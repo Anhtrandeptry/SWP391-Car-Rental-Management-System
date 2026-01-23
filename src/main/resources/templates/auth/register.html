@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register | CRMS</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+
+<h2>Đăng ký tài khoản</h2>
+
+<form th:action="@{/auth/register}"
+      th:object="${registerRequest}"
+      method="post">
+
+    <div>
+        <label>Họ</label>
+        <input type="text" th:field="*{firstName}" required/>
+    </div>
+
+    <div>
+        <label>Tên</label>
+        <input type="text" th:field="*{lastName}" required/>
+    </div>
+
+    <div>
+        <label>Giới tính</label>
+        <select th:field="*{gender}">
+            <option value="MALE">Nam</option>
+            <option value="FEMALE">Nữ</option>
+            <option value="OTHER">Khác</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Số điện thoại</label>
+        <input type="text" th:field="*{phone}" required/>
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input type="email" th:field="*{email}" required/>
+    </div>
+
+    <div>
+        <label>Mật khẩu</label>
+        <input type="password" th:field="*{password}" required/>
+    </div>
+
+    <div>
+        <label>Xác nhận mật khẩu</label>
+        <input type="password" th:field="*{confirmPassword}" required/>
+    </div>
+
+    <div>
+        <label>Đăng ký với tư cách</label>
+        <select th:field="*{role}">
+            <option value="CUSTOMER">Customer</option>
+            <option value="CAR_OWNER">Car Owner</option>
+        </select>
+    </div>
+
+    <button type="submit">Đăng ký</button>
+</form>
+
+<p>
+    Đã có tài khoản?
+    <a th:href="@{/auth/login}">Đăng nhập</a>
+</p>
+
+</body>
+</html>
