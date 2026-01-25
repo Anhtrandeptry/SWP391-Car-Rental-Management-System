@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Car Listings</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <style>
+        /* Minimal styles so the view is usable without project CSS */
+        .car-list { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .car-item { border: 1px solid #ddd; padding: 0.75rem; width: 300px; border-radius: 6px; }
+        .car-item img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; }
+        .car-meta { margin-top: 0.5rem; }
+        .car-price { font-weight: bold; color: #1a73e8; }
+        .search-form { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Car Listings</h1>
+
+    <form th:action="@{/public/cars}" method="get" class="search-form">
+        <input type="text" name="name" placeholder="Search by name" th:value="${name}" />
+        <button type="submit">Search</button>
+        <a th:href="@{/public/cars}">Clear</a>
+    </form>
+
+    <div th:if="${cars.empty}">
+        <p>No cars found.</p>
+    </div>
+
+    <div class="car-list" th:if="${!cars.empty}">
+        <div class="car-item" th:each="car : ${cars}">
+            <div th:if="${car.mainImageUrl != null}">
+                <img th:src="${car.mainImageUrl}" alt="Car image" />
+            </div>
+            <div th:unless="${car.mainImageUrl != null}">
+                <img src="/images/placeholder-car.png" alt="placeholder" />
+            </div>
+            <div class="car-meta">
+                <h3 th:text="${car.name}">Car name</h3>
+                <p th:text="${car.brand} + ' - ' + ${car.model}">Brand - Model</p>
+                <p th:text="${car.location}">Location</p>
+                <p class="car-price" th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 2, 'POINT')}">0.00</p>
+                <p>Rating: <span th:text="${car.averageRating}">0.0</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
