@@ -33,6 +33,12 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
             return;
         }
 
+        if (roles.contains("ROLE_CAR_OWNER")) {
+            response.sendRedirect("/owner/dashboard");
+            return;
+        }
+
+
         response.sendRedirect("/public/home");
     }
 }

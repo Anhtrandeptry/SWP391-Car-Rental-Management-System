@@ -10,7 +10,7 @@ public class OwnerController {
 
     @GetMapping("/dashboard")
     public String dashboard() {
-        return "customer/car-owner-dashboard";
+        return "owner/car-owner-dashboard";
     }
 }
 
