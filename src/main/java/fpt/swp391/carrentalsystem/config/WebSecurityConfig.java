@@ -15,6 +15,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class WebSecurityConfig {
 
+    private final CustomLoginSuccessHandler successHandler;
+
+    public WebSecurityConfig(CustomLoginSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,7 +52,7 @@ public class WebSecurityConfig {
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .defaultSuccessUrl("/public/home", true)
+                        .successHandler(successHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout

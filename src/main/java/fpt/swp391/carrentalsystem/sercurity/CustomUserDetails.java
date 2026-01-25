@@ -1,6 +1,7 @@
 package fpt.swp391.carrentalsystem.sercurity;
 
 import fpt.swp391.carrentalsystem.entity.User;
+import fpt.swp391.carrentalsystem.enums.UserStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,16 +24,16 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return user.getPasswordHash();
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail() != null ? user.getEmail() : user.getPhone();
+        return user.getEmail() != null ? user.getEmail() : user.getPhoneNumber();
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return user.getStatus() == UserStatus.ACTIVE;
     }
 }

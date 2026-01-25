@@ -3,6 +3,7 @@ package fpt.swp391.carrentalsystem.mapper;
 import fpt.swp391.carrentalsystem.dto.request.RegisterRequest;
 import fpt.swp391.carrentalsystem.entity.User;
 
+
 public class UserMapper {
 
     public static User toEntity(RegisterRequest dto) {
@@ -10,7 +11,7 @@ public class UserMapper {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setGender(dto.getGender());
-        user.setPhone(dto.getPhone());
+        user.setPhoneNumber(dto.getPhoneNumber());
         user.setEmail(dto.getEmail());
         user.setRole(dto.getRole());
         return user;
