@@ -18,11 +18,8 @@ public class ProfileController {
         this.service = service;
     }
 
-    // NHÁNH ANHNV: hardcode user_id = 1 để chạy ngay.
-    // Khi merge login: thay bằng userId lấy từ session/security.
-    private int currentUserId() {
-        return 1;
-    }
+    // ✅ chạy riêng profile: fix cứng userId để test
+    private int currentUserId() { return 1; }
 
     private String initials(UserProfile u) {
         StringBuilder sb = new StringBuilder();
@@ -49,13 +46,13 @@ public class ProfileController {
         model.addAttribute("initials", initials(u));
         model.addAttribute("stats", service.getStats(userId));
         model.addAttribute("pwdOk", pwd != null);
-
         return "profile";
     }
 
     @GetMapping("/edit")
     public String editForm(Model model) {
-        UserProfile u = service.getProfile(currentUserId());
+        int userId = currentUserId();
+        UserProfile u = service.getProfile(userId);
 
         UpdateProfileForm f = new UpdateProfileForm();
         f.setFirstName(u.getFirstName());

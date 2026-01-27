@@ -81,6 +81,17 @@ public class ProfileService {
         jdbc.update("UPDATE users SET password_hash=? WHERE user_id=?",
                 f.getNewPassword(), userId);
     }
+    public int findUserIdByLogin(String login) {
+        // Nếu hệ thống login bằng email -> dùng email
+        // Nếu login bằng username -> đổi query theo username
+        Integer id = jdbc.queryForObject(
+                "SELECT user_id FROM users WHERE email = ?",
+                Integer.class,
+                login
+        );
+        if (id == null) throw new RuntimeException("Không tìm thấy user theo login: " + login);
+        return id;
+    }
 
     public Map<String, Object> getStats(int userId) {
         Long trips = jdbc.queryForObject(
