@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết Lập Xe - CRMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 48px;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background-color: #14b8a6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: #14b8a6;
+            font-weight: 600;
+        }
+
+        .step-line {
+            width: 120px;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 16px;
+        }
+
+        /* Info Card */
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .info-card h2 {
+            font-size: 1.5rem;
+            color: #14b8a6;
+            margin-bottom: 16px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-item {
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Form */
+        .setup-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #14b8a6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        input.error, select.error, textarea.error {
+            border-color: #ef4444;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            color: #10b981;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .validation-icon {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            width: 20px;
+            height: 20px;
+            display: none;
+        }
+
+        .validation-icon.show {
+            display: block;
+        }
+
+        .validation-icon.success {
+            color: #10b981;
+        }
+
+        .validation-icon.error {
+            color: #ef4444;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #14b8a6;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 4px;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #374151;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <span class="logo-text">CRMS</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Thiết Lập</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Thông tin</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Giấy tờ</div>
+        </div>
+    </div>
+
+    <!-- Thông tin đã chọn -->
+    <div class="info-card">
+        <h2>Thông tin xe của bạn</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Hãng xe</div>
+                <div class="info-value" id="displayBrand">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mẫu xe</div>
+                <div class="info-value" id="displayModel">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Năm sản xuất</div>
+                <div class="info-value" id="displayYear">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Thành phố</div>
+                <div class="info-value" id="displayCity">--</div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+                <div class="info-label">Thu nhập ước tính/tháng</div>
+                <div class="info-value" style="color: #14b8a6;" id="displayIncome">--</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form thiết lập -->
+    <div class="setup-form">
+        <h2 class="form-title">Bước 1: Thiết Lập Xe</h2>
+        <form id="setupForm">
+            <!-- Biển số xe -->
+            <div class="form-group">
+                <label class="required">
+                    Biển số xe
+                    <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Định dạng: 30A-12345 (Số tỉnh + chữ cái - số)</span>
+                        </span>
+                </label>
+                <input
+                        type="text"
+                        name="licensePlate"
+                        id="licensePlate"
+                        placeholder="VD: 30A-12345"
+                        required
+                >
+                <span class="validation-icon" id="licensePlateIcon">✓</span>
+                <div class="error-message" id="licensePlateError"></div>
+                <div class="success-message" id="licensePlateSuccess"></div>
+            </div>
+
+            <div class="form-row">
+                <!-- Màu sắc -->
+                <div class="form-group">
+                    <label class="required">Màu sắc</label>
+                    <select name="color" id="color" required>
+                        <option value="">-- Chọn màu sắc --</option>
+                        <option value="Trắng">Trắng</option>
+                        <option value="Đen">Đen</option>
+                        <option value="Xám">Xám</option>
+                        <option value="Bạc">Bạc</option>
+                        <option value="Đỏ">Đỏ</option>
+                        <option value="Xanh">Xanh</option>
+                        <option value="Vàng">Vàng</option>
+                        <option value="Nâu">Nâu</option>
+                    </select>
+                    <div class="error-message" id="colorError"></div>
+                </div>
+
+                <!-- Loại hộp số -->
+                <div class="form-group">
+                    <label class="required">Loại hộp số</label>
+                    <select name="transmissionType" id="transmissionType" required>
+                        <option value="">-- Chọn loại hộp số --</option>
+                        <option value="Số tự động">Số tự động</option>
+                        <option value="Số sàn">Số sàn</option>
+                    </select>
+                    <div class="error-message" id="transmissionTypeError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <!-- Loại nhiên liệu -->
+                <div class="form-group">
+                    <label class="required">Loại nhiên liệu</label>
+                    <select name="fuelType" id="fuelType" required>
+                        <option value="">-- Chọn loại nhiên liệu --</option>
+                        <option value="Xăng">Xăng</option>
+                        <option value="Dầu">Dầu</option>
+                        <option value="Điện">Điện</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                    <div class="error-message" id="fuelTypeError"></div>
+                </div>
+
+                <!-- Số chỗ ngồi -->
+                <div class="form-group">
+                    <label class="required">Số chỗ ngồi</label>
+                    <select name="seats" id="seats" required>
+                        <option value="">-- Chọn số chỗ --</option>
+                        <option value="2">2 chỗ</option>
+                        <option value="4">4 chỗ</option>
+                        <option value="5">5 chỗ</option>
+                        <option value="7">7 chỗ</option>
+                        <option value="9">9 chỗ</option>
+                        <option value="16">16 chỗ</option>
+                    </select>
+                    <div class="error-message" id="seatsError"></div>
+                </div>
+            </div>
+
+            <!-- Giá thuê -->
+            <div class="form-group">
+                <label class="required">
+                    Giá thuê mỗi ngày (VNĐ)
+                    <span class="tooltip">ℹ️
+                            <span class="tooltiptext">Tối thiểu 100,000 VNĐ/ngày</span>
+                        </span>
+                </label>
+                <input
+                        type="number"
+                        name="pricePerDay"
+                        id="pricePerDay"
+                        placeholder="VD: 1500000"
+                        min="100000"
+                        step="10000"
+                        required
+                >
+                <div class="error-message" id="pricePerDayError"></div>
+                <small style="color: #6b7280;">Giá đề xuất dựa trên ước tính: <strong id="suggestedPrice">--</strong></small>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-group">
+                <label>Mô tả xe (tùy chọn)</label>
+                <textarea
+                        name="description"
+                        id="description"
+                        rows="4"
+                        placeholder="Nhập mô tả về xe của bạn... (VD: Xe mới, nội thất đẹp, tiết kiệm nhiên liệu)"
+                        maxlength="1000"
+                ></textarea>
+                <small style="color: #6b7280;">
+                    <span id="charCount">0</span>/1000 ký tự
+                </small>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Tiếp theo: Thông tin chi tiết
+            </button>
+        </form>
+    </div>
+</div>
+<script>
+    const API_BASE_URL = 'http://localhost:8082/api';
+    let estimateData = null;
+    let licensePlateCheckTimeout = null;
+
+    /* ================= LOAD DATA FROM STEP 0 ================= */
+    document.addEventListener('DOMContentLoaded', () => {
+        estimateData = JSON.parse(sessionStorage.getItem('carRegisterStep1'));
+
+        if (!estimateData) {
+            alert('⚠️ Không tìm thấy dữ liệu ước tính. Vui lòng thực hiện lại.');
+            window.location.href = 'income-estimate.html';
+            return;
+        }
+
+        displayEstimateInfo();
+        attachEventListeners();
+    });
+
+    /* ================= DISPLAY INFO ================= */
+    function displayEstimateInfo() {
+        document.getElementById('displayBrand').textContent = estimateData.brandName || '--';
+        document.getElementById('displayModel').textContent = estimateData.modelName || '--';
+        document.getElementById('displayYear').textContent = estimateData.year;
+        document.getElementById('displayCity').textContent = estimateData.city;
+        document.getElementById('displayIncome').textContent =
+            estimateData.estimatedIncome.toLocaleString('vi-VN') + ' VNĐ';
+
+        const suggestedPrice = Math.round(estimateData.estimatedIncome / 20 / 10000) * 10000;
+        document.getElementById('suggestedPrice').textContent =
+            suggestedPrice.toLocaleString('vi-VN') + ' VNĐ';
+
+        document.getElementById('pricePerDay').value = suggestedPrice;
+    }
+
+    /* ================= EVENTS ================= */
+    function attachEventListeners() {
+        document.getElementById('setupForm').addEventListener('submit', handleSubmit);
+
+        document.getElementById('licensePlate').addEventListener('input', function () {
+            clearTimeout(licensePlateCheckTimeout);
+            this.value = this.value.toUpperCase();
+
+            if (this.value.length >= 7) {
+                licensePlateCheckTimeout = setTimeout(() => {
+                    checkLicensePlate(this.value);
+                }, 500);
+            }
+        });
+
+        document.getElementById('description').addEventListener('input', e => {
+            document.getElementById('charCount').textContent = e.target.value.length;
+        });
+    }
+
+    /* ================= CHECK LICENSE PLATE ================= */
+    async function checkLicensePlate(plate) {
+        const pattern = /^[0-9]{2}[A-Z]-[0-9]{4,5}$/;
+        if (!pattern.test(plate)) {
+            showError('licensePlate', 'Sai định dạng biển số');
+            return;
+        }
+
+        const res = await fetch(
+            `${API_BASE_URL}/owner/car-setup/check-license-plate?licensePlate=${plate}`
+        );
+        const result = await res.json();
+
+        if (result.success && !result.data) {
+            hideError('licensePlate');
+        } else {
+            showError('licensePlate', 'Biển số đã tồn tại');
+        }
+    }
+
+    /* ================= SUBMIT ================= */
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> Đang xử lý...';
+
+        try {
+            const formData = Object.fromEntries(new FormData(e.target));
+
+            const payload = {
+                ...estimateData,
+                licensePlate: formData.licensePlate.toUpperCase(),
+                color: formData.color,
+                transmissionType: formData.transmissionType,
+                fuelType: formData.fuelType,
+                seats: Number(formData.seats),
+                pricePerDay: Number(formData.pricePerDay),
+                description: formData.description?.trim()
+            };
+
+            const res = await fetch(`${API_BASE_URL}/owner/car-setup/validate-step1`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+
+            if (!result.success) {
+                alert(result.message || 'Dữ liệu không hợp lệ');
+                return;
+            }
+
+            sessionStorage.setItem('carRegisterStep2', JSON.stringify(payload));
+            window.location.href = 'create-car-step2.html';
+
+        } catch (e) {
+            alert('❌ Lỗi server');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Tiếp theo: Thông tin chi tiết';
+        }
+    }
+
+    /* ================= ERROR UI ================= */
+    function showError(id, msg) {
+        const el = document.getElementById(id + 'Error');
+        if (el) {
+            el.textContent = msg;
+            el.classList.add('show');
+        }
+    }
+
+    function hideError(id) {
+        const el = document.getElementById(id + 'Error');
+        if (el) el.classList.remove('show');
+    }
+</script>
+
+
+<!--<script>-->
+<!--    const API_BASE_URL = 'http://localhost:8082/api/';-->
+<!--    let estimateData = null;-->
+<!--    let licensePlateCheckTimeout = null;-->
+
+<!--    //Load dữ liệu từ sessionStorage-->
+<!--    document.addEventListener('DOMContentLoaded', function() {-->
+<!--        estimateData = JSON.parse(sessionStorage.getItem('incomeEstimateData'));-->
+
+<!--        if (!estimateData) {-->
+<!--            alert('Không tìm thấy thông tin ước tính. Vui lòng quay lại bước trước.');-->
+<!--            window.location.href = '/api/income-estimate';-->
+<!--            return;-->
+<!--        }-->
+
+<!--        // Hiển thị thông tin-->
+<!--        displayEstimateInfo();-->
+
+<!--        // Attach event listeners-->
+<!--        attachEventListeners();-->
+<!--    });-->
+
+<!--    // Hiển thị thông tin ước tính-->
+<!--    function displayEstimateInfo() {-->
+<!--        document.getElementById('displayBrand').textContent = estimateData.brandName;-->
+<!--        document.getElementById('displayModel').textContent = estimateData.modelName;-->
+<!--        document.getElementById('displayYear').textContent = estimateData.year;-->
+<!--        document.getElementById('displayCity').textContent = estimateData.city;-->
+<!--        document.getElementById('displayIncome').textContent =-->
+<!--            estimateData.estimatedIncome.toLocaleString('vi-VN') + ' VNĐ';-->
+
+<!--        // Hiển thị giá đề xuất (ước tính / 20 ngày)-->
+<!--        const suggestedPrice = Math.round(estimateData.estimatedIncome / 20 / 10000) * 10000;-->
+<!--        document.getElementById('suggestedPrice').textContent =-->
+<!--            suggestedPrice.toLocaleString('vi-VN') + ' VNĐ';-->
+
+<!--        // Set giá mặc định-->
+<!--        document.getElementById('pricePerDay').value = suggestedPrice;-->
+<!--    }-->
+
+<!--    // Attach event listeners-->
+<!--    function attachEventListeners() {-->
+<!--        // Kiểm tra biển số khi người dùng nhập-->
+<!--        const licensePlateInput = document.getElementById('licensePlate');-->
+<!--        licensePlateInput.addEventListener('input', function() {-->
+<!--            clearTimeout(licensePlateCheckTimeout);-->
+
+<!--            const value = this.value.trim().toUpperCase();-->
+<!--            this.value = value; // Auto uppercase-->
+
+<!--            if (value.length >= 7) {-->
+<!--                licensePlateCheckTimeout = setTimeout(() => {-->
+<!--                    checkLicensePlate(value);-->
+<!--                }, 500);-->
+<!--            }-->
+<!--        });-->
+
+<!--        // Character count cho description-->
+<!--        const descriptionTextarea = document.getElementById('description');-->
+<!--        descriptionTextarea.addEventListener('input', function() {-->
+<!--            document.getElementById('charCount').textContent = this.value.length;-->
+<!--        });-->
+
+<!--        // Form submit-->
+<!--        document.getElementById('setupForm').addEventListener('submit', handleSubmit);-->
+
+<!--        // Real-time validation cho các trường khác-->
+<!--        document.getElementById('color').addEventListener('change', validateField);-->
+<!--        document.getElementById('transmissionType').addEventListener('change', validateField);-->
+<!--        document.getElementById('fuelType').addEventListener('change', validateField);-->
+<!--        document.getElementById('seats').addEventListener('change', validateField);-->
+<!--        document.getElementById('pricePerDay').addEventListener('blur', validatePrice);-->
+<!--    }-->
+
+<!--    // Kiểm tra biển số xe-->
+<!--    async function checkLicensePlate(licensePlate) {-->
+<!--        const errorEl = document.getElementById('licensePlateError');-->
+<!--        const successEl = document.getElementById('licensePlateSuccess');-->
+<!--        const iconEl = document.getElementById('licensePlateIcon');-->
+<!--        const inputEl = document.getElementById('licensePlate');-->
+
+<!--        // Validate format trước-->
+<!--        const pattern = /^[0-9]{2}[A-Z]-[0-9]{4,5}$/;-->
+<!--        if (!pattern.test(licensePlate)) {-->
+<!--            showError('licensePlate', 'Định dạng biển số không đúng (VD: 30A-12345)');-->
+<!--            return;-->
+<!--        }-->
+
+<!--        try {-->
+<!--            const response = await fetch(-->
+<!--                `${API_BASE_URL}/owner/car-setup/check-license-plate?licensePlate=${licensePlate}`-->
+<!--            );-->
+<!--            const result = await response.json();-->
+
+<!--            if (result.success && !result.data) {-->
+<!--                // Biển số có thể sử dụng-->
+<!--                hideError('licensePlate');-->
+<!--                successEl.textContent = '✓ Biển số xe có thể sử dụng';-->
+<!--                successEl.classList.add('show');-->
+<!--                iconEl.classList.add('show', 'success');-->
+<!--                iconEl.classList.remove('error');-->
+<!--                inputEl.classList.remove('error');-->
+<!--            } else {-->
+<!--                // Biển số đã tồn tại-->
+<!--                showError('licensePlate', 'Biển số xe đã tồn tại trong hệ thống');-->
+<!--                successEl.classList.remove('show');-->
+<!--                iconEl.classList.add('show', 'error');-->
+<!--                iconEl.classList.remove('success');-->
+<!--            }-->
+<!--        } catch (error) {-->
+<!--            console.error('Error checking license plate:', error);-->
+<!--            showError('licensePlate', 'Không thể kiểm tra biển số xe. Vui lòng thử lại.');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Validate field-->
+<!--    function validateField(e) {-->
+<!--        const field = e.target;-->
+<!--        const value = field.value;-->
+
+<!--        if (!value) {-->
+<!--            showError(field.id, 'Trường này không được để trống');-->
+<!--        } else {-->
+<!--            hideError(field.id);-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Validate price-->
+<!--    function validatePrice() {-->
+<!--        const priceInput = document.getElementById('pricePerDay');-->
+<!--        const price = parseFloat(priceInput.value);-->
+
+<!--        if (!price || price < 100000) {-->
+<!--            showError('pricePerDay', 'Giá thuê tối thiểu là 100,000 VNĐ/ngày');-->
+<!--        } else if (price > 50000000) {-->
+<!--            showError('pricePerDay', 'Giá thuê tối đa là 50,000,000 VNĐ/ngày');-->
+<!--        } else {-->
+<!--            hideError('pricePerDay');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Show error-->
+<!--    function showError(fieldId, message) {-->
+<!--        const errorEl = document.getElementById(fieldId + 'Error');-->
+<!--        const inputEl = document.getElementById(fieldId);-->
+
+<!--        if (errorEl) {-->
+<!--            errorEl.textContent = message;-->
+<!--            errorEl.classList.add('show');-->
+<!--        }-->
+
+<!--        if (inputEl) {-->
+<!--            inputEl.classList.add('error');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Hide error-->
+<!--    function hideError(fieldId) {-->
+<!--        const errorEl = document.getElementById(fieldId + 'Error');-->
+<!--        const inputEl = document.getElementById(fieldId);-->
+
+<!--        if (errorEl) {-->
+<!--            errorEl.classList.remove('show');-->
+<!--        }-->
+
+<!--        if (inputEl) {-->
+<!--            inputEl.classList.remove('error');-->
+<!--        }-->
+<!--    }-->
+
+<!--    // Handle form submit-->
+<!--    async function handleSubmit(e) {-->
+<!--        e.preventDefault();-->
+
+<!--        const submitBtn = document.getElementById('submitBtn');-->
+<!--        const originalText = submitBtn.innerHTML;-->
+
+<!--        // Disable button-->
+<!--        submitBtn.disabled = true;-->
+<!--        submitBtn.innerHTML = '<span class="loading"></span> Đang xử lý...';-->
+
+<!--        try {-->
+<!--            // Lấy dữ liệu form-->
+<!--            const formData = new FormData(e.target);-->
+<!--            const setupData = Object.fromEntries(formData.entries());-->
+
+<!--            // Kết hợp với dữ liệu từ bước trước-->
+<!--            const completeData = {-->
+<!--                brandId: estimateData.brandId,-->
+<!--                modelId: estimateData.modelId,-->
+<!--                year: parseInt(estimateData.year),-->
+<!--                city: estimateData.city,-->
+<!--                licensePlate: setupData.licensePlate.trim().toUpperCase(),-->
+<!--                color: setupData.color,-->
+<!--                transmissionType: setupData.transmissionType,-->
+<!--                fuelType: setupData.fuelType,-->
+<!--                seats: parseInt(setupData.seats),-->
+<!--                pricePerDay: parseFloat(setupData.pricePerDay),-->
+<!--                description: setupData.description.trim(),-->
+<!--                estimatedIncome: estimateData.estimatedIncome-->
+<!--            };-->
+
+<!--            // Validate với backend-->
+<!--            const response = await fetch(`${API_BASE_URL}/owner/car-setup/validate-step1`, {-->
+<!--                method: 'POST',-->
+<!--                headers: {-->
+<!--                    'Content-Type': 'application/json',-->
+<!--                },-->
+<!--                body: JSON.stringify(completeData)-->
+<!--            });-->
+
+<!--            const result = await response.json();-->
+
+<!--            if (result.success) {-->
+<!--                // Lưu vào sessionStorage-->
+<!--                sessionStorage.setItem('step1Data', JSON.stringify(completeData));-->
+
+<!--                console.log('Step 1 Data saved:', completeData);-->
+
+<!--                // Chuyển sang bước 2-->
+<!--                alert('✅ Dữ liệu bước 1 đã được lưu thành công!\n\nSẵn sàng chuyển sang Bước 2: Thông tin chi tiết');-->
+<!--                 window.location.href = 'create-car-step1.html';-->
+<!--            } else {-->
+<!--                // Hiển thị lỗi-->
+<!--                if (result.data) {-->
+<!--                    for (const [field, message] of Object.entries(result.data)) {-->
+<!--                        if (field === 'general') {-->
+<!--                            alert('❌ ' + message);-->
+<!--                        } else {-->
+<!--                            showError(field, message);-->
+<!--                        }-->
+<!--                    }-->
+<!--                } else {-->
+<!--                    alert('❌ ' + result.message);-->
+<!--                }-->
+<!--            }-->
+<!--        } catch (error) {-->
+<!--            console.error('Error:', error);-->
+<!--            alert('❌ Không thể kết nối đến server. Vui lòng thử lại!');-->
+<!--        } finally {-->
+<!--            submitBtn.disabled = false;-->
+<!--            submitBtn.innerHTML = originalText;-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+<!--<script>-->
+<!--    const API_BASE_URL = 'http://localhost:8082/api';-->
+<!--    let estimateData = null;-->
+<!--    let licensePlateCheckTimeout = null;-->
+
+<!--    document.addEventListener('DOMContentLoaded', function () {-->
+<!--        estimateData = sessionStorage.getItem('incomeEstimateData');-->
+
+<!--&lt;!&ndash;        if (!estimateData) {&ndash;&gt;-->
+<!--&lt;!&ndash;            alert('⚠️ Phiên làm việc đã hết hạn. Vui lòng ước tính lại.');&ndash;&gt;-->
+<!--&lt;!&ndash;            window.location.href = '/api/income-estimate';&ndash;&gt;-->
+<!--&lt;!&ndash;            return;&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+
+<!--        estimateData = JSON.parse(estimateData);-->
+<!--        displayEstimateInfo();-->
+<!--        attachEventListeners();-->
+<!--    });-->
+
+<!--    function displayEstimateInfo() {-->
+<!--        document.getElementById('displayBrand').textContent = estimateData.brandName;-->
+<!--        document.getElementById('displayModel').textContent = estimateData.modelName;-->
+<!--        document.getElementById('displayYear').textContent = estimateData.year;-->
+<!--        document.getElementById('displayCity').textContent = estimateData.city;-->
+<!--        document.getElementById('displayIncome').textContent =-->
+<!--            estimateData.estimatedIncome.toLocaleString('vi-VN') + ' VNĐ';-->
+
+<!--        const suggestedPrice = Math.round(estimateData.estimatedIncome / 20 / 10000) * 10000;-->
+<!--        document.getElementById('suggestedPrice').textContent =-->
+<!--            suggestedPrice.toLocaleString('vi-VN') + ' VNĐ';-->
+
+<!--        document.getElementById('pricePerDay').value = suggestedPrice;-->
+<!--    }-->
+
+<!--    async function handleSubmit(e) {-->
+<!--        e.preventDefault();-->
+
+<!--        const submitBtn = document.getElementById('submitBtn');-->
+<!--        submitBtn.disabled = true;-->
+<!--        submitBtn.innerHTML = '<span class="loading"></span> Đang xử lý...';-->
+
+<!--        try {-->
+<!--            const formData = new FormData(e.target);-->
+<!--            const setupData = Object.fromEntries(formData.entries());-->
+
+<!--            const completeData = {-->
+<!--                brandId: estimateData.brandId,-->
+<!--                modelId: estimateData.modelId,-->
+<!--                year: Number(estimateData.year),-->
+<!--                city: estimateData.city,-->
+<!--                licensePlate: setupData.licensePlate.trim().toUpperCase(),-->
+<!--                color: setupData.color,-->
+<!--                transmissionType: setupData.transmissionType,-->
+<!--                fuelType: setupData.fuelType,-->
+<!--                seats: Number(setupData.seats),-->
+<!--                pricePerDay: Number(setupData.pricePerDay),-->
+<!--                description: setupData.description?.trim(),-->
+<!--                estimatedIncome: estimateData.estimatedIncome-->
+<!--            };-->
+
+<!--            const response = await fetch(`${API_BASE_URL}/owner/car-setup/validate-step1`, {-->
+<!--                method: 'POST',-->
+<!--                headers: { 'Content-Type': 'application/json' },-->
+<!--                body: JSON.stringify(completeData)-->
+<!--            });-->
+
+<!--            const result = await response.json();-->
+
+<!--            if (result.success) {-->
+<!--                sessionStorage.setItem('step1Data', JSON.stringify(completeData));-->
+<!--                window.location.href = 'create-car-step1.html';-->
+<!--            } else {-->
+<!--                alert(result.message || '❌ Dữ liệu không hợp lệ');-->
+<!--            }-->
+
+<!--        } catch (err) {-->
+<!--            alert('❌ Lỗi kết nối server');-->
+<!--        } finally {-->
+<!--            submitBtn.disabled = false;-->
+<!--            submitBtn.innerHTML = 'Tiếp theo: Thông tin chi tiết';-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+
+</body>
+</html>

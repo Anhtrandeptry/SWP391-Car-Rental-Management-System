@@ -1,4 +1,4 @@
-package fpt.swp391.carrentalsystem.sercurity;
+package fpt.swp391.carrentalsystem.security;
 
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -18,22 +18,29 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    public String getUsername() {
+        return user.getEmail();
     }
 
     @Override
     public String getPassword() {
-        return user.getPasswordHash();
+        return user.getPasswordHash(); // 🔥 DÒNG QUYẾT ĐỊNH
     }
 
     @Override
-    public String getUsername() {
-        return user.getEmail() != null ? user.getEmail() : user.getPhoneNumber();
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+        );
     }
 
     @Override
     public boolean isEnabled() {
         return user.getStatus() == UserStatus.ACTIVE;
     }
+
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
 }
+

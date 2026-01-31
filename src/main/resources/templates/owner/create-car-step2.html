@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Tin Xe - CRMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 48px;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+        }
+
+        .step.completed .step-number {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .step.active .step-number {
+            background-color: #14b8a6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: #14b8a6;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #10b981;
+        }
+
+        .step-line {
+            width: 120px;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 16px;
+        }
+
+        .step.completed + .step-line {
+            background-color: #10b981;
+        }
+
+        /* Info Card */
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .info-card h2 {
+            font-size: 1.25rem;
+            color: #14b8a6;
+            margin-bottom: 16px;
+        }
+
+        .info-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .info-tag {
+            padding: 8px 12px;
+            background: #f0fdfa;
+            border: 1px solid #14b8a6;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #0d9488;
+        }
+
+        /* Form */
+        .info-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            color: #14b8a6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        input.error, select.error {
+            border-color: #ef4444;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Amenities Checkboxes */
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background-color: #f9fafb;
+            border-color: #14b8a6;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #14b8a6;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        /* Buttons */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .btn-primary {
+            background-color: #14b8a6;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Helper text */
+        .helper-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Input with unit */
+        .input-with-unit {
+            position: relative;
+        }
+
+        .input-with-unit input {
+            padding-right: 60px;
+        }
+
+        .input-unit {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 0.875rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .amenities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <span class="logo-text">CRMS</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step completed">
+            <div class="step-number">✓</div>
+            <div class="step-label">Thiết Lập</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-number">2</div>
+            <div class="step-label">Thông tin</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Giấy tờ</div>
+        </div>
+    </div>
+
+    <!-- Thông tin từ Step 1 -->
+    <div class="info-card">
+        <h2>✓ Thông tin đã nhập (Bước 1)</h2>
+        <div class="info-summary">
+            <div class="info-tag">
+                <strong>Xe:</strong> <span id="summaryBrand">--</span> <span id="summaryModel">--</span>
+            </div>
+            <div class="info-tag">
+                <strong>Năm:</strong> <span id="summaryYear">--</span>
+            </div>
+            <div class="info-tag">
+                <strong>Biển số:</strong> <span id="summaryLicensePlate">--</span>
+            </div>
+            <div class="info-tag">
+                <strong>Giá:</strong> <span id="summaryPrice">--</span> VNĐ/ngày
+            </div>
+        </div>
+    </div>
+
+    <!-- Form thông tin -->
+    <div class="info-form">
+        <form id="infoForm">
+
+            <!-- SECTION 1: Thông tin vị trí -->
+            <h3 class="section-title">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                1. Thông tin vị trí
+            </h3>
+
+            <div class="form-group">
+                <label class="required">Địa chỉ chi tiết</label>
+                <input type="text" name="address" id="address" placeholder="Số nhà, tên đường" required>
+                <div class="error-message" id="addressError"></div>
+            </div>
+
+            <div class="form-row-3">
+                <div class="form-group">
+                    <label class="required">Quận/Huyện</label>
+                    <input type="text" name="district" id="district" placeholder="VD: Quận 1" required>
+                    <div class="error-message" id="districtError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Phường/Xã</label>
+                    <input type="text" name="ward" id="ward" placeholder="VD: Phường Bến Nghé" required>
+                    <div class="error-message" id="wardError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Thành phố</label>
+                    <input type="text" id="cityReadonly" readonly style="background-color: #f9fafb;">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Vĩ độ (GPS)</label>
+                    <input type="text" name="latitude" id="latitude" placeholder="VD: 10.762622">
+                    <div class="helper-text">Tùy chọn - giúp khách dễ tìm xe hơn</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Kinh độ (GPS)</label>
+                    <input type="text" name="longitude" id="longitude" placeholder="VD: 106.660172">
+                    <div class="helper-text">Tùy chọn - giúp khách dễ tìm xe hơn</div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Thông tin kỹ thuật -->
+            <h3 class="section-title" style="margin-top: 40px;">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                2. Thông tin kỹ thuật
+            </h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">Số km đã đi</label>
+                    <div class="input-with-unit">
+                        <input type="number" name="mileage" id="mileage" placeholder="VD: 50000" min="0" required>
+                        <span class="input-unit">km</span>
+                    </div>
+                    <div class="error-message" id="mileageError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Tình trạng xe</label>
+                    <select name="condition" id="condition" required>
+                        <option value="">-- Chọn tình trạng --</option>
+                        <option value="Mới">Mới (0-2 năm)</option>
+                        <option value="Rất tốt">Rất tốt (2-5 năm)</option>
+                        <option value="Tốt">Tốt (5-8 năm)</option>
+                        <option value="Trung bình">Trung bình (8-12 năm)</option>
+                        <option value="Cũ">Cũ (>12 năm)</option>
+                    </select>
+                    <div class="error-message" id="conditionError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Năng lượng tiêu hao</label>
+                    <div class="input-with-unit">
+                        <input type="number" name="fuelConsumption" id="fuelConsumption" placeholder="VD: 7.5" min="0" step="0.1">
+                        <span class="input-unit">lít/100km</span>
+                    </div>
+                    <div class="helper-text">Tùy chọn - giúp khách ước tính chi phí</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Dung tích động cơ</label>
+                    <div class="input-with-unit">
+                        <input type="number" name="engineCapacity" id="engineCapacity" placeholder="VD: 1500" min="500">
+                        <span class="input-unit">cc</span>
+                    </div>
+                    <div class="helper-text">Tùy chọn</div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Tiện nghi -->
+            <h3 class="section-title" style="margin-top: 40px;">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+                3. Tiện nghi xe
+            </h3>
+
+            <div class="amenities-grid">
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasAirConditioner" id="hasAirConditioner">
+                    <label for="hasAirConditioner">❄️ Điều hòa</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasDashCam" id="hasDashCam">
+                    <label for="hasDashCam">📹 Camera hành trình</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasReverseCamera" id="hasReverseCamera">
+                    <label for="hasReverseCamera">📷 Camera lùi</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasGPS" id="hasGPS">
+                    <label for="hasGPS">🛰️ Định vị GPS</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasUSB" id="hasUSB">
+                    <label for="hasUSB">🔌 Khe cắm USB</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasBluetooth" id="hasBluetooth">
+                    <label for="hasBluetooth">📡 Bluetooth</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasMaps" id="hasMaps">
+                    <label for="hasMaps">🗺️ Bản đồ</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="has360Camera" id="has360Camera">
+                    <label for="has360Camera">📸 Camera 360</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasSpareWheel" id="hasSpareWheel">
+                    <label for="hasSpareWheel">🛞 Lốp dự phòng</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasDVDPlayer" id="hasDVDPlayer">
+                    <label for="hasDVDPlayer">💿 Đầu DVD</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasETC" id="hasETC">
+                    <label for="hasETC">🎫 Thu phí ETC</label>
+                </div>
+
+                <div class="checkbox-item">
+                    <input type="checkbox" name="hasSunroof" id="hasSunroof">
+                    <label for="hasSunroof">🌤️ Cửa sổ trời</label>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Quy định thuê xe -->
+            <h3 class="section-title" style="margin-top: 40px;">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                4. Quy định thuê xe
+            </h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">Giới hạn km/ngày</label>
+                    <div class="input-with-unit">
+                        <input type="number" name="dailyKmLimit" id="dailyKmLimit" placeholder="VD: 300" min="50" required>
+                        <span class="input-unit">km</span>
+                    </div>
+                    <div class="error-message" id="dailyKmLimitError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Phụ phí vượt km</label>
+                    <div class="input-with-unit">
+                        <input type="number" name="overLimitFee" id="overLimitFee" placeholder="VD: 5000" min="1000" required>
+                        <span class="input-unit">VNĐ/km</span>
+                    </div>
+                    <div class="error-message" id="overLimitFeeError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">Chính sách nhiên liệu</label>
+                    <select name="fuelPolicy" id="fuelPolicy" required>
+                        <option value="">-- Chọn chính sách --</option>
+                        <option value="Đầy đủ">Đầy đủ (đầy -> đầy)</option>
+                        <option value="Tự đổ">Tự đổ (khách tự chi trả)</option>
+                        <option value="Trả theo km">Trả theo km thực tế</option>
+                    </select>
+                    <div class="error-message" id="fuelPolicyError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Chính sách hủy</label>
+                    <select name="cancellationPolicy" id="cancellationPolicy">
+                        <option value="">-- Chọn chính sách --</option>
+                        <option value="Miễn phí hủy trong 24h">Miễn phí hủy trong 24h</option>
+                        <option value="Miễn phí hủy trong 48h">Miễn phí hủy trong 48h</option>
+                        <option value="Phạt 50% nếu hủy">Phạt 50% nếu hủy</option>
+                        <option value="Không hoàn tiền">Không hoàn tiền</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required">Thời gian giao xe</label>
+                    <input type="text" name="deliveryTime" id="deliveryTime" placeholder="VD: 8:00 - 20:00" required>
+                    <div class="error-message" id="deliveryTimeError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">Địa điểm giao xe</label>
+                    <input type="text" name="deliveryLocation" id="deliveryLocation" placeholder="VD: Tại nhà, Sân bay, ..." required>
+                    <div class="error-message" id="deliveryLocationError"></div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: Thông tin bổ sung -->
+            <h3 class="section-title" style="margin-top: 40px;">
+                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                </svg>
+                5. Thông tin bổ sung
+            </h3>
+
+            <div class="form-group">
+                <label>Ghi chú đặc biệt</label>
+                <textarea name="specialNotes" id="specialNotes" rows="3" placeholder="VD: Xe phù hợp cho gia đình, có ghế trẻ em, ..."></textarea>
+                <div class="helper-text"><span id="specialNotesCount">0</span>/1000 ký tự</div>
+            </div>
+
+            <div class="form-group">
+                <label>Yêu cầu với người thuê</label>
+                <textarea name="renterRequirements" id="renterRequirements" rows="2" placeholder="VD: Có bằng lái từ 2 năm, không hút thuốc, ..."></textarea>
+                <div class="helper-text"><span id="renterRequirementsCount">0</span>/500 ký tự</div>
+            </div>
+
+            <div class="form-group">
+                <label>Chính sách vệ sinh</label>
+                <input type="text" name="cleaningPolicy" id="cleaningPolicy" placeholder="VD: Phụ phí vệ sinh 200,000 VNĐ nếu quá bẩn">
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" id="prevBtn">
+                    ← Quay lại
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Tiếp theo: Giấy tờ →
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = 'http://localhost:8082/api';
+    let step1Data = null;
+
+    // Load dữ liệu từ sessionStorage
+    document.addEventListener('DOMContentLoaded', function() {
+        step1Data = JSON.parse(sessionStorage.getItem('step1Data'));
+
+        if (!step1Data) {
+            alert('Không tìm thấy thông tin bước 1. Vui lòng quay lại.');
+            window.location.href = 'create-car-step1.html';
+            return;
+        }
+
+        // Hiển thị tóm tắt Step 1
+        displayStep1Summary();
+
+        // Pre-fill city (readonly)
+        document.getElementById('cityReadonly').value = step1Data.city;
+
+        // Attach event listeners
+        attachEventListeners();
+    });
+
+    // Hiển thị tóm tắt Step 1
+    function displayStep1Summary() {
+        document.getElementById('summaryBrand').textContent = step1Data.brandName || step1Data.brand;
+        document.getElementById('summaryModel').textContent = step1Data.modelName || step1Data.model;
+        document.getElementById('summaryYear').textContent = step1Data.year;
+        document.getElementById('summaryLicensePlate').textContent = step1Data.licensePlate;
+        document.getElementById('summaryPrice').textContent =
+            parseInt(step1Data.pricePerDay).toLocaleString('vi-VN');
+    }
+
+    // Attach event listeners
+    function attachEventListeners() {
+        // Character counters
+        document.getElementById('specialNotes').addEventListener('input', function() {
+            document.getElementById('specialNotesCount').textContent = this.value.length;
+        });
+
+        document.getElementById('renterRequirements').addEventListener('input', function() {
+            document.getElementById('renterRequirementsCount').textContent = this.value.length;
+        });
+
+        // Previous button
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            window.location.href = 'create-car-step1.html';
+        });
+
+        // Form submit
+        document.getElementById('infoForm').addEventListener('submit', handleSubmit);
+    }
+
+    // Handle form submit
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+
+        // Disable button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading"></span> Đang xử lý...';
+
+        try {
+            // Lấy dữ liệu form
+            const formData = new FormData(e.target);
+            const step2Data = {};
+
+            // Text inputs
+            for (let [key, value] of formData.entries()) {
+                if (key.startsWith('has')) {
+                    // Checkbox - sẽ xử lý riêng
+                    continue;
+                }
+                step2Data[key] = value;
+            }
+
+            // Checkboxes (amenities)
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                step2Data[checkbox.name] = checkbox.checked;
+            });
+
+            // Kết hợp với Step 1 data
+            const completeData = {
+                ...step1Data,
+                ...step2Data,
+                // Convert number fields
+                mileage: parseInt(step2Data.mileage) || 0,
+                fuelConsumption: parseFloat(step2Data.fuelConsumption) || null,
+                engineCapacity: parseInt(step2Data.engineCapacity) || null,
+                dailyKmLimit: parseInt(step2Data.dailyKmLimit),
+                overLimitFee: parseFloat(step2Data.overLimitFee)
+            };
+
+            console.log('Complete Step 2 Data:', completeData);
+
+            // Validate với backend
+            const response = await fetch(`${API_BASE_URL}/owner/car-info/validate-step2`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(completeData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Lưu vào sessionStorage
+                sessionStorage.setItem('step2Data', JSON.stringify(completeData));
+
+                console.log('Step 2 Data saved:', completeData);
+
+                // Chuyển sang bước 3
+                alert('✅ Dữ liệu bước 2 đã được lưu thành công!\n\nSẵn sàng chuyển sang Bước 3: Giấy tờ');
+                // window.location.href = 'create-car-step3.html';
+            } else {
+                // Hiển thị lỗi
+                if (result.data) {
+                    for (const [field, message] of Object.entries(result.data)) {
+                        if (field === 'general') {
+                            alert('❌ ' + message);
+                        } else {
+                            showError(field, message);
+                        }
+                    }
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Không thể kết nối đến server. Vui lòng thử lại!');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    // Show error
+    function showError(fieldId, message) {
+        const errorEl = document.getElementById(fieldId + 'Error');
+        const inputEl = document.getElementById(fieldId);
+
+        if (errorEl) {
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        if (inputEl) {
+            inputEl.classList.add('error');
+        }
+    }
+
+    // Hide error
+    function hideError(fieldId) {
+        const errorEl = document.getElementById(fieldId + 'Error');
+        const inputEl = document.getElementById(fieldId);
+
+        if (errorEl) {
+            errorEl.classList.remove('show');
+        }
+
+        if (inputEl) {
+            inputEl.classList.remove('error');
+        }
+    }
+</script>
+</body>
+</html>

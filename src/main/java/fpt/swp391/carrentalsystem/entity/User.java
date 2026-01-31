@@ -31,7 +31,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(name = "phone_number", length = 20)
@@ -40,6 +40,7 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String address;
 
+    // 🔥 QUAN TRỌNG: map đúng DB
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -68,8 +69,6 @@ public class User {
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
-
-    /* ================= Lifecycle ================= */
 
     @PrePersist
     protected void onCreate() {
