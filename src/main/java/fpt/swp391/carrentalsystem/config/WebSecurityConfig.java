@@ -46,11 +46,12 @@ public class WebSecurityConfig {
                         .requestMatchers("/public/**", "/auth/**").permitAll()
 
                         // ✅ CHỈ ĐỂ CHẠY PROFILE (tạm thời nhánh anhnv)
-                        .requestMatchers("/profile", "/profile/**").permitAll()
+                        .requestMatchers("/profile", "/profile/**").authenticated()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/owner/**").hasRole("CAR_OWNER")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
+
                         .anyRequest().authenticated()
                 )
 
