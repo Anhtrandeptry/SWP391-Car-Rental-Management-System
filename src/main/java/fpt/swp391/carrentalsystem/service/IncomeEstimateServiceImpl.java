@@ -1,7 +1,5 @@
 package fpt.swp391.carrentalsystem.service;
 
-
-
 import fpt.swp391.carrentalsystem.dto.request.IncomeEstimateRequestDTO;
 import fpt.swp391.carrentalsystem.dto.response.IncomeEstimateResponseDTO;
 import fpt.swp391.carrentalsystem.entity.Brand;
@@ -15,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
+import java.time.Year;
 import java.util.Map;
 
 @Service
@@ -28,88 +26,116 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
 
     @Override
     public IncomeEstimateResponseDTO calculateIncome(IncomeEstimateRequestDTO request) {
-        // Lấy thông tin Brand và Model
+
+        // ===== 1. Validate input =====
+        if (request.getYear() > Year.now().getValue()) {
+            throw new IllegalArgumentException("Năm sản xuất không hợp lệ");
+        }
+
+        // ===== 2. Load Brand & Model =====
         Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Không tìm thấy hãng xe với ID: %d", request.getBrandId())));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Không tìm thấy hãng xe"));
 
         CarModel model = carModelRepository.findById(request.getModelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mẫu xe"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Không tìm thấy mẫu xe"));
 
-        // Tính giá cho thuê gợi ý dựa trên hãng xe, năm sản xuất và thành phố
-        BigDecimal basePricePerDay = calculateBasePrice(brand.getName(), request.getYear(), request.getCity());
+        // ===== 3. Tính giá thuê/ngày =====
+        BigDecimal pricePerDay = calculateBasePrice(
+                brand.getName(),
+                request.getYear(),
+                request.getCity()
+        );
 
-        // Tính thu nhập ước tính (giả sử cho thuê 20 ngày/tháng)
-        BigDecimal estimatedMonthlyIncome = basePricePerDay.multiply(BigDecimal.valueOf(20));
+        // ===== 4. Thu nhập/tháng (20 ngày) =====
+        BigDecimal estimatedMonthlyIncome = pricePerDay.multiply(BigDecimal.valueOf(20));
 
-        // Tạo recommendation
-        String recommendation = generateRecommendation(brand.getName(), request.getYear(), request.getCity());
+        // ===== 5. Gợi ý =====
+        String recommendation = generateRecommendation(
+                brand.getName(),
+                request.getYear(),
+                request.getCity()
+        );
 
+        // ===== 6. Response =====
         return new IncomeEstimateResponseDTO(
                 brand.getName(),
                 model.getName(),
                 request.getYear(),
                 request.getCity(),
-                basePricePerDay,
-                estimatedMonthlyIncome,
-                basePricePerDay,
+                pricePerDay,               // suggestedPricePerDay
+                estimatedMonthlyIncome,    // estimatedIncome
+                pricePerDay,               // minPricePerDay
                 recommendation
         );
     }
 
-    // Logic tính giá cơ bản
+    /* ================== CORE LOGIC ================== */
+
     private BigDecimal calculateBasePrice(String brandName, Integer year, String city) {
-        BigDecimal basePrice = BigDecimal.valueOf(1000000); // 1 triệu VNĐ base
 
-        // Điều chỉnh theo hãng xe
-        Map<String, BigDecimal> brandMultiplier = new HashMap<>();
-        brandMultiplier.put("TOYOTA", BigDecimal.valueOf(1.2));
-        brandMultiplier.put("HONDA", BigDecimal.valueOf(1.15));
-        brandMultiplier.put("MAZDA", BigDecimal.valueOf(1.1));
-        brandMultiplier.put("KIA", BigDecimal.valueOf(1.0));
-        brandMultiplier.put("HYUNDAI", BigDecimal.valueOf(1.0));
-        brandMultiplier.put("FORD", BigDecimal.valueOf(1.3));
-        brandMultiplier.put("MERCEDES-BENZ", BigDecimal.valueOf(2.0));
-        brandMultiplier.put("BMW", BigDecimal.valueOf(2.2));
+        // Giá nền KHÔNG BAO GIỜ = 0
+        BigDecimal basePrice = BigDecimal.valueOf(1_000_000);
 
-        BigDecimal multiplier = brandMultiplier.getOrDefault(brandName.toUpperCase(), BigDecimal.valueOf(1.0));
-        basePrice = basePrice.multiply(multiplier);
+        // ===== HỆ SỐ HÃNG XE =====
+        Map<String, BigDecimal> brandFactor = Map.of(
+                "TOYOTA", BigDecimal.valueOf(1.2),
+                "HONDA", BigDecimal.valueOf(1.15),
+                "MAZDA", BigDecimal.valueOf(1.1),
+                "KIA", BigDecimal.valueOf(1.0),
+                "HYUNDAI", BigDecimal.valueOf(1.0),
+                "FORD", BigDecimal.valueOf(1.3),
+                "MERCEDES-BENZ", BigDecimal.valueOf(2.0),
+                "BMW", BigDecimal.valueOf(2.2)
+        );
 
-        // Điều chỉnh theo năm sản xuất (xe mới hơn = giá cao hơn)
-        int currentYear = 2025;
+        BigDecimal brandMultiplier = brandFactor
+                .getOrDefault(brandName.toUpperCase(), BigDecimal.ONE);
+
+        basePrice = basePrice.multiply(brandMultiplier);
+
+        // ===== HỆ SỐ NĂM SẢN XUẤT =====
+        int currentYear = Year.now().getValue();
         int age = currentYear - year;
+
         if (age <= 2) {
             basePrice = basePrice.multiply(BigDecimal.valueOf(1.3));
         } else if (age <= 5) {
             basePrice = basePrice.multiply(BigDecimal.valueOf(1.1));
-        } else if (age > 10) {
+        } else if (age >= 10) {
             basePrice = basePrice.multiply(BigDecimal.valueOf(0.8));
         }
 
-        // Điều chỉnh theo thành phố
-        if (city.equals("Hồ Chí Minh") || city.equals("Hà Nội")) {
-            basePrice = basePrice.multiply(BigDecimal.valueOf(1.2));
-        } else if (city.equals("Đà Nẵng")) {
-            basePrice = basePrice.multiply(BigDecimal.valueOf(1.1));
+        // ===== HỆ SỐ THÀNH PHỐ =====
+        switch (city.trim()) {
+            case "Hồ Chí Minh":
+            case "Hà Nội":
+                basePrice = basePrice.multiply(BigDecimal.valueOf(1.2));
+                break;
+            case "Đà Nẵng":
+                basePrice = basePrice.multiply(BigDecimal.valueOf(1.1));
+                break;
+            default:
+                basePrice = basePrice.multiply(BigDecimal.ONE);
         }
 
-        // Làm tròn đến hàng nghìn
-        return basePrice.divide(BigDecimal.valueOf(1000), 0, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(1000));
+        // ===== LÀM TRÒN =====
+        return basePrice
+                .divide(BigDecimal.valueOf(10_000), 0, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(10_000));
     }
 
-    // Tạo recommendation
-    private String generateRecommendation(String brandName, Integer year, String city) {
-        int currentYear = 2025;
-        int age = currentYear - year;
+    private String generateRecommendation(String brand, Integer year, String city) {
+        int age = Year.now().getValue() - year;
 
         if (age <= 2) {
-            return "Xe của bạn còn mới, rất được ưa chuộng! Bạn có thể cho thuê với giá cao.";
-        } else if (age <= 5) {
-            return "Xe của bạn trong tình trạng tốt, phù hợp cho thuê dài hạn.";
-        } else {
-            return "Xe của bạn có thể cho thuê với giá hợp lý, phù hợp với khách hàng tiết kiệm.";
+            return "Xe mới, rất dễ cho thuê và có thể đặt giá cao.";
         }
+        if (age <= 5) {
+            return "Xe ổn định, phù hợp cho thuê dài ngày.";
+        }
+        return "Nên đặt giá hợp lý để tăng tỷ lệ thuê.";
     }
 }
 

@@ -2,6 +2,7 @@ package fpt.swp391.carrentalsystem.entity;
 
 
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,8 +24,11 @@ public class CarDocument {
     @Column(name = "document_id")
     private Long id;
 
-    @Column(name = "car_id", nullable = false)
+    @Column(name = "car_id")
     private Long carId;
+
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "document_type", nullable = false)
@@ -64,22 +68,28 @@ public class CarDocument {
 
     // ENUMS
     public enum DocumentType {
-        REGISTRATION("Đăng ký xe"),
-        INSURANCE("Bảo hiểm xe"),
-        INSPECTION_CERTIFICATE("Giấy kiểm định"),
-        OWNER_LICENSE("Bằng lái chủ xe"),
-        OWNER_ID("CMND/CCCD chủ xe"),
-        OWNERSHIP_CERTIFICATE("Giấy sở hữu"),
-        OTHER("Giấy tờ khác");
+        REGISTRATION("Đăng ký xe", true),
+        INSURANCE("Bảo hiểm xe", true),
+        INSPECTION_CERTIFICATE("Giấy kiểm định", false),
+        OWNER_LICENSE("Bằng lái chủ xe", true),
+        OWNER_ID("CMND/CCCD chủ xe", true),
+        OWNERSHIP_CERTIFICATE("Giấy sở hữu", false),
+        OTHER("Giấy tờ khác", false);
 
         private final String displayName;
+        private final boolean required;
 
-        DocumentType(String displayName) {
+        DocumentType(String displayName, boolean required) {
             this.displayName = displayName;
+            this.required = required;
         }
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        public boolean isRequired() {
+            return required;
         }
     }
 

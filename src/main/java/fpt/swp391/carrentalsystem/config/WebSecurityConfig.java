@@ -19,26 +19,43 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
+
+                        /* ========= PUBLIC MVC PAGES (TEMPLATES) ========= */
                         .requestMatchers(
-                                "/auth/login",
-                                "/auth/register",
+                                "/",
+                                "/home",
+                                "/income-estimate",
+                                "/owner/create-car-step1",
+                                "/auth/**"
+                        ).permitAll()
+
+                        /* ========= STATIC RESOURCES ========= */
+                        .requestMatchers(
                                 "/css/**",
                                 "/js/**",
                                 "/images/**"
                         ).permitAll()
 
-                        .requestMatchers("/owner/**").hasRole("Owner")
-                        .requestMatchers("/admin/**").hasRole("Admin")
+                        /* ========= PUBLIC APIs ========= */
+                        .requestMatchers(
+                                "/api/brands/**",
+                                "/api/income-estimate"
+                        ).permitAll()
 
+                        /* ========= ROLE BASED ========= */
+                        .requestMatchers("/owner/**").hasRole("CAR_OWNER")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers("/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
                 .formLogin(form -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
-                        .usernameParameter("email")   // 🔥 CỰC QUAN TRỌNG
+                        .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/home", true)
+                        .defaultSuccessUrl("/owner/create-car-step1", true)
                         .failureUrl("/auth/login?error")
                         .permitAll()
                 )
@@ -63,3 +80,4 @@ public class WebSecurityConfig {
         return config.getAuthenticationManager();
     }
 }
+

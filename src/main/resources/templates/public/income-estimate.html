@@ -401,116 +401,81 @@
     </div>
 </div>
 <script>
-    const API_BASE = "http://localhost:8082/api";
+    const API = "/api";
 
-    document.addEventListener("DOMContentLoaded", () => {
-        loadBrands();
-        initEvents();
-        initBrandChange();
+    /* ===== LOAD BRANDS ===== */
+    fetch(API + "/brands")
+        .then(r => r.json())
+        .then(j => {
+            if (!j.success) return;
+            const brand = document.getElementById("brand");
+            j.data.forEach(b =>
+                brand.innerHTML += `<option value="${b.id}">${b.name}</option>`
+            );
+        });
+
+    /* ===== LOAD MODELS ===== */
+    document.getElementById("brand").addEventListener("change", e => {
+        const brandId = e.target.value;
+        const model = document.getElementById("model");
+        model.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
+        model.disabled = true;
+
+        if (!brandId) return;
+
+        fetch(`${API}/brands/${brandId}/models`)
+            .then(r => r.json())
+            .then(j => {
+                if (!j.success) return;
+                j.data.forEach(m =>
+                    model.innerHTML += `<option value="${m.id}">${m.name}</option>`
+                );
+                model.disabled = false;
+            });
     });
 
-    /* ================= LOAD BRANDS ================= */
-    function loadBrands() {
-        fetch(API_BASE + "/brands")
-            .then(res => res.json())
-            .then(res => {
-                if (!res.success) return;
+    /* ===== SUBMIT ===== */
+    document.getElementById("incomeForm").addEventListener("submit", async e => {
+        e.preventDefault();
 
-                const brand = document.getElementById("brand");
-                brand.innerHTML = '<option value="">-- Chọn hãng xe --</option>';
+        const payload = {
+            brandId: Number(brand.value),
+            modelId: Number(model.value),
+            year: Number(year.value),
+            city: city.value
+        };
 
-                res.data.forEach(b => {
-                    brand.innerHTML += `<option value="${b.id}">${b.name}</option>`;
-                });
-            })
-            .catch(err => console.error("Load brands error:", err));
-    }
-
-    /* ================= LOAD MODELS ================= */
-    function initBrandChange() {
-        document.getElementById("brand").addEventListener("change", function () {
-            const brandId = this.value;
-            const model = document.getElementById("model");
-
-            model.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
-            model.disabled = true;
-
-            if (!brandId) return;
-
-            fetch(`${API_BASE}/brands/${brandId}/models`)
-                .then(res => res.json())
-                .then(res => {
-                    if (!res.success) return;
-
-                    res.data.forEach(m => {
-                        model.innerHTML += `<option value="${m.id}">${m.name}</option>`;
-                    });
-
-                    model.disabled = false;
-                })
-                .catch(err => console.error("Load models error:", err));
+        const res = await fetch(API + "/income-estimate", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
         });
-    }
 
-    /* ================= SUBMIT ================= */
-    function initEvents() {
-        document.getElementById("incomeForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
+        if (!res.ok) {
+            alert("Bạn cần đăng nhập để tiếp tục");
+            window.location.href = "/auth/login";
+            return;
+        }
 
-            const data = {
-                brandId: document.getElementById("brand").value,
-                modelId: document.getElementById("model").value,
-                year: document.getElementById("year").value,
-                city: document.getElementById("city").value
-            };
+        const json = await res.json();
+        if (!json.success) {
+            alert(json.message);
+            return;
+        }
 
-            // Validate
-            if (!data.brandId || !data.modelId) {
-                alert("Vui lòng chọn đầy đủ hãng và mẫu xe");
-                return;
-            }
+        const data = json.data;
 
-            try {
-                const res = await fetch(API_BASE + "/income-estimate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data)
-                });
+        document.getElementById("incomeBox").classList.add("show");
+        document.getElementById("incomeAmount").innerText =
+            Number(data.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
+        document.getElementById("incomeRecommendation").innerText =
+            data.recommendation;
 
-                const json = await res.json();
-
-                if (!json.success || !json.data) {
-                    alert("Không tính được thu nhập");
-                    return;
-                }
-
-                const income = json.data.estimatedIncome || 0;
-
-                // ✅ HIỂN THỊ THU NHẬP
-                document.getElementById("incomeBox").classList.add("show");
-                document.getElementById("incomeAmount").innerText =
-                    income.toLocaleString("vi-VN") + " VNĐ";
-
-                document.getElementById("incomeRecommendation").innerText =
-                    json.data.recommendation || "Thu nhập dự kiến ổn định";
-
-                // ✅ LƯU SESSION
-                sessionStorage.setItem("carEstimate", JSON.stringify({
-                    ...data,
-                    estimatedIncome: income
-                }));
-
-                // ✅ REDIRECT
-                setTimeout(() => {
-                    window.location.href = "/owner/create-car-step1";
-                }, 800);
-
-            } catch (e) {
-                console.error(e);
-                alert("Lỗi hệ thống");
-            }
-        });
-    }
+        // 👉 chuyển sang step 1
+        setTimeout(() => {
+            window.location.href = "/auth/login";
+        }, 4000);
+    });
 </script>
 
 </body>
