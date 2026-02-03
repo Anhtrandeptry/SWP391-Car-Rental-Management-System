@@ -1,7 +1,10 @@
 package fpt.swp391.carrentalsystem.dto;
 
 public class UserProfile {
-    private int userId;
+    private Long userId;
+
+
+
     private String firstName;
     private String lastName;
     private String gender;
@@ -11,8 +14,9 @@ public class UserProfile {
     private String nationalId;
     private String driversLicense;
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }

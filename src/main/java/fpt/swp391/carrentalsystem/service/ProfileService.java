@@ -3,7 +3,9 @@ package fpt.swp391.carrentalsystem.service;
 import fpt.swp391.carrentalsystem.dto.ChangePasswordForm;
 import fpt.swp391.carrentalsystem.dto.UpdateProfileForm;
 import fpt.swp391.carrentalsystem.dto.UserProfile;
-import org.springframework.jdbc.core.JdbcTemplate;
+import fpt.swp391.carrentalsystem.entity.User;
+import fpt.swp391.carrentalsystem.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -11,57 +13,62 @@ import java.util.Map;
 @Service
 public class ProfileService {
 
-    private final JdbcTemplate jdbc;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ProfileService(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    public ProfileService(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public UserProfile getProfile(int userId) {
-        String sql = """
-            SELECT user_id, first_name, last_name, gender, email,
-                   phone_number, address, national_id, drivers_license
-            FROM users
-            WHERE user_id = ?
-        """;
+    // ========== 1) GET PROFILE ==========
+    public UserProfile getProfile(long userId) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found id=" + userId));
 
-        return jdbc.queryForObject(sql, (rs, rowNum) -> {
-            UserProfile u = new UserProfile();
-            u.setUserId(rs.getInt("user_id"));
-            u.setFirstName(rs.getString("first_name"));
-            u.setLastName(rs.getString("last_name"));
-            u.setGender(rs.getString("gender"));
-            u.setEmail(rs.getString("email"));
-            u.setPhoneNumber(rs.getString("phone_number"));
-            u.setAddress(rs.getString("address"));
-            u.setNationalId(rs.getString("national_id"));
-            u.setDriversLicense(rs.getString("drivers_license"));
-            return u;
-        }, userId);
+        UserProfile dto = new UserProfile();
+        dto.setUserId(u.getId());
+        dto.setFirstName(u.getFirstName());
+        dto.setLastName(u.getLastName());
+        dto.setGender(u.getGender() == null ? null : u.getGender().name()); // hoặc dto.setGender(u.getGender())
+        dto.setEmail(u.getEmail());
+        dto.setPhoneNumber(u.getPhoneNumber());
+        dto.setAddress(u.getAddress());
+        dto.setNationalId(u.getNationalId());
+        dto.setDriversLicense(u.getDriversLicense());
+
+        return dto;
     }
 
-    public void updateProfile(int userId, UpdateProfileForm f) {
-        String sql = """
-            UPDATE users
-            SET first_name=?, last_name=?, gender=?, phone_number=?, address=?,
-                national_id=?, drivers_license=?
-            WHERE user_id=?
-        """;
+    // ========== 2) UPDATE PROFILE ==========
+    public void updateProfile(long userId, UpdateProfileForm f) {
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found id=" + userId));
 
-        jdbc.update(sql,
-                f.getFirstName(),
-                f.getLastName(),
-                f.getGender(),
-                f.getPhoneNumber(),
-                f.getAddress(),
-                f.getNationalId(),
-                f.getDriversLicense(),
-                userId
-        );
+        u.setFirstName(f.getFirstName());
+        u.setLastName(f.getLastName());
+
+        // gender trong entity là enum Gender
+        // form đang là String -> map lại:
+        if (f.getGender() != null && !f.getGender().isBlank()) {
+            try {
+                u.setGender(fpt.swp391.carrentalsystem.enums.Gender.valueOf(f.getGender()));
+            } catch (Exception ignored) {
+                // nếu form gửi "Nam/Nữ" thì bạn phải map riêng, còn hiện tại dùng Male/Female/Other
+            }
+        }
+
+        u.setPhoneNumber(f.getPhoneNumber());
+        u.setAddress(f.getAddress());
+        u.setNationalId(f.getNationalId());
+        u.setDriversLicense(f.getDriversLicense());
+
+        userRepository.save(u);
     }
 
-    // demo: password_hash đang lưu plain text
-    public void changePassword(int userId, ChangePasswordForm f) {
+    // CHANGE PASSWORD
+    public void changePassword(long userId, ChangePasswordForm f) {
         if (f.getNewPassword() == null || f.getNewPassword().length() < 8) {
             throw new RuntimeException("Mật khẩu mới phải >= 8 ký tự.");
         }
@@ -69,49 +76,32 @@ public class ProfileService {
             throw new RuntimeException("Xác nhận mật khẩu mới không khớp.");
         }
 
-        String current = jdbc.queryForObject(
-                "SELECT password_hash FROM users WHERE user_id=?",
-                String.class, userId
-        );
+        User u = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found id=" + userId));
 
-        if (current == null || !f.getCurrentPassword().equals(current)) {
+        // Login của nhóm dùng BCrypt => phải matches
+        if (!passwordEncoder.matches(f.getCurrentPassword(), u.getPasswordHash())) {
             throw new RuntimeException("Mật khẩu hiện tại không đúng.");
         }
 
-        jdbc.update("UPDATE users SET password_hash=? WHERE user_id=?",
-                f.getNewPassword(), userId);
-    }
-    public int findUserIdByLogin(String login) {
-        // Nếu hệ thống login bằng email -> dùng email
-        // Nếu login bằng username -> đổi query theo username
-        Integer id = jdbc.queryForObject(
-                "SELECT user_id FROM users WHERE email = ?",
-                Integer.class,
-                login
-        );
-        if (id == null) throw new RuntimeException("Không tìm thấy user theo login: " + login);
-        return id;
+        u.setPasswordHash(passwordEncoder.encode(f.getNewPassword()));
+        userRepository.save(u);
     }
 
-    public Map<String, Object> getStats(int userId) {
-        Long trips = jdbc.queryForObject(
-                "SELECT COUNT(*) FROM bookings WHERE customer_id=?",
-                Long.class, userId
-        );
+    // FIND USER ID BY LOGIN
+    public long findUserIdByLogin(String login) {
+        // ưu tiên email
+        return userRepository.findByEmail(login)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user theo login: " + login));
+    }
 
-        Double rating = jdbc.queryForObject(
-                "SELECT COALESCE(AVG(rating),0) FROM feedbacks WHERE customer_id=?",
-                Double.class, userId
-        );
-
-        long favorites = 0; // chưa có bảng favorites
-
-        double rounded = Math.round(rating * 10.0) / 10.0;
-
+    // ========== 5) STATS (tạm thời chưa có booking/feedback) ==========
+    public Map<String, Object> getStats(long userId) {
         return Map.of(
-                "trips", trips,
-                "favorites", favorites,
-                "rating", rounded
+                "trips", 0,
+                "favorites", 0,
+                "rating", 0.0
         );
     }
 }

@@ -18,7 +18,7 @@ public class ProfileController {
         this.service = service;
     }
 
-    // ✅ chạy riêng profile: fix cứng userId để test
+
     private int currentUserId() { return 1; }
 
     private String initials(UserProfile u) {
