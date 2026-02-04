@@ -1,4 +1,4 @@
-package fpt.swp391.carrentalsystem.sercurity;
+package fpt.swp391.carrentalsystem.security;
 
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -15,6 +15,10 @@ public class CustomUserDetails implements UserDetails {
 
     public CustomUserDetails(User user) {
         this.user = user;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     @Override

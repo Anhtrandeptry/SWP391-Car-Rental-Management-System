@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Car Images</title>
+    <style>
+        .grid { display: flex; gap: 15px; flex-wrap: wrap; }
+        .card { border: 2px solid #ccc; padding: 5px; }
+        .main { border-color: green; }
+        img { width: 160px; height: 120px; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+<h2>Car Images</h2>
+
+<form th:action="@{/owner/cars/{id}/images/upload(id=${carId})}"
+      method="post" enctype="multipart/form-data">
+    <input type="file" name="files" multiple required>
+    <button type="submit">Upload</button>
+</form>
+
+<hr>
+
+<div class="grid">
+    <div class="card" th:each="img : ${images}"
+         th:classappend="${img.isMain} ? ' main'">
+        <img th:src="${img.imageUrl}">
+        <form th:action="@{/owner/cars/images/{id}/set-main(id=${img.id})}" method="post">
+            <input type="hidden" name="carId" th:value="${carId}">
+            <button type="submit">Set Main</button>
+        </form>
+        <form th:action="@{/owner/cars/images/{id}/delete(id=${img.id})}" method="post">
+            <input type="hidden" name="carId" th:value="${carId}">
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
