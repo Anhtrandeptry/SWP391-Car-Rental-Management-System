@@ -1,0 +1,54 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.upload-form {
+    margin-bottom: 20px;
+}
+
+.upload-form input[type="file"] {
+    margin-right: 10px;
+}
+
+.grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.card {
+    border: 2px solid #ccc;
+    padding: 8px;
+    width: 180px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.card.main {
+    border-color: green;
+}
+
+.card img {
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 6px auto;
+    border-radius: 4px;
+}
+
+.card form {
+    margin-top: 4px;
+}
+
+.card button {
+    width: 100%;
+    padding: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+}

@@ -1,40 +1,61 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Manage Car Images</title>
-    <style>
-        .grid { display: flex; gap: 15px; flex-wrap: wrap; }
-        .card { border: 2px solid #ccc; padding: 5px; }
-        .main { border-color: green; }
-        img { width: 160px; height: 120px; object-fit: cover; }
-    </style>
+
+    <link rel="stylesheet" th:href="@{/css/car-images.css}">
 </head>
 <body>
 
-<h2>Car Images</h2>
+<h2>Manage Images for Car</h2>
 
 <form th:action="@{/owner/cars/{id}/images/upload(id=${carId})}"
-      method="post" enctype="multipart/form-data">
+      method="post"
+      enctype="multipart/form-data"
+      class="upload-form">
+
     <input type="file" name="files" multiple required>
-    <button type="submit">Upload</button>
+    <button type="submit">Upload Images</button>
 </form>
 
 <hr>
 
-<div class="grid">
-    <div class="card" th:each="img : ${images}"
+<div th:if="${#lists.isEmpty(images)}">
+    <p><i>No images uploaded yet.</i></p>
+</div>
+
+<div class="grid" th:if="${!#lists.isEmpty(images)}">
+
+    <div class="card"
+         th:each="img : ${images}"
          th:classappend="${img.isMain} ? ' main'">
-        <img th:src="${img.imageUrl}">
-        <form th:action="@{/owner/cars/images/{id}/set-main(id=${img.id})}" method="post">
+
+        <img th:src="@{${img.imageUrl}}" alt="Car Image">
+
+        <div th:if="${img.isMain}" style="color: green; font-weight: bold;">
+            MAIN IMAGE
+        </div>
+
+        <form th:action="@{/owner/cars/images/{id}/set-main(id=${img.id})}"
+              method="post">
             <input type="hidden" name="carId" th:value="${carId}">
             <button type="submit">Set Main</button>
         </form>
-        <form th:action="@{/owner/cars/images/{id}/delete(id=${img.id})}" method="post">
+
+        <form th:action="@{/owner/cars/images/{id}/delete(id=${img.id})}"
+              method="post"
+              onsubmit="return confirm('Delete this image?')">
             <input type="hidden" name="carId" th:value="${carId}">
             <button type="submit">Delete</button>
         </form>
+
     </div>
 </div>
+
+<br>
+
+<a th:href="@{/owner/cars}">⬅ Back to My Cars</a>
 
 </body>
 </html>

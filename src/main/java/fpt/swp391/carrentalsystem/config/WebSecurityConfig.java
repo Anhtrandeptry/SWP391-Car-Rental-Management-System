@@ -46,7 +46,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/uploads/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/public/**",
