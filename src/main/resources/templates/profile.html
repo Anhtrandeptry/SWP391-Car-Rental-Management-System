@@ -90,14 +90,13 @@
                         <label class="form-label">Tên</label>
                         <input class="form-control" th:value="${u.lastName}" readonly>
                     </div>
-
                     <div class="col-md-6">
                         <label class="form-label">Giới tính</label>
                         <input class="form-control"
-                               th:value="${u.gender == 'Male' ? 'Nam' : (u.gender == 'Female' ? 'Nữ' : 'Khác')}"
+                               th:value="${u.gender == 'MALE' ? 'Nam' : (u.gender == 'FEMALE' ? 'Nữ' : 'Khác')}"
                                readonly>
-
                     </div>
+
                     <div class="col-md-6">
                         <label class="form-label">Số điện thoại</label>
                         <input class="form-control" th:value="${u.phoneNumber}" readonly>
@@ -128,7 +127,7 @@
                 </div>
 
                 <div class="mt-3" th:if="${pwdOk}">
-                    <div class="alert alert-success mb-0">Đổi mật khẩu thành công ✅</div>
+                    <div class="alert alert-success mb-0">Đổi mật khẩu thành công</div>
                 </div>
             </div>
 
