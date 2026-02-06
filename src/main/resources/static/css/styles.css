@@ -135,3 +135,45 @@ body {
     margin-top: 0.3rem;
     font-size: 0.85rem;
 }
+.filter-box {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: -1.5rem;
+    margin-bottom: 2.5rem;
+    background: #ffffff;
+    padding: 1rem;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.filter-box select,
+.filter-box input[type="text"] {
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+    background: #f9fafb;
+    min-width: 140px;
+}
+
+.filter-box select:focus,
+.filter-box input[type="text"]:focus {
+    outline: none;
+    border-color: #10b981;
+    background: #ffffff;
+}
+
+.filter-box button {
+    padding: 0.7rem 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.filter-box button:hover {
+    background: #059669;
+}

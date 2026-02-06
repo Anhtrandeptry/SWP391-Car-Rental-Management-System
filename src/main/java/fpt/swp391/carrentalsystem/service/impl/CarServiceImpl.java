@@ -7,9 +7,9 @@ import fpt.swp391.carrentalsystem.repository.CarRepository;
 import fpt.swp391.carrentalsystem.service.CarService;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
 @Service
 public class CarServiceImpl implements CarService {
@@ -22,12 +22,45 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public List<CarListItemDto> listAll() {
-        return carRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
+        return carRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<CarListItemDto> searchByName(String name) {
-        return carRepository.findByNameContainingIgnoreCase(name).stream().map(this::toDto).collect(Collectors.toList());
+        return carRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CarListItemDto> filterCars(
+            String name,
+            Integer seats,
+            String brand,
+            String carType,
+            String fuelType,
+            String location
+    ) {
+        return carRepository.findAll().stream()
+                .filter(car -> name == null || name.isBlank()
+                        || car.getName().toLowerCase().contains(name.toLowerCase()))
+                .filter(car -> seats == null
+                        || (car.getSeats() != null && car.getSeats().equals(seats)))
+                .filter(car -> brand == null || brand.isBlank()
+                        || brand.equalsIgnoreCase(car.getBrand()))
+                .filter(car -> carType == null || carType.isBlank()
+                        || carType.equalsIgnoreCase(car.getCarType()))
+                .filter(car -> fuelType == null || fuelType.isBlank()
+                        || (car.getFuelType() != null
+                        && fuelType.equalsIgnoreCase(car.getFuelType())))
+                .filter(car -> location == null || location.isBlank()
+                        || car.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
     private CarListItemDto toDto(Car car) {
@@ -39,7 +72,7 @@ public class CarServiceImpl implements CarService {
                     break;
                 }
             }
-            if (mainImage == null && !car.getImages().isEmpty()) {
+            if (mainImage == null) {
                 mainImage = car.getImages().get(0).getImageUrl();
             }
         }

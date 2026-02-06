@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Car Listings</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
 </head>
 <body>
 
@@ -14,7 +14,7 @@
         <div class="logo">CRMS</div>
     </div>
 
-    <!-- SEARCH AREA (KHUNG TÍM) -->
+    <!-- SEARCH AREA -->
     <div class="search-wrapper">
         <h2>Tìm xe tự lái</h2>
 
@@ -27,10 +27,54 @@
             />
 
             <button type="submit">TÌM XE</button>
-
             <a th:href="@{/public/cars}" class="clear-btn">XÓA</a>
         </form>
     </div>
+
+    <!-- FILTER AREA -->
+    <form th:action="@{/public/cars}" method="get" class="filter-box">
+
+        <!-- giữ lại search -->
+        <input type="hidden" name="name" th:value="${name}"/>
+
+        <select name="seats">
+            <option value="">Số chỗ</option>
+            <option value="4">4 chỗ</option>
+            <option value="5">5 chỗ</option>
+            <option value="7">7 chỗ</option>
+        </select>
+
+        <select name="brand">
+            <option value="">Hãng xe</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Honda">Honda</option>
+            <option value="Kia">Kia</option>
+            <option value="Hyundai">Hyundai</option>
+        </select>
+
+        <select name="carType">
+            <option value="">Loại xe</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Hatchback">Hatchback</option>
+        </select>
+
+        <select name="fuelType">
+            <option value="">Nhiên liệu</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Electric">Electric</option>
+            <option value="Hybrid">Hybrid</option>
+        </select>
+
+        <input
+                type="text"
+                name="location"
+                placeholder="Địa điểm"
+        />
+
+        <button type="submit">LỌC</button>
+    </form>
 
     <!-- EMPTY -->
     <div th:if="${cars.empty}">
@@ -42,7 +86,7 @@
         <div class="car-item" th:each="car : ${cars}">
 
             <img th:if="${car.mainImageUrl != null}"
-                 th:src="${car.mainImageUrl}"
+                 th:src="@{${car.mainImageUrl}}"
                  alt="Car image"/>
 
             <img th:unless="${car.mainImageUrl != null}"

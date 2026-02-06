@@ -20,19 +20,29 @@ public class CarController {
         this.carService = carService;
     }
 
-    /**
-     * Show car list page. Optional query param `name` will filter cars by name (case-insensitive, contains).
-     */
     @GetMapping("/cars")
-    public String listCars(@RequestParam(name = "name", required = false) String name, Model model) {
-        List<CarListItemDto> cars;
-        if (name == null || name.isBlank()) {
-            cars = carService.listAll();
-        } else {
-            cars = carService.searchByName(name);
-        }
+    public String listCars(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer seats,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String carType,
+            @RequestParam(required = false) String fuelType,
+            @RequestParam(required = false) String location,
+            Model model
+    ) {
+
+        List<CarListItemDto> cars = carService.filterCars(
+                name, seats, brand, carType, fuelType, location
+        );
+
         model.addAttribute("cars", cars);
-        model.addAttribute("name", name == null ? "" : name);
+        model.addAttribute("name", name);
+        model.addAttribute("seats", seats);
+        model.addAttribute("brand", brand);
+        model.addAttribute("carType", carType);
+        model.addAttribute("fuelType", fuelType);
+        model.addAttribute("location", location);
+
         return "public/cars";
     }
 }

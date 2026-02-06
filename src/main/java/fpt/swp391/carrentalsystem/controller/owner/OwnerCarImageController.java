@@ -1,4 +1,4 @@
-package fpt.swp391.carrentalsystem.controller;
+package fpt.swp391.carrentalsystem.controller.owner;
 
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.security.CustomUserDetails;
