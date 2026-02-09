@@ -2,41 +2,88 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${car.name}">Car Detail</title>
-    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/car-detail.css}">
 </head>
 <body>
 
 <div class="container">
-
-    <a href="/customer/cars">← Quay lại danh sách xe</a>
-
-    <h1 th:text="${car.name}"></h1>
-    <p th:text="${car.brand} + ' - ' + ${car.model}"></p>
-
-    <!-- IMAGE GALLERY -->
-    <div class="car-images">
-        <img th:each="img : ${car.images}"
-             th:src="@{${img.imageUrl}}"
-             style="width:200px; margin-right:10px;">
+    <div class="back-link">
+        <a href="/customer/cars"><i class="fas fa-arrow-left"></i> Quay lại danh sách xe</a>
     </div>
 
-    <h2>
-        Giá thuê:
-        <span th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K/ngày'"></span>
-    </h2>
+    <div class="content-wrapper">
+        <div class="main-content">
 
-    <p><strong>Địa điểm:</strong> <span th:text="${car.location}"></span></p>
-    <p><strong>Số chỗ:</strong> <span th:text="${car.seats}"></span></p>
-    <p><strong>Loại xe:</strong> <span th:text="${car.carType}"></span></p>
-    <p><strong>Nhiên liệu:</strong> <span th:text="${car.fuelType}"></span></p>
-    <p><strong>Mức tiêu thụ:</strong> <span th:text="${car.fuelConsumption}"></span></p>
+            <div class="car-gallery">
+                <div class="main-img">
+                    <img th:if="${not #lists.isEmpty(car.images)}" th:src="@{${car.images[0].imageUrl}}" alt="Main Car">
+                </div>
+                <div class="sub-imgs">
+                    <div class="sub-img-item" th:each="img, iter : ${car.images}" th:if="${iter.index > 0 and iter.index < 3}">
+                        <img th:src="@{${img.imageUrl}}" alt="Sub Car">
+                    </div>
+                </div>
+            </div>
 
-    <h3>Mô tả</h3>
-    <p th:text="${car.description}"></p>
+            <div class="car-header">
+                <h1 th:text="${car.name}">Tên Xe</h1>
+                <p class="location"><i class="fas fa-map-marker-alt"></i> <span th:text="${car.location}">Địa điểm</span></p>
+            </div>
 
-    <button>Đặt xe</button>
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <i class="fas fa-users"></i>
+                    <span class="label">Số chỗ</span>
+                    <strong th:text="${car.seats} + ' chỗ'">7 chỗ</strong>
+                </div>
+                <div class="spec-item">
+                    <i class="fas fa-car"></i>
+                    <span class="label">Truyền động</span>
+                    <strong th:text="${car.carType}">Tự động</strong>
+                </div>
+                <div class="spec-item">
+                    <i class="fas fa-gas-pump"></i>
+                    <span class="label">Nhiên liệu</span>
+                    <strong th:text="${car.fuelType}">Xăng</strong>
+                </div>
+                <div class="spec-item">
+                    <i class="fas fa-leaf"></i>
+                    <span class="label">Tiêu hao</span>
+                    <strong th:text="${car.fuelConsumption}">7L/100km</strong>
+                </div>
+            </div>
 
+            <div class="section-card">
+                <h3>Mô tả</h3>
+                <p class="desc-text" th:text="${car.description}">Mô tả chi tiết về xe...</p>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="booking-card">
+                <div class="price-header">
+                    <span class="price-val" th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
+                    <span class="price-unit">/ngày</span>
+                </div>
+
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span>Đơn giá thuê</span>
+                        <span th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
+                    </div>
+                    <div class="detail-row total">
+                        <span>Tổng cộng</span>
+                        <strong th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</strong>
+                    </div>
+                </div>
+
+                <button class="btn-booking">Đặt xe ngay</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>
