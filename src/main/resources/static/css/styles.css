@@ -15,9 +15,12 @@ body {
     margin: 0 auto;
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 .page-header {
     padding: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .logo {
@@ -26,7 +29,55 @@ body {
     color: #10b981;
 }
 
-/* SEARCH WRAPPER (KHUNG TÍM) */
+/* HEADER ACTIONS (login / profile) */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* LOGIN BUTTON (PUBLIC) */
+.login-btn {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.login-btn:hover {
+    background: #059669;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+/* PROFILE ICON (CUSTOMER) */
+.profile-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    transition: box-shadow 0.15s ease;
+}
+
+.profile-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-btn:hover {
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+}
+
+/* ================= SEARCH WRAPPER ================= */
 .search-wrapper {
     background: linear-gradient(135deg, #1e293b, #0f172a);
     padding: 2rem;
@@ -74,22 +125,101 @@ body {
     background: #059669;
 }
 
-/* CLEAR BUTTON */
+/* CLEAR SEARCH BUTTON */
 .clear-btn {
-    padding: 0.85rem 1.2rem;
-    background: #e5e7eb;
-    color: #374151;
+    padding: 0.75rem 1.1rem;
     border-radius: 10px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 0.8rem;
     font-weight: 600;
     text-decoration: none;
-    font-size: 0.85rem;
+    border: 2px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .clear-btn:hover {
-    background: #d1d5db;
+    background: #e5e7eb;
+    border-color: #d1d5db;
 }
 
-/* CAR LIST */
+/* ================= FILTER ================= */
+.filter-box {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: -1.5rem;
+    margin-bottom: 2.5rem;
+    background: #ffffff;
+    padding: 1.1rem;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.filter-box select,
+.filter-box input[type="text"] {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #6b7280;
+    font-size: 0.85rem;
+    background: #ffffff;
+    min-width: 140px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-box select:hover,
+.filter-box input[type="text"]:hover {
+    border-color: #374151;
+}
+
+.filter-box select:focus,
+.filter-box input[type="text"]:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.filter-box button {
+    padding: 0.75rem 1.4rem;
+    border-radius: 10px;
+    border: none;
+    background: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.filter-box button:hover {
+    background: #059669;
+}
+
+/* FILTER ACTIONS */
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* RESET FILTER BUTTON (FIXED) */
+.reset-filter-btn {
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px dashed #d1d5db;
+    transition: all 0.15s ease;
+}
+
+.reset-filter-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #9ca3af;
+}
+
+/* ================= CAR LIST ================= */
 .car-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -101,6 +231,12 @@ body {
     border-radius: 14px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.car-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
 }
 
 .car-item img {
@@ -134,46 +270,4 @@ body {
 .rating {
     margin-top: 0.3rem;
     font-size: 0.85rem;
-}
-.filter-box {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: -1.5rem;
-    margin-bottom: 2.5rem;
-    background: #ffffff;
-    padding: 1rem;
-    border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-}
-
-.filter-box select,
-.filter-box input[type="text"] {
-    padding: 0.7rem 0.9rem;
-    border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    font-size: 0.85rem;
-    background: #f9fafb;
-    min-width: 140px;
-}
-
-.filter-box select:focus,
-.filter-box input[type="text"]:focus {
-    outline: none;
-    border-color: #10b981;
-    background: #ffffff;
-}
-
-.filter-box button {
-    padding: 0.7rem 1.2rem;
-    border-radius: 10px;
-    border: none;
-    background: #10b981;
-    color: #ffffff;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.filter-box button:hover {
-    background: #059669;
 }

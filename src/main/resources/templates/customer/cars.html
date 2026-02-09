@@ -10,12 +10,14 @@
 <div class="container">
 
     <!-- HEADER -->
-    <div class="page-header">
+    <div class="page-header header-flex">
         <div class="logo">CRMS</div>
 
-        <!-- LOGIN BUTTON -->
+        <!-- PROFILE ICON -->
         <div class="header-actions">
-            <a th:href="@{/auth/login}" class="login-btn">Đăng nhập</a>
+            <a th:href="@{/customer/profile}" class="profile-btn" title="Profile">
+                <img src="/images/profile-icon.png" alt="Profile" style="width:32px;">
+            </a>
         </div>
     </div>
 
@@ -23,27 +25,31 @@
     <div class="search-wrapper">
         <h2>Tìm xe tự lái</h2>
 
-        <form th:action="@{/public/cars}" method="get" class="search-box">
+        <form th:action="@{/customer/cars}" method="get" class="search-box">
             <input type="text"
                    name="name"
                    placeholder="Chọn địa điểm / tên xe"
                    th:value="${name}"/>
 
             <button type="submit">TÌM XE</button>
-            <a th:href="@{/public/cars}" class="clear-btn">XÓA</a>
+            <a th:href="@{/customer/cars}" class="clear-btn">XÓA</a>
         </form>
     </div>
 
     <!-- FILTER -->
-    <form th:action="@{/public/cars}" method="get" class="filter-box">
+    <form th:action="@{/customer/cars}" method="get" class="filter-box">
 
+        <!-- SEATS -->
         <select name="seats">
             <option value="">Số chỗ</option>
-            <option value="4" th:selected="${seats == 4}">4</option>
-            <option value="5" th:selected="${seats == 5}">5</option>
-            <option value="7" th:selected="${seats == 7}">7</option>
+            <option th:each="s : ${seatsList}"
+                    th:value="${s}"
+                    th:text="${s}"
+                    th:selected="${s == seats}">
+            </option>
         </select>
 
+        <!-- BRAND -->
         <select name="brand">
             <option value="">Hãng xe</option>
             <option th:each="b : ${brands}"
@@ -53,6 +59,7 @@
             </option>
         </select>
 
+        <!-- CAR TYPE -->
         <select name="carType">
             <option value="">Loại xe</option>
             <option th:each="t : ${carTypes}"
@@ -62,6 +69,7 @@
             </option>
         </select>
 
+        <!-- FUEL TYPE -->
         <select name="fuelType">
             <option value="">Nhiên liệu</option>
             <option th:each="f : ${fuelTypes}"
@@ -71,29 +79,30 @@
             </option>
         </select>
 
+        <!-- LOCATION -->
         <input type="text"
                name="location"
                placeholder="Địa điểm"
                th:value="${location}"/>
 
+        <!-- ACTIONS -->
         <div class="filter-actions">
             <button type="submit">LỌC</button>
-
-            <!-- RESET FILTER -->
-            <a th:href="@{/public/cars}" class="reset-filter-btn">
+            <a th:href="@{/customer/cars}" class="reset-filter-btn">
                 XÓA LỌC
             </a>
         </div>
     </form>
 
-    <!-- RESULT -->
+    <!-- EMPTY RESULT -->
     <div th:if="${cars.empty}">
         <p>Không tìm thấy xe.</p>
     </div>
 
+    <!-- CAR LIST -->
     <div class="car-list" th:if="${!cars.empty}">
         <div class="car-item" th:each="car : ${cars}">
-            <a th:href="@{/public/cars/{id}(id=${car.id})}" class="car-link">
+            <a th:href="@{/customer/cars/{id}(id=${car.id})}" class="car-link">
 
                 <img th:if="${car.mainImageUrl != null}"
                      th:src="@{${car.mainImageUrl}}"/>

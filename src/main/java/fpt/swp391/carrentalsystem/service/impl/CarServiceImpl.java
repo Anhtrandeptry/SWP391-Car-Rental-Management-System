@@ -2,12 +2,10 @@ package fpt.swp391.carrentalsystem.service.impl;
 
 import fpt.swp391.carrentalsystem.dto.CarListItemDto;
 import fpt.swp391.carrentalsystem.entity.Car;
-import fpt.swp391.carrentalsystem.entity.CarImage;
 import fpt.swp391.carrentalsystem.repository.CarRepository;
 import fpt.swp391.carrentalsystem.service.CarService;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,22 +19,6 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public List<CarListItemDto> listAll() {
-        return carRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<CarListItemDto> searchByName(String name) {
-        return carRepository.findByNameContainingIgnoreCase(name)
-                .stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<CarListItemDto> filterCars(
             String name,
             Integer seats,
@@ -46,49 +28,54 @@ public class CarServiceImpl implements CarService {
             String location
     ) {
         return carRepository.findAll().stream()
-                .filter(car -> name == null || name.isBlank()
-                        || car.getName().toLowerCase().contains(name.toLowerCase()))
-                .filter(car -> seats == null
-                        || (car.getSeats() != null && car.getSeats().equals(seats)))
-                .filter(car -> brand == null || brand.isBlank()
-                        || brand.equalsIgnoreCase(car.getBrand()))
-                .filter(car -> carType == null || carType.isBlank()
-                        || carType.equalsIgnoreCase(car.getCarType()))
-                .filter(car -> fuelType == null || fuelType.isBlank()
-                        || (car.getFuelType() != null
-                        && fuelType.equalsIgnoreCase(car.getFuelType())))
-                .filter(car -> location == null || location.isBlank()
-                        || car.getLocation().toLowerCase().contains(location.toLowerCase()))
-                .map(this::toDto)
+                .filter(c -> name == null || c.getName().toLowerCase().contains(name.toLowerCase()))
+                .filter(c -> seats == null || c.getSeats().equals(seats))
+                .filter(c -> brand == null || brand.isBlank() || brand.equals(c.getBrand()))
+                .filter(c -> carType == null || carType.isBlank() || carType.equals(c.getCarType()))
+                .filter(c -> fuelType == null || fuelType.isBlank() || fuelType.equals(c.getFuelType()))
+                .filter(c -> location == null || location.isBlank() || c.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .map(CarListItemDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    private CarListItemDto toDto(Car car) {
-        String mainImage = null;
-        if (car.getImages() != null && !car.getImages().isEmpty()) {
-            for (CarImage img : car.getImages()) {
-                if (Boolean.TRUE.equals(img.getIsMain())) {
-                    mainImage = img.getImageUrl();
-                    break;
-                }
-            }
-            if (mainImage == null) {
-                mainImage = car.getImages().get(0).getImageUrl();
-            }
-        }
+    @Override
+    public List<String> getAllBrands() {
+        return carRepository.findDistinctBrands();
+    }
 
-        BigDecimal avg = car.getAverageRating();
-        if (avg == null) avg = BigDecimal.ZERO;
+    @Override
+    public List<String> getAllCarTypes() {
+        return carRepository.findDistinctCarTypes();
+    }
 
-        return CarListItemDto.builder()
-                .id(car.getId())
-                .name(car.getName())
-                .brand(car.getBrand())
-                .model(car.getModel())
-                .location(car.getLocation())
-                .pricePerDay(car.getPricePerDay())
-                .averageRating(avg)
-                .mainImageUrl(mainImage)
-                .build();
+    @Override
+    public List<String> getAllFuelTypes() {
+        return carRepository.findDistinctFuelTypes();
+    }
+
+    @Override
+    public List<Integer> getAllSeats() {
+        return carRepository.findDistinctSeats();
+    }
+
+    @Override
+    public Car getCarById(Long id) {
+        return carRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public List<CarListItemDto> listAll() {
+        return carRepository.findAll()
+                .stream()
+                .map(CarListItemDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CarListItemDto> searchByName(String name) {
+        return carRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(CarListItemDto::fromEntity)
+                .collect(Collectors.toList());
     }
 }

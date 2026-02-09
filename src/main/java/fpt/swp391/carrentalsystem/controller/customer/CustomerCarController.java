@@ -1,21 +1,24 @@
-package fpt.swp391.carrentalsystem.controller.common;
+package fpt.swp391.carrentalsystem.controller.customer;
 
+import fpt.swp391.carrentalsystem.dto.CarListItemDto;
+import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.service.CarService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
-@RequestMapping("/public")
-public class CarController {
+@RequestMapping("/customer")
+public class CustomerCarController {
 
     private final CarService carService;
 
-    public CarController(CarService carService) {
+    public CustomerCarController(CarService carService) {
         this.carService = carService;
     }
 
-    // ===== LIST CARS =====
     @GetMapping("/cars")
     public String listCars(
             @RequestParam(required = false) String name,
@@ -27,14 +30,20 @@ public class CarController {
             Model model
     ) {
 
-        model.addAttribute("cars",
-                carService.filterCars(name, seats, brand, carType, fuelType, location));
+        List<CarListItemDto> cars = carService.filterCars(
+                name, seats, brand, carType, fuelType, location
+        );
 
+        // ===== CAR LIST =====
+        model.addAttribute("cars", cars);
+
+        // ===== FILTER DATA FROM DB =====
         model.addAttribute("brands", carService.getAllBrands());
         model.addAttribute("carTypes", carService.getAllCarTypes());
         model.addAttribute("fuelTypes", carService.getAllFuelTypes());
         model.addAttribute("seatsList", carService.getAllSeats());
 
+        // ===== KEEP SELECTED FILTER =====
         model.addAttribute("name", name);
         model.addAttribute("seats", seats);
         model.addAttribute("brand", brand);
@@ -42,15 +51,18 @@ public class CarController {
         model.addAttribute("fuelType", fuelType);
         model.addAttribute("location", location);
 
-        return "public/cars";
+        return "customer/cars";
     }
 
-    // ===== CAR DETAIL (PUBLIC) =====
     @GetMapping("/cars/{id}")
     public String carDetail(@PathVariable Long id, Model model) {
+        Car car = carService.getCarById(id);
 
-        model.addAttribute("car", carService.getCarById(id));
+        if (car == null) {
+            return "redirect:/customer/cars";
+        }
 
-        return "public/car-detail";
+        model.addAttribute("car", car);
+        return "customer/car-detail";
     }
 }

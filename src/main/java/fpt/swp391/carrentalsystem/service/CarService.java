@@ -1,6 +1,7 @@
 package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.dto.CarListItemDto;
+import fpt.swp391.carrentalsystem.entity.Car;
 
 import java.util.List;
 
@@ -15,7 +16,13 @@ public interface CarService {
             String location
     );
 
-    List<CarListItemDto> listAll();
+    List<String> getAllBrands();
+    List<String> getAllCarTypes();
+    List<String> getAllFuelTypes();
+    List<Integer> getAllSeats();
 
+    Car getCarById(Long id);
+
+    List<CarListItemDto> listAll();
     List<CarListItemDto> searchByName(String name);
 }

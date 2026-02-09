@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${car.name}">Car Detail</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<div class="container">
+
+    <a href="/public/cars">← Quay lại danh sách xe</a>
+
+    <h1 th:text="${car.name}"></h1>
+    <p th:text="${car.brand} + ' - ' + ${car.model}"></p>
+
+    <!-- IMAGE GALLERY -->
+    <div class="car-images">
+        <img th:each="img : ${car.images}"
+             th:src="@{${img.imageUrl}}"
+             style="width:200px; margin-right:10px;">
+    </div>
+
+    <h2>
+        Giá thuê:
+        <span th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K/ngày'"></span>
+    </h2>
+
+    <p><strong>Địa điểm:</strong> <span th:text="${car.location}"></span></p>
+    <p><strong>Số chỗ:</strong> <span th:text="${car.seats}"></span></p>
+    <p><strong>Loại xe:</strong> <span th:text="${car.carType}"></span></p>
+    <p><strong>Nhiên liệu:</strong> <span th:text="${car.fuelType}"></span></p>
+    <p><strong>Mức tiêu thụ:</strong> <span th:text="${car.fuelConsumption}"></span></p>
+
+    <h3>Mô tả</h3>
+    <p th:text="${car.description}"></p>
+
+    <button>Đặt xe </button>
+
+</div>
+
+</body>
+</html>
