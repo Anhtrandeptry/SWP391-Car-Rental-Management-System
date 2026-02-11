@@ -1,7 +1,7 @@
 package fpt.swp391.carrentalsystem.controller;
 
-import fpt.swp391.carrentalsystem.dto.ChangePasswordForm;
-import fpt.swp391.carrentalsystem.dto.UpdateProfileForm;
+import fpt.swp391.carrentalsystem.dto.ChangePasswordRequest;
+import fpt.swp391.carrentalsystem.dto.UpdateProfileRequest;
 import fpt.swp391.carrentalsystem.dto.UserProfile;
 import fpt.swp391.carrentalsystem.service.ProfileService;
 import org.springframework.stereotype.Controller;
@@ -54,7 +54,7 @@ public class ProfileController {
         int userId = currentUserId();
         UserProfile u = service.getProfile(userId);
 
-        UpdateProfileForm f = new UpdateProfileForm();
+        UpdateProfileRequest f = new UpdateProfileRequest();
         f.setFirstName(u.getFirstName());
         f.setLastName(u.getLastName());
         f.setGender(u.getGender());
@@ -69,19 +69,19 @@ public class ProfileController {
     }
 
     @PostMapping("/edit")
-    public String editSubmit(@ModelAttribute("form") UpdateProfileForm form) {
+    public String editSubmit(@ModelAttribute("form") UpdateProfileRequest form) {
         service.updateProfile(currentUserId(), form);
         return "redirect:/profile";
     }
 
     @GetMapping("/change-password")
     public String changePasswordForm(Model model) {
-        model.addAttribute("form", new ChangePasswordForm());
+        model.addAttribute("form", new ChangePasswordRequest());
         return "profile-password";
     }
 
     @PostMapping("/change-password")
-    public String changePasswordSubmit(@ModelAttribute("form") ChangePasswordForm form, Model model) {
+    public String changePasswordSubmit(@ModelAttribute("form") ChangePasswordRequest form, Model model) {
         try {
             service.changePassword(currentUserId(), form);
             return "redirect:/profile?pwd=ok";

@@ -44,14 +44,10 @@ public class WebSecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/public/**", "/auth/**").permitAll()
-
-                        // ✅ CHỈ ĐỂ CHẠY PROFILE (tạm thời nhánh anhnv)
                         .requestMatchers("/profile", "/profile/**").authenticated()
-
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/owner/**").hasRole("CAR_OWNER")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
-
                         .anyRequest().authenticated()
                 )
 

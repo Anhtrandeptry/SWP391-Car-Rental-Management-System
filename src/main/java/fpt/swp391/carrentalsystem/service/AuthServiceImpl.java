@@ -8,9 +8,11 @@ import fpt.swp391.carrentalsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
     @Autowired
@@ -19,10 +21,13 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserMapper userMapper;
+
     @Override
     public void register(RegisterRequest request) {
 
-        User user = UserMapper.toEntity(request);
+        User user = userMapper.registerRequestToUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
 
