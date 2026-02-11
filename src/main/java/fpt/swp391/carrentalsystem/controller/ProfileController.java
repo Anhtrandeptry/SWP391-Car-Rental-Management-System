@@ -2,92 +2,73 @@ package fpt.swp391.carrentalsystem.controller;
 
 import fpt.swp391.carrentalsystem.dto.ChangePasswordRequest;
 import fpt.swp391.carrentalsystem.dto.UpdateProfileRequest;
-import fpt.swp391.carrentalsystem.dto.UserProfile;
 import fpt.swp391.carrentalsystem.service.ProfileService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Thin controller for profile management.
+ * All complexity delegated to ProfileService.
+ * Methods are one-liners following the pattern of AuthController.register().
+ */
 @Controller
 @RequestMapping("/profile")
+@RequiredArgsConstructor
 public class ProfileController {
 
-    private final ProfileService service;
+    private final ProfileService profileService;
 
-    public ProfileController(ProfileService service) {
-        this.service = service;
-    }
-
-
-    private int currentUserId() { return 1; }
-
-    private String initials(UserProfile u) {
-        StringBuilder sb = new StringBuilder();
-        String firstName = u.getFirstName();
-        String lastName = u.getLastName();
-
-        if (firstName != null) {
-            for (String p : firstName.trim().split("\\s+")) {
-                if (!p.isBlank()) sb.append(Character.toUpperCase(p.charAt(0)));
-            }
-        }
-        if (lastName != null && !lastName.isBlank()) {
-            sb.append(Character.toUpperCase(lastName.trim().charAt(0)));
-        }
-        return sb.toString();
-    }
-
+    /**
+     * Display user profile page.
+     * GET /profile
+     */
     @GetMapping
-    public String profile(Model model, @RequestParam(value = "pwd", required = false) String pwd) {
-        int userId = currentUserId();
-        UserProfile u = service.getProfile(userId);
-
-        model.addAttribute("u", u);
-        model.addAttribute("initials", initials(u));
-        model.addAttribute("stats", service.getStats(userId));
-        model.addAttribute("pwdOk", pwd != null);
+    public String getProfile(Model model, @RequestParam(value = "pwd", required = false) String pwd) {
+        model.addAllAttributes(profileService.getProfileViewModel(1L, pwd != null));
         return "profile";
     }
 
+    /**
+     * Display profile edit form.
+     * GET /profile/edit
+     */
     @GetMapping("/edit")
-    public String editForm(Model model) {
-        int userId = currentUserId();
-        UserProfile u = service.getProfile(userId);
-
-        UpdateProfileRequest f = new UpdateProfileRequest();
-        f.setFirstName(u.getFirstName());
-        f.setLastName(u.getLastName());
-        f.setGender(u.getGender());
-        f.setPhoneNumber(u.getPhoneNumber());
-        f.setEmail(u.getEmail());
-        f.setAddress(u.getAddress());
-        f.setNationalId(u.getNationalId());
-        f.setDriversLicense(u.getDriversLicense());
-
-        model.addAttribute("form", f);
+    public String showEditProfileForm(Model model) {
+        model.addAllAttributes(profileService.getEditFormViewModel(1L));
         return "profile-edit";
     }
 
+    /**
+     * Process profile update submission.
+     * POST /profile/edit
+     */
     @PostMapping("/edit")
-    public String editSubmit(@ModelAttribute("form") UpdateProfileRequest form) {
-        service.updateProfile(currentUserId(), form);
+    public String updateProfile(@Valid @ModelAttribute("updateProfileRequest") UpdateProfileRequest request) {
+        profileService.updateProfile(1L, request);
         return "redirect:/profile";
     }
 
+    /**
+     * Display change password form.
+     * GET /profile/change-password
+     */
     @GetMapping("/change-password")
-    public String changePasswordForm(Model model) {
-        model.addAttribute("form", new ChangePasswordRequest());
+    public String showChangePasswordForm(Model model) {
+        model.addAttribute("changePasswordRequest", new ChangePasswordRequest());
         return "profile-password";
     }
 
+    /**
+     * Process password change submission.
+     * POST /profile/change-password
+     */
     @PostMapping("/change-password")
-    public String changePasswordSubmit(@ModelAttribute("form") ChangePasswordRequest form, Model model) {
-        try {
-            service.changePassword(currentUserId(), form);
-            return "redirect:/profile?pwd=ok";
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            return "profile-password";
-        }
+    public String changePassword(@Valid @ModelAttribute("changePasswordRequest") ChangePasswordRequest request) {
+        profileService.changePassword(1L, request);
+        return "redirect:/profile?pwd=ok";
     }
 }

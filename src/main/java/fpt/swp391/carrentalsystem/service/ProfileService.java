@@ -22,6 +22,25 @@ public interface ProfileService {
     UserProfile getProfile(long userId);
 
     /**
+     * Get complete profile view model for display.
+     * Encapsulates all logic needed for profile page rendering.
+     *
+     * @param userId the ID of the user
+     * @param passwordChangeSuccess flag indicating password change success
+     * @return a Map containing userProfile, initials, stats, and passwordChangeSuccess
+     */
+    Map<String, Object> getProfileViewModel(long userId, boolean passwordChangeSuccess);
+
+    /**
+     * Get edit form view model.
+     * Converts current profile to UpdateProfileRequest for form display.
+     *
+     * @param userId the ID of the user
+     * @return a Map containing updateProfileRequest
+     */
+    Map<String, Object> getEditFormViewModel(long userId);
+
+    /**
      * Update user profile information.
      *
      * @param userId the ID of the user to update
