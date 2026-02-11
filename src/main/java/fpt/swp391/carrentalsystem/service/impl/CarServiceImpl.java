@@ -5,6 +5,7 @@ import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.repository.CarRepository;
 import fpt.swp391.carrentalsystem.service.CarService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,63 +20,62 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public List<CarListItemDto> filterCars(
-            String name,
-            Integer seats,
-            String brand,
-            String carType,
-            String fuelType,
-            String location
-    ) {
-        return carRepository.findAll().stream()
-                .filter(c -> name == null || c.getName().toLowerCase().contains(name.toLowerCase()))
-                .filter(c -> seats == null || c.getSeats().equals(seats))
-                .filter(c -> brand == null || brand.isBlank() || brand.equals(c.getBrand()))
-                .filter(c -> carType == null || carType.isBlank() || carType.equals(c.getCarType()))
-                .filter(c -> fuelType == null || fuelType.isBlank() || fuelType.equals(c.getFuelType()))
-                .filter(c -> location == null || location.isBlank() || c.getLocation().toLowerCase().contains(location.toLowerCase()))
+    public List<CarListItemDto> getPendingCars() {
+        return carRepository.findByStatus("Pending").stream()
                 .map(CarListItemDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<String> getAllBrands() {
-        return carRepository.findDistinctBrands();
+    @Transactional
+    public void approveCar(Long id) {
+        Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
+        car.setStatus("Available");
+        carRepository.save(car);
     }
 
     @Override
-    public List<String> getAllCarTypes() {
-        return carRepository.findDistinctCarTypes();
+    @Transactional
+    public void rejectCar(Long id) {
+        Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
+        car.setStatus("Rejected");
+        carRepository.save(car);
     }
 
     @Override
-    public List<String> getAllFuelTypes() {
-        return carRepository.findDistinctFuelTypes();
-    }
-
-    @Override
-    public List<Integer> getAllSeats() {
-        return carRepository.findDistinctSeats();
-    }
-
-    @Override
-    public Car getCarById(Long id) {
-        return carRepository.findById(id).orElse(null);
+    public List<CarListItemDto> filterCars(String name, Integer seats, String brand, String carType, String fuelType, String location) {
+        return carRepository.filterAvailableCars(name, seats, brand, carType, fuelType, location)
+                .stream()
+                .map(CarListItemDto::fromEntity)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<CarListItemDto> listAll() {
-        return carRepository.findAll()
-                .stream()
+        return carRepository.findAllAvailable().stream()
                 .map(CarListItemDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<CarListItemDto> searchByName(String name) {
-        return carRepository.findByNameContainingIgnoreCase(name)
+        return carRepository.findByNameContainingIgnoreCaseAndStatus(name, "Available")
                 .stream()
                 .map(CarListItemDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Car getCarById(Long id) {
+        Car car = carRepository.findById(id).orElse(null);
+        if (car != null && !"Available".equals(car.getStatus())) {
+            return null;
+        }
+        return car;
+    }
+
+    @Override public List<String> getAllBrands() { return carRepository.findDistinctBrands(); }
+    @Override public List<String> getAllCarTypes() { return carRepository.findDistinctCarTypes(); }
+    @Override public List<String> getAllFuelTypes() { return carRepository.findDistinctFuelTypes(); }
+    @Override public List<Integer> getAllSeats() { return carRepository.findDistinctSeats(); }
 }
