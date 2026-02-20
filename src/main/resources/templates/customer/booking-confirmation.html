@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác Nhận Đặt Xe - Car Rental System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .confirmation-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .confirmation-container h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .detail-value {
+            color: #333;
+            text-align: right;
+        }
+        .fee-breakdown {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .fee-breakdown h5 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        .fee-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 15px;
+        }
+        .fee-item .fee-name {
+            color: #555;
+        }
+        .fee-item .fee-amount {
+            color: #333;
+            font-weight: 600;
+        }
+        .fee-item.total {
+            border-top: 2px solid #667eea;
+            padding-top: 15px;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+        .fee-item.total .fee-name {
+            font-weight: 700;
+            color: #667eea;
+        }
+        .fee-item.total .fee-amount {
+            color: #667eea;
+            font-size: 20px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .warning-box strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn-confirm {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-back {
+            flex: 1;
+            padding: 14px;
+            background: #e9ecef;
+            color: #555;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+            line-height: 1;
+        }
+        .btn-back:hover {
+            background: #ddd;
+            color: #333;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+        .countdown {
+            text-align: center;
+            color: #dc3545;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="confirmation-container">
+    <div class="success-icon">✅</div>
+    <h2>Xác Nhận Thông Tin Đặt Xe</h2>
+
+    <div class="booking-details">
+        <div class="detail-row">
+            <span class="detail-label">Mã Đặt Xe:</span>
+            <span class="detail-value" th:text="'#' + ${booking.bookingId}">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Tên Xe:</span>
+            <span class="detail-value" th:text="${booking.carName}">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Ngày Bắt Đầu:</span>
+            <span class="detail-value" th:text="${#dates.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Ngày Kết Thúc:</span>
+            <span class="detail-value" th:text="${#dates.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">-</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Địa Điểm Nhận Xe:</span>
+            <span class="detail-value" th:text="${booking.pickupLocation}">-</span>
+        </div>
+    </div>
+
+    <div class="fee-breakdown">
+        <h5>📋 Chi Tiết Phí</h5>
+        <div class="fee-item">
+            <span class="fee-name">Phí thuê xe (tính theo ngày):</span>
+            <span class="fee-amount" th:text="${booking.rentalFee} + ' VND'">-</span>
+        </div>
+        <div class="fee-item">
+            <span class="fee-name">Phí giữ chỗ (thanh toán ngay):</span>
+            <span class="fee-amount" th:text="${booking.holdingFee} + ' VND'">-</span>
+        </div>
+        <div class="fee-item">
+            <span class="fee-name">Phí thế chấp (thanh toán khi nhận):</span>
+            <span class="fee-amount" th:text="${booking.depositAmount} + ' VND'">-</span>
+        </div>
+        <div class="fee-item total">
+            <span class="fee-name">💰 Tổng Cộng:</span>
+            <span class="fee-amount" th:text="${booking.totalAmount} + ' VND'">-</span>
+        </div>
+    </div>
+
+    <div class="warning-box">
+        <strong>⏰ Lưu Ý Quan Trọng:</strong>
+        <span>Bạn có 3 phút để thanh toán phí giữ chỗ. Hết thời hạn, xe sẽ được mở khóa cho khách hàng khác.</span>
+        <div class="countdown">
+            ⏱️ Hết hạn lúc: <span th:text="${#dates.format(booking.paymentDeadline, 'HH:mm:ss')}">--:--:--</span>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button type="button" class="btn-confirm" onclick="goToPayment()">💳 Tiếp Tục Thanh Toán</button>
+        <a href="/customer/booking" class="btn-back">← Quay Lại</a>
+    </div>
+</div>
+
+<script>
+    function goToPayment() {
+        const bookingId = [[${booking.bookingId}]];
+        window.location.href = `/customer/booking/${bookingId}/payment`;
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
