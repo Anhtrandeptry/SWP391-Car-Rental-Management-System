@@ -11,6 +11,9 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 
     List<Car> findByStatus(String status);
 
+
+    List<Car> findByOwnerId(Long ownerId);
+
     @Query("SELECT c FROM Car c WHERE c.status = 'Available' " +
             "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (:seats IS NULL OR c.seats = :seats) " +

@@ -14,7 +14,9 @@ public interface CarService {
     List<CarListItemDto> listAll();
     List<CarListItemDto> searchByName(String name);
 
+
     List<CarListItemDto> getPendingCars();
     void approveCar(Long id);
     void rejectCar(Long id);
+    List<CarListItemDto> getCarsByOwner(Long ownerId);
 }

@@ -31,7 +31,9 @@ public class OwnerCarImageController {
     @PostMapping("/{carId}/images/upload")
     public String uploadImages(@PathVariable Long carId,
                                @RequestParam("files") List<MultipartFile> files) throws Exception {
-        carImageService.uploadImages(carId, getCurrentUser(), files);
+        if (files != null && !files.isEmpty()) {
+            carImageService.uploadImages(carId, getCurrentUser(), files);
+        }
         return "redirect:/owner/cars/" + carId + "/images";
     }
 
@@ -49,6 +51,9 @@ public class OwnerCarImageController {
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return ((CustomUserDetails) auth.getPrincipal()).getUser();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+            return ((CustomUserDetails) auth.getPrincipal()).getUser();
+        }
+        return null;
     }
 }

@@ -20,6 +20,13 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    public List<CarListItemDto> getCarsByOwner(Long ownerId) {
+        return carRepository.findByOwnerId(ownerId).stream()
+                .map(CarListItemDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<CarListItemDto> getPendingCars() {
         return carRepository.findByStatus("Pending").stream()
                 .map(CarListItemDto::fromEntity)
@@ -67,11 +74,7 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car getCarById(Long id) {
-        Car car = carRepository.findById(id).orElse(null);
-        if (car != null && !"Available".equals(car.getStatus())) {
-            return null;
-        }
-        return car;
+        return carRepository.findById(id).orElse(null);
     }
 
     @Override public List<String> getAllBrands() { return carRepository.findDistinctBrands(); }

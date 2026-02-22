@@ -2,11 +2,7 @@ package fpt.swp391.carrentalsystem.dto;
 
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarImage;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 
 @Data
@@ -14,44 +10,29 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class CarListItemDto {
-
     private Long id;
     private String name;
-    private String brand;
-    private String model;
     private String location;
     private BigDecimal pricePerDay;
-    private BigDecimal averageRating;
+    private String status;
     private String mainImageUrl;
 
-
     public static CarListItemDto fromEntity(Car car) {
-
-        String mainImage = null;
+        String mainImage = "/images/default-car.png";
         if (car.getImages() != null && !car.getImages().isEmpty()) {
-            for (CarImage img : car.getImages()) {
-                if (Boolean.TRUE.equals(img.getIsMain())) {
-                    mainImage = img.getImageUrl();
-                    break;
-                }
-            }
-            if (mainImage == null) {
-                mainImage = car.getImages().get(0).getImageUrl();
-            }
+            mainImage = car.getImages().stream()
+                    .filter(img -> Boolean.TRUE.equals(img.getIsMain()))
+                    .map(CarImage::getImageUrl)
+                    .findFirst()
+                    .orElse(car.getImages().get(0).getImageUrl());
         }
 
         return CarListItemDto.builder()
                 .id(car.getId())
                 .name(car.getName())
-                .brand(car.getBrand())
-                .model(car.getModel())
                 .location(car.getLocation())
                 .pricePerDay(car.getPricePerDay())
-                .averageRating(
-                        car.getAverageRating() != null
-                                ? car.getAverageRating()
-                                : BigDecimal.ZERO
-                )
+                .status(car.getStatus())
                 .mainImageUrl(mainImage)
                 .build();
     }
