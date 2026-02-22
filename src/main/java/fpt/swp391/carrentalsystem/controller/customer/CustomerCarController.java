@@ -1,6 +1,6 @@
 package fpt.swp391.carrentalsystem.controller.customer;
 
-import fpt.swp391.carrentalsystem.dto.CarListItemDto;
+import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse; // Import mới ở đây
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.service.CarService;
 import org.springframework.stereotype.Controller;
@@ -29,21 +29,17 @@ public class CustomerCarController {
             @RequestParam(required = false) String location,
             Model model
     ) {
-
-        List<CarListItemDto> cars = carService.filterCars(
+        List<CarListItemResponse> cars = carService.filterCars(
                 name, seats, brand, carType, fuelType, location
         );
 
-        // ===== CAR LIST =====
         model.addAttribute("cars", cars);
 
-        // ===== FILTER DATA FROM DB =====
         model.addAttribute("brands", carService.getAllBrands());
         model.addAttribute("carTypes", carService.getAllCarTypes());
         model.addAttribute("fuelTypes", carService.getAllFuelTypes());
         model.addAttribute("seatsList", carService.getAllSeats());
 
-        // ===== KEEP SELECTED FILTER =====
         model.addAttribute("name", name);
         model.addAttribute("seats", seats);
         model.addAttribute("brand", brand);
