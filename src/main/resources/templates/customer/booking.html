@@ -95,25 +95,17 @@
 </head>
 <body>
 <div class="booking-container">
-    <h2>🚗 Đặt Xe Thuê</h2>
+    <h2>Đặt Xe Thuê</h2>
 
-    <div class="info-box">
-        <h5>💡 Hướng Dẫn</h5>
-        <p>1. Chọn chiếc xe muốn thuê</p>
-        <p>2. Chọn ngày giờ bắt đầu và kết thúc</p>
-        <p>3. Nhập địa điểm nhận xe</p>
-        <p>4. Bấm "Tiếp Tục" để xem chi tiết phí</p>
-    </div>
+
 
     <form th:action="@{/customer/booking/create}" method="post" id="bookingForm">
         <div class="form-group">
             <label for="carId">Chọn Xe <span style="color: red;">*</span></label>
             <select id="carId" name="carId" required>
                 <option value="">-- Chọn xe --</option>
-                <option value="1">Toyota Camry - 1,500,000 VND/ngày</option>
-                <option value="2">Honda Accord - 1,300,000 VND/ngày</option>
-                <option value="3">Kia Sorento - 2,000,000 VND/ngày</option>
             </select>
+            <small id="carLoading" style="color: #667eea; display: none;">Đang tải danh sách xe...</small>
         </div>
 
         <div class="form-group">
@@ -143,18 +135,72 @@
 </div>
 
 <script>
+    // Format currency to VND
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(value);
+    }
+
+    // Load cars from API
+    async function loadCars() {
+        const carSelect = document.getElementById('carId');
+        const loadingMsg = document.getElementById('carLoading');
+        loadingMsg.style.display = 'inline';
+
+        try {
+            const response = await fetch('/customer/booking/api/cars');
+            if (!response.ok) {
+                throw new Error('Failed to load cars');
+            }
+            const cars = await response.json();
+
+            cars.forEach(car => {
+                const option = document.createElement('option');
+                option.value = car.carId;
+                option.textContent = `${car.name || car.brand} ${car.model || ''} - ${formatCurrency(car.pricePerDay)}/ngày`;
+                carSelect.appendChild(option);
+            });
+
+            loadingMsg.style.display = 'none';
+        } catch (error) {
+            console.error('Error loading cars:', error);
+            loadingMsg.textContent = 'Lỗi tải danh sách xe';
+            loadingMsg.style.color = '#dc3545';
+        }
+    }
+
+    // Set minimum date to current time
     const now = new Date();
     const minDate = now.toISOString().slice(0, 16);
     document.getElementById('startDate').setAttribute('min', minDate);
     document.getElementById('endDate').setAttribute('min', minDate);
 
+    // Form validation on submit
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        const startDate = new Date(document.getElementById('startDate').value);
-        const endDate = new Date(document.getElementById('endDate').value);
-        if (endDate <= startDate) {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        if (!startDate || !endDate) {
+            e.preventDefault();
+            alert('Vui lòng chọn cả ngày bắt đầu và ngày kết thúc!');
+            return;
+        }
+
+        const startDateTime = new Date(startDate);
+        const endDateTime = new Date(endDate);
+
+        if (endDateTime <= startDateTime) {
             e.preventDefault();
             alert('Ngày kết thúc phải sau ngày bắt đầu!');
+            return;
         }
+    });
+
+    // Load cars when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCars();
     });
 </script>
 

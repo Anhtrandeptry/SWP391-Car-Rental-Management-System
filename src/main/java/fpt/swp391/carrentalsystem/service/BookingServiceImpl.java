@@ -1,6 +1,7 @@
 package fpt.swp391.carrentalsystem.service;
 import fpt.swp391.carrentalsystem.dto.request.CreateBookingRequest;
 import fpt.swp391.carrentalsystem.dto.response.BookingConfirmationDto;
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.PaymentInfoDto;
 import fpt.swp391.carrentalsystem.entity.Booking;
 import fpt.swp391.carrentalsystem.entity.Car;
@@ -8,6 +9,7 @@ import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.BookingStatus;
 import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 import fpt.swp391.carrentalsystem.mapper.BookingMapper;
+import fpt.swp391.carrentalsystem.mapper.CarMapper;
 import fpt.swp391.carrentalsystem.repository.BookingRepository;
 import fpt.swp391.carrentalsystem.repository.CarRepository;
 import fpt.swp391.carrentalsystem.repository.UserRepository;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -27,6 +31,8 @@ public class BookingServiceImpl implements BookingService {
     private final CarRepository carRepository;
     private final UserRepository userRepository;
     private final BookingMapper bookingMapper;
+    private final NotificationService notificationService;
+    private final CarMapper carMapper;
     private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
     @Override
@@ -58,6 +64,7 @@ public class BookingServiceImpl implements BookingService {
                 .totalAmount(totalAmount)
                 .status(BookingStatus.PAYMENT_PENDING)
                 .paymentStatus(PaymentStatus.UNPAID)
+                .paymentDeadline(LocalDateTime.now().plusMinutes(3))
                 .build();
         Booking savedBooking = bookingRepository.save(booking);
         log.info("Booking created: {}", savedBooking.getBookingId());
@@ -94,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
     public void releaseExpiredBooking(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
-        if (booking.getPaymentDeadline().isBefore(LocalDateTime.now()) 
+        if (booking.getPaymentDeadline().isBefore(LocalDateTime.now())
                 && booking.getPaymentStatus() == PaymentStatus.UNPAID) {
             booking.setStatus(BookingStatus.CANCELLED);
             bookingRepository.save(booking);
@@ -109,4 +116,17 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.countOverlappingBookings(
                 carId, startDate, endDate, BookingStatus.CONFIRMED) == 0;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CarResponseDto> getAvailableCars() {
+
+        List<Car> cars = carRepository.findAll();
+
+        log.info("Fetched {} cars for booking page", cars.size());
+
+        return carMapper.toDtoList(cars);
+    }
+
+
 }
