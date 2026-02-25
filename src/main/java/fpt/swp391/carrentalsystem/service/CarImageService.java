@@ -1,5 +1,7 @@
 package fpt.swp391.carrentalsystem.service;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarImage;
 import fpt.swp391.carrentalsystem.entity.User;
@@ -9,9 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.nio.file.Files;
+import java.text.Normalizer;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -19,30 +22,36 @@ public class CarImageService {
 
     private final CarRepository carRepository;
     private final CarImageRepository carImageRepository;
-
+    private final Cloudinary cloudinary;
 
     public List<CarImage> getImagesByCar(Long carId, User owner) {
         Car car = getOwnedCar(carId, owner);
         return carImageRepository.findByCarOrderByDisplayOrderAsc(car);
     }
 
-
     public void uploadImages(Long carId, User owner, List<MultipartFile> files) throws Exception {
         Car car = getOwnedCar(carId, owner);
 
+        String folderName = String.format("cars/%d_%s_%s",
+                car.getId(),
+                slugify(car.getName()),
+                slugify(owner.getFirstName() + " " + owner.getLastName()));
+
         int order = carImageRepository.findByCarOrderByDisplayOrderAsc(car).size();
 
-        String uploadDir = "uploads/cars/" + carId;
-        new File(uploadDir).mkdirs();
-
         for (MultipartFile file : files) {
-            String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File dest = new File(uploadDir + "/" + filename);
-            Files.copy(file.getInputStream(), dest.toPath());
+            if (file.isEmpty()) continue;
+
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "folder", folderName,
+                    "resource_type", "auto"
+            ));
+
+            String url = (String) uploadResult.get("secure_url");
 
             CarImage image = CarImage.builder()
                     .car(car)
-                    .imageUrl("/" + uploadDir + "/" + filename)
+                    .imageUrl(url)
                     .displayOrder(order++)
                     .isMain(false)
                     .build();
@@ -58,7 +67,6 @@ public class CarImageService {
         Car car = image.getCar();
         validateOwner(car, owner);
 
-        // unset old main
         carImageRepository.findByCarAndIsMainTrue(car)
                 .forEach(img -> {
                     img.setIsMain(false);
@@ -74,9 +82,9 @@ public class CarImageService {
                 .orElseThrow(() -> new RuntimeException("Image not found"));
 
         validateOwner(image.getCar(), owner);
+
         carImageRepository.delete(image);
     }
-
 
     private Car getOwnedCar(Long carId, User owner) {
         Car car = carRepository.findById(carId)
@@ -90,5 +98,17 @@ public class CarImageService {
         if (!car.getOwner().getId().equals(owner.getId())) {
             throw new RuntimeException("Access denied");
         }
+    }
+
+    private String slugify(String input) {
+        if (input == null || input.isEmpty()) return "unknown";
+
+        String temp = Normalizer.normalize(input, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("^-+|-+$", "");
     }
 }

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chuyến đi của tôi | CRMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #00a58e;
+            --bg-body: #f4f7f6;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header-title {
+            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-sub {
+            color: var(--text-sub);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        /* --- Stats Row Style --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid #dfe6e9; /* Mặc định màu xám nhẹ */
+        }
+
+        .stat-card:nth-child(1) { border-left-color: #636e72; } /* Tổng chuyến */
+        .stat-card:nth-child(2) { border-left-color: var(--info); } /* Sắp tới */
+        .stat-card:nth-child(3) { border-left-color: #00b894; } /* Đang thuê */
+        .stat-card:nth-child(4) { border-left-color: #95a5a6; } /* Hoàn thành */
+        .stat-card:nth-child(5) { border-left-color: var(--primary-color); } /* Tổng chi */
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        /* --- Search Bar Style --- */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+
+        /* --- Booking Card Style --- */
+        .booking-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 25px;
+            position: relative;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        /* Badge trạng thái ở góc trái */
+        .status-tag {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        .status-Pending { background-color: #0984e3; }
+        .status-Accepted { background-color: #00b894; }
+        .status-Completed { background-color: #636e72; }
+        .status-Cancelled { background-color: #d63031; }
+
+        .car-image-wrapper {
+            width: 180px;
+            height: 120px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .car-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .booking-main-info {
+            flex: 1;
+        }
+
+        .car-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .car-name-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .booking-code-top {
+            font-size: 11px;
+            color: #b2bec3;
+            font-family: monospace;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 15px;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-item {
+            font-size: 13px;
+            color: var(--text-sub);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item i {
+            color: #b2bec3;
+            width: 14px;
+        }
+
+        .owner-box {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .owner-avatar {
+            width: 30px;
+            height: 30px;
+            background: #e8f5f3;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .price-col {
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            border-left: 1px dashed #dfe6e9;
+            padding-left: 20px;
+        }
+
+        .price-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 5px;
+        }
+
+        .price-total {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .price-day {
+            font-size: 11px;
+            color: var(--text-sub);
+        }
+
+        .btn-review-action {
+            margin-top: 10px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            background: #e8f5f3;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* --- Feedback Box Style --- */
+        .feedback-section {
+            margin-top: 15px;
+            background: #fffdf2;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border-left: 4px solid #f1c40f;
+        }
+
+        .feedback-text {
+            font-size: 12px;
+            margin: 5px 0 0 0;
+            color: #2d3436;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-title">Chuyến đi của tôi</div>
+    <div class="header-sub">Xem lại lịch sử thuê xe của bạn</div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Tổng chuyến</div>
+            <div class="stat-value" th:text="${totalCount}">6</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Sắp tới</div>
+            <div class="stat-value" th:text="${pendingCount}" style="color: #0984e3">1</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Đang thuê</div>
+            <div class="stat-value" style="color: #00b894">1</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Hoàn thành</div>
+            <div class="stat-value" th:text="${completedCount}">3</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Tổng chi phí</div>
+            <div class="stat-value" style="color: var(--primary-color)" th:text="${totalSpent != null ? totalSpent + 'K' : '0K'}">15.235K</div>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" class="search-input" placeholder="Tìm kiếm theo mã đơn, tên xe...">
+        <select class="search-input" style="max-width: 150px;">
+            <option>Tất cả</option>
+        </select>
+    </div>
+
+    <div th:each="b : ${bookings}" class="booking-card">
+        <div th:class="'status-tag status-' + ${b.status}" th:text="${b.status}">SẮP TỚI</div>
+
+        <div class="car-image-wrapper">
+            <img th:src="${b.carImage != null ? b.carImage : 'https://placehold.co/200x130?text=No+Image'}" class="car-thumb">
+        </div>
+
+        <div class="booking-main-info">
+            <div class="car-name-row">
+                <div>
+                    <h3 class="car-name-text" th:text="${b.carName}">TOYOTA VIOS 2021</h3>
+                    <div style="font-size: 12px; color: #b2bec3;">Biển số: <span th:text="${b.licensePlate}">30A-12345</span></div>
+                </div>
+                <div class="booking-code-top" th:text="${b.bookingCode}">BK-2026-101</div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-group">
+                    <div class="info-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>Thời gian thuê: <strong th:text="${#temporals.format(b.startDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(b.endDate, 'dd/MM/yyyy')}"></strong></span>
+                    </div>
+                    <div class="info-item" style="padding-left: 24px;">
+                        <span th:text="${b.durationDays + ' ngày'}">3 ngày</span>
+                    </div>
+                </div>
+                <div class="info-group">
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Địa điểm: <strong th:text="${b.pickupLocation}">Cầu Giấy, Hà Nội</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="owner-box">
+                <div class="owner-avatar" th:text="${#strings.substring(b.ownerName,0,1)}">N</div>
+                <div style="font-size: 13px;">
+                    <span th:text="${b.ownerName}">Nguyễn Văn Hùng</span>
+                    <span style="color: #b2bec3; margin-left: 5px;">• Chủ xe</span>
+                </div>
+                <div style="margin-left: auto; font-size: 12px; border: 1px solid #eee; padding: 2px 8px; border-radius: 5px;">
+                    <i class="fas fa-phone-alt" style="font-size: 10px;"></i> <span th:text="${b.ownerPhone}">0911111111</span>
+                </div>
+            </div>
+
+            <button th:if="${b.status == 'Completed' && b.rating == null}" class="btn-review-action">
+                <i class="fas fa-star"></i> Đánh giá chuyến đi
+            </button>
+
+            <div th:if="${b.rating != null}" class="feedback-section">
+                <div style="font-size: 12px; font-weight: 600;">
+                    Đánh giá của bạn: <span style="color: #f1c40f;">★★★★★ <span th:text="${b.rating + '/5'}"></span></span>
+                </div>
+                <p class="feedback-text" th:text="${b.comment}">Xe rất tốt, chủ xe nhiệt tình!</p>
+            </div>
+        </div>
+
+        <div class="price-col">
+            <div class="price-label"><i class="fas fa-dollar-sign"></i> Tổng tiền</div>
+            <div class="price-total" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT') + 'K'}">2.160K</div>
+            <div class="price-day" th:text="${b.pricePerDay + 'K/ngày'}">720K/ngày</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

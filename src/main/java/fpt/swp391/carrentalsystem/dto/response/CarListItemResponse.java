@@ -11,9 +11,11 @@ public class CarListItemResponse {
     private Long id;
     private String name;
     private String location;
+    private String brand;
+    private String model;
     private BigDecimal pricePerDay;
     private String status;
     private String mainImageUrl;
     private Integer totalTrips;
-    private Double rating;
+    private Double averageRating;
 }

@@ -56,8 +56,28 @@
             text-align: center;
         }
 
-        .upload-form input[type="file"] {
-            margin-bottom: 15px;
+        /* Preview Area */
+        #previewContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 90px;
+            margin: 0 auto;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #ddd;
         }
 
         .btn-upload {
@@ -69,6 +89,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.3s;
+            display: none; /* Ẩn khi chưa chọn file */
+            margin: 0 auto;
         }
 
         .btn-upload:hover {
@@ -76,7 +98,7 @@
             transform: translateY(-2px);
         }
 
-        /* Grid ảnh */
+        /* Grid ảnh đã lưu */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -93,9 +115,7 @@
             transition: 0.3s;
         }
 
-        .image-card:hover {
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
+        .image-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
 
         .image-card img {
             width: 100%;
@@ -104,11 +124,8 @@
             display: block;
         }
 
-        .image-card.main {
-            border: 2px solid var(--primary-color);
-        }
+        .image-card.main { border: 2px solid var(--primary-color); }
 
-        /* Badge ảnh chính */
         .main-badge {
             position: absolute;
             top: 10px;
@@ -119,7 +136,6 @@
             border-radius: 4px;
             font-size: 11px;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .card-actions {
@@ -137,59 +153,19 @@
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 5px;
         }
 
-        .btn-set-main {
-            background-color: white;
-            color: var(--text-color);
-        }
+        .btn-set-main:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .btn-delete:hover { background-color: #fff5f5; border-color: var(--danger-color); color: var(--danger-color); }
 
-        .btn-set-main:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-delete {
-            background-color: white;
-            color: var(--danger-color);
-        }
-
-        .btn-delete:hover {
-            background-color: #fff5f5;
-            border-color: var(--danger-color);
-        }
-
-        /* Nút quay lại */
-        .footer-actions {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
-            text-decoration: none;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        .btn-back:hover {
-            color: var(--primary-color);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
+        .footer-actions { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+        .btn-back { display: inline-flex; align-items: center; gap: 8px; color: #666; text-decoration: none; font-weight: 600; }
+        .btn-back:hover { color: var(--primary-color); }
+        .empty-state { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
@@ -204,15 +180,20 @@
         <form th:action="@{/owner/cars/{id}/images/upload(id=${carId})}"
               method="post"
               enctype="multipart/form-data"
-              class="upload-form">
+              class="upload-form"
+              id="uploadForm">
 
-            <input type="file" name="files" id="fileInput" multiple required hidden>
-            <label for="fileInput" style="cursor: pointer; display: block; margin-bottom: 15px;">
-                <i class="fas fa-cloud-upload-alt" style="font-size: 30px; color: var(--primary-color);"></i>
-                <br><span>Nhấn để chọn ảnh</span>
+            <input type="file" name="files" id="fileInput" multiple accept="image/*" hidden>
+
+            <label for="fileInput" style="cursor: pointer; display: block; margin-bottom: 10px;">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: var(--primary-color);"></i>
+                <br><span id="uploadText">Nhấp vào đây để chọn ảnh</span>
             </label>
-            <button type="submit" class="btn-upload">
-                <i class="fas fa-upload"></i> Tải ảnh lên
+
+            <div id="previewContainer"></div>
+
+            <button type="submit" class="btn-upload" id="submitBtn">
+                <i class="fas fa-upload"></i> <span id="btnText">Tải ảnh lên</span>
             </button>
         </form>
     </div>
@@ -224,23 +205,17 @@
 
     <div class="image-grid" th:if="${!#lists.isEmpty(images)}">
         <div class="image-card" th:each="img : ${images}" th:classappend="${img.isMain} ? 'main'">
-
             <img th:src="@{${img.imageUrl}}" alt="Ảnh xe">
-
             <div th:if="${img.isMain}" class="main-badge">
                 <i class="fas fa-star"></i> ẢNH CHÍNH
             </div>
-
             <div class="card-actions">
                 <form th:if="${!img.isMain}"
                       th:action="@{/owner/cars/images/{id}/set-main(id=${img.id})}"
                       method="post" style="flex: 1;">
                     <input type="hidden" name="carId" th:value="${carId}">
-                    <button type="submit" class="btn-action btn-set-main">
-                        Đặt chính
-                    </button>
+                    <button type="submit" class="btn-action btn-set-main">Đặt chính</button>
                 </form>
-
                 <form th:action="@{/owner/cars/images/{id}/delete(id=${img.id})}"
                       method="post"
                       onsubmit="return confirm('Bạn có chắc chắn muốn xóa ảnh này không?')"
@@ -262,11 +237,36 @@
 </div>
 
 <script>
-    // Hiển thị tên file khi chọn (tùy chọn thêm để UX tốt hơn)
-    document.getElementById('fileInput').onchange = function() {
-        if(this.files.length > 0) {
-            const label = this.nextElementSibling.nextElementSibling;
-            label.innerHTML = `Đã chọn ${this.files.length} ảnh`;
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const uploadText = document.getElementById('uploadText');
+
+    fileInput.onchange = function() {
+        previewContainer.innerHTML = '';
+        const files = this.files;
+
+        if (files.length > 0) {
+            submitBtn.style.display = 'flex';
+            btnText.innerText = `Tải ${files.length} ảnh đã chọn lên`;
+            uploadText.innerText = "Đã chọn " + files.length + " ảnh. Nhấp để thay đổi";
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const div = document.createElement('div');
+                        div.className = 'preview-item';
+                        div.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+                        previewContainer.appendChild(div);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        } else {
+            submitBtn.style.display = 'none';
+            uploadText.innerText = "Nhấp vào đây để chọn ảnh";
         }
     };
 </script>

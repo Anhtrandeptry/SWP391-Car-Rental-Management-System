@@ -39,9 +39,11 @@
 
         <select name="seats">
             <option value="">Số chỗ</option>
-            <option value="4" th:selected="${seats == 4}">4</option>
-            <option value="5" th:selected="${seats == 5}">5</option>
-            <option value="7" th:selected="${seats == 7}">7</option>
+            <option th:each="s : ${seatsList}"
+                    th:value="${s}"
+                    th:text="${s}"
+                    th:selected="${s == seats}">
+            </option>
         </select>
 
         <select name="brand">
