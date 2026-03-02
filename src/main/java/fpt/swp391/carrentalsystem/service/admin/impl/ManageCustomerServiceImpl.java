@@ -8,9 +8,9 @@ import fpt.swp391.carrentalsystem.enums.UserStatus;
 import fpt.swp391.carrentalsystem.mapper.admin.CustomerMapper;
 import fpt.swp391.carrentalsystem.repository.CustomerRepository;
 import fpt.swp391.carrentalsystem.service.admin.ManageCustomerService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ManageCustomerServiceImpl implements ManageCustomerService {
@@ -22,32 +22,37 @@ public class ManageCustomerServiceImpl implements ManageCustomerService {
     }
 
     @Override
-    public List<CustomerResponse> getAllCustomers() {
-        return customerRepository.findByRole(Role.CUSTOMER)
-                .stream()
-                .map(CustomerMapper::toResponse)
-                .toList();
+    public Page<CustomerResponse> getAllCustomers(String keyword, UserStatus status, Pageable pageable) {
+        // Xử lý trim keyword
+        String safeKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+
+        Page<User> customers = customerRepository.searchAndFilterCustomers(
+                Role.CUSTOMER,
+                safeKeyword,
+                status,
+                pageable
+        );
+
+        return customers.map(CustomerMapper::toResponse);
     }
 
     @Override
     public CustomerStatsResponse getCustomerStats() {
-        // Lấy toàn bộ danh sách khách hàng từ Database thông qua Repository
-        List<CustomerResponse> customers = getAllCustomers();
+        // Gọi trực tiếp repository để lấy con số tổng từ Database
+        long total = customerRepository.countByRole(Role.CUSTOMER);
+        long active = customerRepository.countByRoleAndStatus(Role.CUSTOMER, UserStatus.ACTIVE);
+        long disabled = customerRepository.countByRoleAndStatus(Role.CUSTOMER, UserStatus.DISABLED);
+        long pending = customerRepository.countByRoleAndStatus(Role.CUSTOMER, UserStatus.PENDING);
 
-        // Sử dụng Java Stream để phân loại và đếm
         return CustomerStatsResponse.builder()
-                .totalUsers(customers.size())
-                .activeUsers(customers.stream()
-                        .filter(c -> c.getStatus() == UserStatus.ACTIVE).count())
-                .disabledUsers(customers.stream()
-                        .filter(c -> c.getStatus() == UserStatus.DISABLED).count())
-                .pendingApproval(customers.stream()
-                        .filter(c -> c.getStatus() == UserStatus.PENDING).count())
-                .totalGrowth("+12%") // Giá trị tạm thời theo Requirement của bạn
+                .totalUsers((int) total) // Ép kiểu về int nếu DTO yêu cầu
+                .activeUsers(active)
+                .disabledUsers(disabled)
+                .pendingApproval(pending)
+                .totalGrowth("+12%") // Giữ nguyên theo mẫu của bạn
                 .activeGrowth("+8%")
                 .build();
     }
-
     @Override
     public CustomerResponse getCustomerById(Long customerId) {
         User user = customerRepository.findById(customerId)

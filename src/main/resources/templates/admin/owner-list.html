@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Car Rental Admin - User Management</title>
+    <title>Car Rental Admin - Owner Management</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -49,17 +49,23 @@
       .content-table { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
       .table-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
       .tab-group { display: flex; gap: 8px; }
-      .tab { padding: 10px 20px; border: none; background: none; font-weight: 500; cursor: pointer; color: var(--text-light); display: flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s ease; }
+      .tab { padding: 10px 20px; border: none; background: none; font-weight: 500; cursor: pointer; color: var(--text-light); display: flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s; }
       .tab:hover { color: var(--primary-blue); }
       .tab.active { color: var(--primary-blue); background: #eff6ff; border-radius: 8px; }
       .badge { background: var(--primary-blue); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
 
+      .search-bar { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); outline: none; }
+      .search-bar:focus { border-color: var(--primary-blue); }
+
       table { width: 100%; border-collapse: collapse; }
       th { text-align: left; font-size: 0.75rem; color: var(--text-light); padding: 12px; border-bottom: 1px solid var(--border-color); }
       td { padding: 15px 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); }
-      
-      tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
-      tbody tr:hover { background-color: #f1f5f9; }
+      tbody tr:hover { background-color: #f1f5f9; cursor: pointer; }
+
+      /* Utility Classes for Table */
+      .col-center { text-align: center; }
+      .fw-600 { font-weight: 600; }
+      .revenue-text { color: var(--text-dark); font-weight: 600; }
 
       .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
       .status-pill.active { background: #f0fdf4; color: var(--green); }
@@ -78,7 +84,7 @@
 
       /* Action Dropdown */
       .action-dropdown { position: relative; }
-      .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background-color: white; min-width: 180px; box-shadow: 0px 8px 16px rgba(0,0,0,0.1); z-index: 100; border-radius: 8px; border: 1px solid var(--border-color); padding: 5px 0; }
+      .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background-color: white; min-width: 180px; box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1); z-index: 100; border-radius: 8px; border: 1px solid var(--border-color); padding: 5px 0; }
       .dropdown-content.show { display: block; }
       .dropdown-content a { color: var(--text-dark); padding: 10px 16px; text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
       .dropdown-content a:hover { background-color: #f8fafc; }
@@ -88,6 +94,8 @@
       .modal-content { background: white; margin: 10% auto; width: 450px; border-radius: 16px; overflow: hidden; animation: slideDown 0.3s ease-out; }
       @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       .modal-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); }
+      .modal-header i { color: var(--yellow); font-size: 1.5rem; }
+      .modal-body-preview { padding: 20px; background: #f8fafc; display: flex; align-items: center; gap: 15px; }
       .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px; background: #f8fafc; }
       .btn-confirm { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; }
       .btn-cancel { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; }
@@ -106,121 +114,126 @@
           <span class="name">Admin User</span>
           <span class="email">admin@carrental.com</span>
         </div>
-        <div class="avatar"><i class="fas fa-user"></i></div>
+        <div class="avatar"><i class="fas fa-user-shield"></i></div>
       </div>
     </header>
 
     <section class="stats-grid">
       <div class="stat-card">
         <div class="stat-content">
-          <p class="label">Total Customers</p>
-          <h2 class="value" th:text="${stats != null ? stats.totalUsers : 0}">0</h2>
-          <p class="trend up"><i class="fas fa-arrow-up"></i> <span th:text="${stats.totalGrowth}">+12%</span></p>
+          <p class="label">Total Owners</p>
+          <h2 class="value" th:text="${stats != null ? stats.totalOwners : 0}">0</h2>
         </div>
-        <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+        <div class="stat-icon blue"><i class="fas fa-user-tie"></i></div>
       </div>
       <div class="stat-card">
         <div class="stat-content">
-          <p class="label">Active</p>
-          <h2 class="value" th:text="${stats != null ? stats.activeUsers : 0}">0</h2>
-          <p class="trend up"><i class="fas fa-arrow-up"></i> <span th:text="${stats.activeGrowth}">+8%</span></p>
+          <p class="label">Active Owners</p>
+          <h2 class="value" th:text="${stats != null ? stats.activeOwners : 0}">0</h2>
         </div>
         <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
       </div>
       <div class="stat-card">
         <div class="stat-content">
-          <p class="label">Disabled</p>
-          <h2 class="value" th:text="${stats != null ? stats.disabledUsers : 0}">0</h2>
-          <p class="trend down"><i class="fas fa-arrow-down"></i> -3%</p>
+          <p class="label">Inactive</p>
+          <h2 class="value" th:text="${stats != null ? stats.inactiveOwners : 0}">0</h2>
         </div>
         <div class="stat-icon red"><i class="fas fa-user-slash"></i></div>
       </div>
       <div class="stat-card">
         <div class="stat-content">
-          <p class="label">Pending Approval</p>
-          <h2 class="value" th:text="${stats != null ? stats.pendingApproval : 0}">0</h2>
-          <p class="trend up"><i class="fas fa-arrow-up"></i> +5%</p>
+          <p class="label">Waiting Approval</p>
+          <h2 class="value" th:text="${stats != null ? stats.pendingOwners : 0}">0</h2>
         </div>
-        <div class="stat-icon yellow"><i class="far fa-clock"></i></div>
+        <div class="stat-icon yellow"><i class="fas fa-hourglass-half"></i></div>
       </div>
     </section>
 
     <main class="content-table">
       <div class="table-header">
         <div class="tab-group">
-          <a th:href="@{/admin/customers}" class="tab active">
-            <i class="fas fa-users-cog"></i> Customers
+          <a th:href="@{/admin/customers}" class="tab">
+            <i class="fas fa-users"></i> Customers
+          </a>
+          <a th:href="@{/admin/owners}" class="tab active">
+            <i class="fas fa-car-side"></i> Owners
             <span class="badge" th:text="${totalElements}">0</span>
           </a>
-          <a th:href="@{/admin/owners}" class="tab">
-            <i class="fas fa-car-side"></i> Owners
-          </a>
         </div>
-        <div class="search-container">
-            <form th:action="@{/admin/customers}" method="get" style="display: flex; gap: 8px; align-items: center;">
-                <input type="hidden" name="page" value="0">
-                
-                <input type="text" name="keyword" th:value="${keyword}" 
-                      placeholder="Tìm theo tên, email, sđt..." 
-                      class="search-bar" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-                
-                
-                
-                <div style="display: flex; align-items: center; gap: 5px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: white;">
-                    <i class="fas fa-filter" style="color: var(--text-light); font-size: 0.9rem;"></i>
-                    <select name="status" onchange="this.form.submit()" style="border: none; outline: none; background: transparent; color: var(--text-dark); cursor: pointer; font-size: 0.85rem;">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVE" th:selected="${status != null and status.name() == 'ACTIVE'}">Hoạt động</option>
-                        <option value="PENDING" th:selected="${status != null and status.name() == 'PENDING'}">Chờ duyệt</option>
-                        <option value="DISABLED" th:selected="${status != null and status.name() == 'DISABLED'}">Đã khóa</option>
-                    </select>
-                </div>
-                <button type="submit" style="padding: 8px 15px; border-radius: 8px; border: none; background: var(--primary-blue); color: white; cursor: pointer;">
-                    <i class="fas fa-search"></i>
-                </button>
+        <div class="search-container" style="display: flex; gap: 8px;">
+        <form th:action="@{/admin/owners}" method="get" style="display: flex; gap: 8px; align-items: center;">
+            <input type="hidden" name="page" value="0">
+            
+            <input type="text" name="keyword" th:value="${keyword}" 
+                   placeholder="Tìm theo tên, email, sđt..." 
+                   class="search-bar" style="min-width: 200px;">
+            
+            <div style="display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: white;">
+                <i class="fas fa-filter" style="color: var(--text-light); font-size: 0.9rem;"></i>
+                <select name="status" onchange="this.form.submit()" style="border: none; outline: none; background: transparent; color: var(--text-dark); cursor: pointer; font-size: 0.85rem;">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="ACTIVE" th:selected="${status != null and status.name() == 'ACTIVE'}">Hoạt động</option>
+                    <option value="PENDING" th:selected="${status != null and status.name() == 'PENDING'}">Chờ duyệt</option>
+                    <option value="DISABLED" th:selected="${status != null and status.name() == 'DISABLED'}">Đã khóa</option>
+                </select>
+            </div>
+            
+            <button type="submit" style="padding: 8px 15px; border-radius: 8px; border: none; background: var(--primary-blue); color: white; cursor: pointer;">
+                <i class="fas fa-search"></i>
+            </button>
 
-            </form>
-        </div>
+        </form>
+      </div>
       </div>
 
       <table>
         <thead>
           <tr>
-            <th>NGƯỜI DÙNG</th>
+            <th>CHỦ XE</th>
             <th>EMAIL</th>
             <th>SỐ ĐIỆN THOẠI</th>
-            <th class="text-mid">TRẠNG THÁI</th>
+            <th class="col-center">SỐ XE</th> 
+            <th class="col-center">DOANH THU</th>
+            <th>TRẠNG THÁI</th>
             <th>NGÀY TẠO</th>
-            <th class="text-mid">ACTIONS</th>
+            <th class="col-center">ACTIONS</th>
           </tr>
         </thead>
         <tbody>
-          <tr th:each="user : ${customers}" 
-              th:onclick="|window.location.href='/admin/customers/detail-page?id=${user.id}'|">
-            <td class="font-medium" th:text="${user.firstName + ' ' + user.lastName}">Name</td>
-            <td th:text="${user.email}">Email</td>
-            <td th:text="${user.phoneNumber}">Phone</td>
-            <td class="text-mid">
-              <span class="status-pill" th:classappend="${user.status.name() == 'ACTIVE' ? 'active' : (user.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
+          <tr th:each="owner : ${owners}" 
+              th:onclick="|window.location.href='/admin/owners/detail-page?id=${owner.id}'|">
+            
+            <td class="fw-600" th:text="${owner.fullName}">Owner Name</td>
+            <td th:text="${owner.email}">Email</td>
+            <td th:text="${owner.phoneNumber}">Phone</td>
+            
+            <td class="col-center fw-600" th:text="${owner.numberOfCars}">0</td>
+            <td class="col-center revenue-text" 
+                th:text="${#numbers.formatDecimal(owner.totalRevenue != null ? owner.totalRevenue : 0, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</td>
+
+            <td>
+              <span class="status-pill" th:classappend="${owner.status.name() == 'ACTIVE' ? 'active' : (owner.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
                 <span class="dot"></span>
-                <span th:text="${user.status.name()}">Status</span>
+                <span th:text="${owner.status.name()}">Status</span>
               </span>
             </td>
-            <td th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'N/A'}">Date</td>
-            <td class="text-mid action-dropdown" onclick="event.stopPropagation();">
+            
+            <td th:text="${owner.createdAt != null ? #temporals.format(owner.createdAt, 'dd/MM/yyyy') : 'N/A'}">Date</td>
+            
+            <td class="col-center action-dropdown" onclick="event.stopPropagation();">
               <i class="fas fa-ellipsis-v icon-btn" onclick="toggleDropdown(this)"></i>
               <div class="dropdown-content">
-                <a th:if="${user.status.name() == 'PENDING'}" href="javascript:void(0)" 
-                  th:onclick="confirmStatus('APPROVE', [[${user.id}]], [[${user.firstName + ' ' + user.lastName}]], [[${user.email}]])">
-                  <i class="fas fa-check-circle" style="color: var(--green)"></i> Phê duyệt
+                <a th:if="${owner.status.name() == 'PENDING'}" href="javascript:void(0)" 
+                  th:onclick="confirmStatus('APPROVE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                  <i class="fas fa-check-circle" style="color: var(--green)"></i> Phê duyệt chủ xe
                 </a>
-                <a th:if="${user.status.name() == 'ACTIVE'}" href="javascript:void(0)"
-                  th:onclick="confirmStatus('DISABLE', [[${user.id}]], [[${user.firstName + ' ' + user.lastName}]], [[${user.email}]])">
+                <a th:if="${owner.status.name() == 'ACTIVE'}" href="javascript:void(0)"
+                  th:onclick="confirmStatus('DISABLE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
                   <i class="fas fa-user-slash" style="color: var(--red)"></i> Vô hiệu hóa
                 </a>
-                <a th:if="${user.status.name() == 'DISABLED'}" href="javascript:void(0)"
-                  th:onclick="confirmStatus('PENDING', [[${user.id}]], [[${user.firstName + ' ' + user.lastName}]], [[${user.email}]])">
-                  <i class="fas fa-history" style="color: var(--yellow)"></i> Khôi phục/Chờ
+                <a th:if="${owner.status.name() != 'PENDING'}" href="javascript:void(0)"
+                  th:onclick="confirmStatus('PENDING', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                  <i class="fas fa-history" style="color: var(--yellow)"></i> Đưa về hàng chờ
                 </a>
               </div>
             </td>
@@ -232,41 +245,41 @@
         <div class="pagination-info">
           Hiển thị trang <strong><span th:text="${currentPage + 1}">1</span></strong> 
           trên tổng số <strong><span th:text="${totalPages}">1</span></strong> trang 
-          (<span th:text="${totalElements}">0</span> khách hàng)
+          (<span th:text="${totalElements}">0</span> chủ xe)
         </div>
 
         <div class="pagination-controls" th:if="${totalPages > 1}">
-            <a th:href="@{/admin/customers(page=${currentPage - 1}, keyword=${keyword},status=${status})}" 
-              class="page-btn" th:classappend="${currentPage == 0} ? 'disabled' : ''">
-                <i class="fas fa-chevron-left"></i>
-            </a>
+          <a th:href="@{/admin/owners(page=${currentPage - 1}, keyword=${keyword}, status=${status})}" 
+            class="page-btn" th:classappend="${currentPage == 0} ? 'disabled' : ''">
+              <i class="fas fa-chevron-left"></i>
+          </a>
 
-            <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                <a th:href="@{/admin/customers(page=${i}, keyword=${keyword},status=${status})}" 
-                  class="page-btn" th:classappend="${i == currentPage} ? 'active' : ''" 
-                  th:text="${i + 1}">1</a>
-            </span>
+          <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+              <a th:href="@{/admin/owners(page=${i}, keyword=${keyword}, status=${status})}" 
+                class="page-btn" th:classappend="${i == currentPage} ? 'active' : ''" 
+                th:text="${i + 1}">1</a>
+          </span>
 
-            <a th:href="@{/admin/customers(page=${currentPage + 1}, keyword=${keyword},status=${status})}" 
-              class="page-btn" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-        </div>
+          <a th:href="@{/admin/owners(page=${currentPage + 1}, keyword=${keyword}, status=${status})}" 
+            class="page-btn" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''">
+              <i class="fas fa-chevron-right"></i>
+          </a>
+      </div>
       </div>
     </main>
 
     <div id="confirmModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <i class="fas fa-exclamation-triangle" style="color: var(--yellow)"></i>
-          <h3 id="modalTitle">Xác nhận thay đổi?</h3>
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3 id="modalTitle">Xác nhận thao tác</h3>
         </div>
-        <div style="padding: 20px; background: #f8fafc; display: flex; align-items: center; gap: 15px;">
-            <div class="avatar"><i class="fas fa-user"></i></div>
-            <div>
-              <div id="modalUserName" style="font-weight: 600">Username</div>
-              <div id="modalUserEmail" style="font-size: 0.8rem; color: var(--text-light)">email@example.com</div>
-            </div>
+        <div class="modal-body-preview">
+          <div class="avatar"><i class="fas fa-user"></i></div>
+          <div>
+            <div id="modalUserName" class="fw-600">Name</div>
+            <div id="modalUserEmail" style="font-size: 0.8rem; color: var(--text-light)">email@example.com</div>
+          </div>
         </div>
         <form id="statusForm" method="post">
           <input type="hidden" name="id" id="targetUserId" />
@@ -281,37 +294,43 @@
     <script>
       function toggleDropdown(element) {
         event.stopPropagation();
-        document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+        document.querySelectorAll('.dropdown-content').forEach(d => {
+            if (d !== element.nextElementSibling) d.classList.remove('show');
+        });
         element.nextElementSibling.classList.toggle('show');
       }
 
       function confirmStatus(action, id, name, email) {
         const modal = document.getElementById('confirmModal');
         const form = document.getElementById('statusForm');
-        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const title = document.getElementById('modalTitle');
+        const btn = document.getElementById('modalConfirmBtn');
         
         document.getElementById('targetUserId').value = id;
         document.getElementById('modalUserName').innerText = name;
         document.getElementById('modalUserEmail').innerText = email;
 
         if (action === 'DISABLE') {
-            form.action = "/admin/customers/disable";
-            confirmBtn.innerText = "Khóa tài khoản";
-            confirmBtn.style.backgroundColor = "#ef4444";
+            title.innerText = "Vô hiệu hóa chủ xe này?";
+            form.action = "/admin/owners/disable";
+            btn.innerText = "Vô hiệu hóa";
+            btn.style.backgroundColor = "var(--red)";
         } else if (action === 'APPROVE') {
-            form.action = "/admin/customers/approve";
-            confirmBtn.innerText = "Phê duyệt";
-            confirmBtn.style.backgroundColor = "#22c55e";
+            title.innerText = "Phê duyệt chủ xe này?";
+            form.action = "/admin/owners/approve";
+            btn.innerText = "Phê duyệt";
+            btn.style.backgroundColor = "var(--green)";
         } else {
-            form.action = "/admin/customers/pending";
-            confirmBtn.innerText = "Đưa vào hàng chờ";
-            confirmBtn.style.backgroundColor = "#f59e0b";
+            title.innerText = "Đưa vào danh sách chờ?";
+            form.action = "/admin/owners/pending";
+            btn.innerText = "Chuyển về chờ";
+            btn.style.backgroundColor = "var(--yellow)";
         }
         modal.style.display = "block";
       }
 
       function closeModal() { document.getElementById('confirmModal').style.display = "none"; }
-      
+
       window.onclick = function(event) {
         if (!event.target.matches('.icon-btn')) {
           document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
