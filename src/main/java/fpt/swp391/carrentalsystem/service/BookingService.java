@@ -44,6 +44,32 @@ public class BookingService {
                 .totalAmount(booking.getTotalAmount())
                 .pricePerDay(booking.getCar().getPricePerDay())
                 .status(booking.getStatus().name())
+                .licensePlate(booking.getCar().getLicensePlate())
+                .build();
+    }
+
+    public List<BookingHistoryResponse> getOwnerBookingHistory(User owner) {
+        List<Booking> bookings = bookingRepository.findByCarOwner(owner);
+        return bookings.stream().map(this::mapToOwnerResponse).collect(Collectors.toList());
+    }
+
+    private BookingHistoryResponse mapToOwnerResponse(Booking booking) {
+        long days = java.time.temporal.ChronoUnit.DAYS.between(booking.getStartDate(), booking.getEndDate());
+        return BookingHistoryResponse.builder()
+                .bookingId(booking.getBookingId())
+                .bookingCode("BK-" + String.format("%04d", booking.getBookingId()))
+                .carName(booking.getCar().getBrand() + " " + booking.getCar().getModel())
+                .carImage(booking.getCar().getImages().isEmpty() ? null : booking.getCar().getImages().get(0).getImageUrl())
+                .customerName(booking.getCustomer().getFirstName() + " " + booking.getCustomer().getLastName())
+                .customerPhone(booking.getCustomer().getPhoneNumber())
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .durationDays(days > 0 ? days : 1)
+                .pickupLocation(booking.getPickupLocation())
+                .totalAmount(booking.getTotalAmount())
+                .pricePerDay(booking.getCar().getPricePerDay())
+                .status(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
                 .build();
     }
 }

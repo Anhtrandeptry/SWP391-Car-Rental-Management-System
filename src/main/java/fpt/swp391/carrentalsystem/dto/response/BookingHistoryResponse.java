@@ -24,4 +24,9 @@ public class BookingHistoryResponse {
 
     private Double rating;
     private String comment;
+
+    private String customerName;
+    private String customerPhone;
+
+    private String paymentStatus;
 }
