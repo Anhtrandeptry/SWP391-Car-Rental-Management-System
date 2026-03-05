@@ -1,6 +1,5 @@
 package fpt.swp391.carrentalsystem.dto.request;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,15 +12,15 @@ import java.util.Map;
 @AllArgsConstructor
 public class FinalCarSubmitDTO {
 
-    // Dữ liệu từ Step 1
+    // Chứa: brand, model, year, licensePlate, color, transmissionType, fuelType, seats, pricePerDay, description
     private Map<String, Object> step1Data;
 
-    // Dữ liệu từ Step 2
+    // Chứa: address, city, district, ward (hoặc các field bạn đã lưu ở Step 2)
     private Map<String, Object> step2Data;
 
-    // Document IDs từ Step 3
+    // Danh sách ID của các tài liệu đã upload thành công (REGISTRATION, INSURANCE, etc.)
     private List<Long> documentIds;
 
-    // Owner ID
+    // ID của người dùng đang thực hiện đăng ký
     private Long ownerId;
 }

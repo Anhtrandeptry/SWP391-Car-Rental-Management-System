@@ -470,11 +470,7 @@
             </div>
 
             <div class="form-row-3">
-                <div class="form-group">
-                    <label class="required">Quận/Huyện</label>
-                    <input type="text" name="district" id="district" placeholder="VD: Quận 1" required>
-                    <div class="error-message" id="districtError"></div>
-                </div>
+
 
                 <div class="form-group">
                     <label class="required">Phường/Xã</label>
@@ -488,19 +484,7 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Vĩ độ (GPS)</label>
-                    <input type="text" name="latitude" id="latitude" placeholder="VD: 10.762622">
-                    <div class="helper-text">Tùy chọn - giúp khách dễ tìm xe hơn</div>
-                </div>
 
-                <div class="form-group">
-                    <label>Kinh độ (GPS)</label>
-                    <input type="text" name="longitude" id="longitude" placeholder="VD: 106.660172">
-                    <div class="helper-text">Tùy chọn - giúp khách dễ tìm xe hơn</div>
-                </div>
-            </div>
 
             <!-- SECTION 2: Thông tin kỹ thuật -->
             <h3 class="section-title" style="margin-top: 40px;">
@@ -705,11 +689,11 @@
                 <div class="helper-text"><span id="specialNotesCount">0</span>/1000 ký tự</div>
             </div>
 
-            <div class="form-group">
-                <label>Yêu cầu với người thuê</label>
-                <textarea name="renterRequirements" id="renterRequirements" rows="2" placeholder="VD: Có bằng lái từ 2 năm, không hút thuốc, ..."></textarea>
-                <div class="helper-text"><span id="renterRequirementsCount">0</span>/500 ký tự</div>
-            </div>
+<!--            <div class="form-group">-->
+<!--                <label>Yêu cầu với người thuê</label>-->
+<!--                <textarea name="renterRequirements" id="renterRequirements" rows="2" placeholder="VD: Có bằng lái từ 2 năm, không hút thuốc, ..."></textarea>-->
+<!--                <div class="helper-text"><span id="renterRequirementsCount">0</span>/500 ký tự</div>-->
+<!--            </div>-->
 
             <div class="form-group">
                 <label>Chính sách vệ sinh</label>
@@ -729,113 +713,232 @@
     </div>
 </div>
 
-<script>
-    /* ================= CONFIG ================= */
-    const STEP1_KEY = "carStep1";
-    const DRAFT_KEY = "createCarDraft";
+<!--<script>-->
+<!--    /* ================= CONFIG ================= */-->
+<!--    const STEP1_KEY = "carStep1";-->
+<!--    const DRAFT_KEY = "createCarDraft";-->
 
-    /* ================= LOAD STEP 1 ================= */
+<!--    /* ================= LOAD STEP 1 ================= */-->
+<!--    document.addEventListener("DOMContentLoaded", () => {-->
+<!--        const raw = sessionStorage.getItem(STEP1_KEY);-->
+
+<!--        if (!raw) {-->
+<!--            alert("Vui lòng hoàn thành Bước 1 trước");-->
+<!--            window.location.href = "/owner/create-car-step1";-->
+<!--            return;-->
+<!--        }-->
+
+<!--        const step1 = JSON.parse(raw);-->
+
+<!--        /* ===== SUMMARY ===== */-->
+<!--        document.getElementById("summaryBrand").innerText = step1.brandId;-->
+<!--        document.getElementById("summaryModel").innerText = step1.modelId;-->
+<!--        document.getElementById("summaryYear").innerText = step1.year;-->
+<!--        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate;-->
+<!--        document.getElementById("summaryPrice").innerText =-->
+<!--            Number(step1.pricePerDay).toLocaleString("vi-VN") + " VNĐ";-->
+
+<!--        /* ===== CITY READONLY ===== */-->
+<!--        document.getElementById("cityReadonly").value = step1.city;-->
+
+<!--        /* ===== COUNTERS ===== */-->
+<!--        bindCounter("specialNotes", "specialNotesCount");-->
+<!--        bindCounter("renterRequirements", "renterRequirementsCount");-->
+
+<!--        /* ===== BACK ===== */-->
+<!--        document.getElementById("prevBtn").addEventListener("click", () => {-->
+<!--            window.location.href = "/owner/create-car-step1";-->
+<!--        });-->
+
+<!--        /* ===== SUBMIT ===== */-->
+<!--        document-->
+<!--            .getElementById("infoForm")-->
+<!--            .addEventListener("submit", e => handleSubmit(e, step1));-->
+<!--    });-->
+
+<!--    /* ================= HELPERS ================= */-->
+<!--    function bindCounter(inputId, counterId) {-->
+<!--        const input = document.getElementById(inputId);-->
+<!--        const counter = document.getElementById(counterId);-->
+
+<!--        if (!input || !counter) return;-->
+
+<!--        counter.innerText = input.value.length;-->
+<!--        input.addEventListener("input", () => {-->
+<!--            counter.innerText = input.value.length;-->
+<!--        });-->
+<!--    }-->
+
+<!--    /* ================= SUBMIT STEP 2 ================= */-->
+<!--    function handleSubmit(e, step1) {-->
+<!--        e.preventDefault();-->
+
+<!--        const form = e.target;-->
+<!--        const formData = new FormData(form);-->
+<!--        const step2 = {};-->
+
+<!--        /* ===== TEXT / SELECT ===== */-->
+<!--        for (const [key, value] of formData.entries()) {-->
+<!--            step2[key] = value.trim();-->
+<!--        }-->
+
+<!--        /* ===== CHECKBOXES (only in form) ===== */-->
+<!--        form.querySelectorAll("input[type='checkbox']").forEach(cb => {-->
+<!--            step2[cb.name] = cb.checked;-->
+<!--        });-->
+
+<!--        /* ===== NORMALIZE NUMBERS ===== */-->
+<!--        step2.mileage = parseInt(step2.mileage || "0", 10);-->
+<!--        step2.dailyKmLimit = parseInt(step2.dailyKmLimit || "0", 10);-->
+<!--        step2.overLimitFee = parseInt(step2.overLimitFee || "0", 10);-->
+
+<!--        step2.fuelConsumption =-->
+<!--            step2.fuelConsumption !== ""-->
+<!--                ? Number(step2.fuelConsumption)-->
+<!--                : null;-->
+
+<!--        step2.engineCapacity =-->
+<!--            step2.engineCapacity !== ""-->
+<!--                ? Number(step2.engineCapacity)-->
+<!--                : null;-->
+
+<!--        /* ===== MERGE ALL DATA ===== */-->
+<!--        const draft = {-->
+<!--            ...step1,-->
+<!--            ...step2,-->
+<!--            step: 2,-->
+<!--            updatedAt: new Date().toISOString()-->
+<!--        };-->
+
+<!--        console.log("🚗 CREATE CAR DRAFT:", draft);-->
+
+<!--        /* ===== SAVE DRAFT ===== */-->
+<!--        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));-->
+
+<!--        /* ===== NEXT ===== */-->
+<!--        window.location.href = "/owner/create-car-step3";-->
+<!--    }-->
+
+<!--</script>-->
+
+
+<!--<script>-->
+<!--    const STEP1_KEY = "carStep1";-->
+<!--    const DRAFT_KEY = "createCarDraft";-->
+
+<!--    document.addEventListener("DOMContentLoaded", () => {-->
+<!--        const raw = sessionStorage.getItem(STEP1_KEY);-->
+<!--        if (!raw) {-->
+<!--            alert("Vui lòng hoàn thành Step 1 trước");-->
+<!--            window.location.href = "/owner/create-car-step1";-->
+<!--            return;-->
+<!--        }-->
+
+<!--        const step1= JSON.parse(raw);-->
+
+<!--        // Hiển thị summary-->
+<!--        document.getElementById("summaryBrand").innerText = step1.brandName;-->
+<!--        document.getElementById("summaryModel").innerText = step1.modelName;-->
+<!--        document.getElementById("summaryYear").innerText = step1.year;-->
+<!--        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate;-->
+<!--        document.getElementById("summaryPrice").innerText = Number(step1.pricePerDay).toLocaleString("vi-VN") + " VNĐ";-->
+
+<!--        // BACK button-->
+<!--        document.getElementById("prevBtn").addEventListener("click", () => window.location.href = "/owner/create-car-step1");-->
+
+<!--        document.getElementById("infoForm").addEventListener("submit", e => handleSubmit(e, step1));-->
+<!--    });-->
+
+<!--    function handleSubmit(e, step1) {-->
+<!--        e.preventDefault();-->
+<!--        const formData = new FormData(e.target);-->
+<!--        const step2 = {};-->
+
+<!--        for (const [key, value] of formData.entries()) step2[key] = value.trim();-->
+
+<!--        e.target.querySelectorAll("input[type='checkbox']").forEach(cb => step2[cb.name] = cb.checked);-->
+
+<!--        step2.mileage = parseInt(step2.mileage || "0", 10);-->
+<!--        step2.dailyKmLimit = parseInt(step2.dailyKmLimit || "0", 10);-->
+<!--        step2.overLimitFee = parseInt(step2.overLimitFee || "0", 10);-->
+<!--        step2.fuelConsumption = step2.fuelConsumption !== "" ? Number(step2.fuelConsumption) : null;-->
+<!--        step2.engineCapacity = step2.engineCapacity !== "" ? Number(step2.engineCapacity) : null;-->
+
+<!--        const draft = {-->
+<!--            ...step1,-->
+<!--            ...step2,-->
+<!--            step: 2,-->
+<!--            updatedAt: new Date().toISOString()-->
+<!--        };-->
+
+<!--        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));-->
+<!--        window.location.href = "/owner/create-car-step3";-->
+<!--    }-->
+<!--</script>-->
+
+<script>
+    const STEP1_KEY = "carStep1";
+    const STEP2_KEY = "carStep2"; // Lưu riêng step 2
+
     document.addEventListener("DOMContentLoaded", () => {
         const raw = sessionStorage.getItem(STEP1_KEY);
-
         if (!raw) {
-            alert("Vui lòng hoàn thành Bước 1 trước");
+            alert("Vui lòng hoàn thành Step 1 trước");
             window.location.href = "/owner/create-car-step1";
             return;
         }
 
         const step1 = JSON.parse(raw);
 
-        /* ===== SUMMARY ===== */
-        document.getElementById("summaryBrand").innerText = step1.brandId;
-        document.getElementById("summaryModel").innerText = step1.modelId;
-        document.getElementById("summaryYear").innerText = step1.year;
-        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate;
+        // Hiển thị summary từ Step 1 lên giao diện Step 2
+        document.getElementById("summaryBrand").innerText = step1.brandName || step1.brand || "--";
+        document.getElementById("summaryModel").innerText = step1.modelName || step1.model || "--";
+        document.getElementById("summaryYear").innerText = step1.year || "--";
+        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate || "--";
         document.getElementById("summaryPrice").innerText =
-            Number(step1.pricePerDay).toLocaleString("vi-VN") + " VNĐ";
+            (step1.pricePerDay ? Number(step1.pricePerDay).toLocaleString("vi-VN") : "0") + " VNĐ";
 
-        /* ===== CITY READONLY ===== */
-        document.getElementById("cityReadonly").value = step1.city;
+        // Đổ city vào ô readonly
+        if(step1.city) document.getElementById("cityReadonly").value = step1.city;
 
-        /* ===== COUNTERS ===== */
-        bindCounter("specialNotes", "specialNotesCount");
-        bindCounter("renterRequirements", "renterRequirementsCount");
-
-        /* ===== BACK ===== */
+        // Nút quay lại
         document.getElementById("prevBtn").addEventListener("click", () => {
             window.location.href = "/owner/create-car-step1";
         });
 
-        /* ===== SUBMIT ===== */
-        document
-            .getElementById("infoForm")
-            .addEventListener("submit", e => handleSubmit(e, step1));
+        document.getElementById("infoForm").addEventListener("submit", e => handleSubmit(e));
     });
 
-    /* ================= HELPERS ================= */
-    function bindCounter(inputId, counterId) {
-        const input = document.getElementById(inputId);
-        const counter = document.getElementById(counterId);
-
-        if (!input || !counter) return;
-
-        counter.innerText = input.value.length;
-        input.addEventListener("input", () => {
-            counter.innerText = input.value.length;
-        });
-    }
-
-    /* ================= SUBMIT STEP 2 ================= */
-    function handleSubmit(e, step1) {
+    function handleSubmit(e) {
         e.preventDefault();
-
         const form = e.target;
         const formData = new FormData(form);
-        const step2 = {};
+        const step2Data = {};
 
-        /* ===== TEXT / SELECT ===== */
-        for (const [key, value] of formData.entries()) {
-            step2[key] = value.trim();
-        }
-
-        /* ===== CHECKBOXES (only in form) ===== */
-        form.querySelectorAll("input[type='checkbox']").forEach(cb => {
-            step2[cb.name] = cb.checked;
+        // 1. Lấy tất cả các trường text, select, number
+        formData.forEach((value, key) => {
+            step2Data[key] = value.trim();
         });
 
-        /* ===== NORMALIZE NUMBERS ===== */
-        step2.mileage = parseInt(step2.mileage || "0", 10);
-        step2.dailyKmLimit = parseInt(step2.dailyKmLimit || "0", 10);
-        step2.overLimitFee = parseInt(step2.overLimitFee || "0", 10);
+        // 2. Lấy các giá trị checkbox (Tiện nghi)
+        form.querySelectorAll("input[type='checkbox']").forEach(cb => {
+            step2Data[cb.name] = cb.checked;
+        });
 
-        step2.fuelConsumption =
-            step2.fuelConsumption !== ""
-                ? Number(step2.fuelConsumption)
-                : null;
+        // 3. Chuẩn hóa kiểu dữ liệu số để khớp với Backend
+        step2Data.mileage = parseInt(step2Data.mileage || "0", 10);
+        step2Data.dailyKmLimit = parseInt(step2Data.dailyKmLimit || "0", 10);
+        step2Data.overLimitFee = parseInt(step2Data.overLimitFee || "0", 10);
+        step2Data.fuelConsumption = step2Data.fuelConsumption ? Number(step2Data.fuelConsumption) : null;
+        step2Data.engineCapacity = step2Data.engineCapacity ? Number(step2Data.engineCapacity) : null;
 
-        step2.engineCapacity =
-            step2.engineCapacity !== ""
-                ? Number(step2.engineCapacity)
-                : null;
+        // 4. LƯU RIÊNG BIỆT VÀO SESSION STORAGE
+        // Việc lưu riêng giúp Step 3 dễ dàng đóng gói vào DTO (step1Data, step2Data)
+        sessionStorage.setItem(STEP2_KEY, JSON.stringify(step2Data));
 
-        /* ===== MERGE ALL DATA ===== */
-        const draft = {
-            ...step1,
-            ...step2,
-            step: 2,
-            updatedAt: new Date().toISOString()
-        };
-
-        console.log("🚗 CREATE CAR DRAFT:", draft);
-
-        /* ===== SAVE DRAFT ===== */
-        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-
-        /* ===== NEXT ===== */
+        // 5. Chuyển sang Step 3
         window.location.href = "/owner/create-car-step3";
     }
-
 </script>
-
 </body>
 </html>

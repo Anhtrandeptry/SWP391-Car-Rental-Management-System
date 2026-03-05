@@ -3,7 +3,9 @@ package fpt.swp391.carrentalsystem.repository;
 
 
 import fpt.swp391.carrentalsystem.entity.Car;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -31,6 +33,14 @@ public interface CarRepository extends JpaRepository<Car, Long> {
      * Tìm xe theo chủ xe (Owner ID)
      */
     List<Car> findByOwnerId(Long ownerId);
+
+
+    // 2. Định nghĩa câu lệnh xóa mềm
+    @Modifying // Đánh dấu đây là truy vấn thay đổi dữ liệu (Update/Delete)
+    @Transactional // Đảm bảo việc update diễn ra trong một giao dịch an toàn
+    @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.id = :carId AND c.ownerId = :ownerId")
+    int softDeleteCar(@Param("carId") Long carId, @Param("ownerId") Long ownerId);
+
 
     /**
      * Đếm số xe của một owner
@@ -297,16 +307,16 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             @Param("excludeId") Long excludeId
     );
 
-    /**
-     * Xóa mềm xe (chuyển status sang INACTIVE)
-     */
-    @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.id = :id")
-    void softDeleteCar(@Param("id") Long id);
-
-    /**
-     * Khôi phục xe đã xóa mềm
-     */
-    @Query("UPDATE Car c SET c.status = 'AVAILABLE' WHERE c.id = :id")
-    void restoreCar(@Param("id") Long id);
+//    /**
+//     * Xóa mềm xe (chuyển status sang INACTIVE)
+//     */
+//    @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.id = :id")
+//    void softDeleteCar(@Param("id") Long id);
+//
+//    /**
+//     * Khôi phục xe đã xóa mềm
+//     */
+//    @Query("UPDATE Car c SET c.status = 'AVAILABLE' WHERE c.id = :id")
+//    void restoreCar(@Param("id") Long id);
 }
 

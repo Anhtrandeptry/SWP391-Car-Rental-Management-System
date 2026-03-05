@@ -25,6 +25,15 @@ public class OwnerController {
     public String step2() {
         return "owner/create-car-step2";
     }
+
+    @GetMapping("/create-car-step3")
+    public String step3() {
+        return "owner/create-car-step3";
+    }
+    @GetMapping("/owner-car-list")
+    public String listCars() {
+        return "owner/owner-car-list"; // Phải khớp chính xác đường dẫn file html
+    }
 }
 
 

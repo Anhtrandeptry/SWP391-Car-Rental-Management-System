@@ -494,11 +494,9 @@
                     <label class="required">Số chỗ ngồi</label>
                     <select name="seats" id="seats" required>
                         <option value="">-- Chọn số chỗ --</option>
-                        <option value="2">2 chỗ</option>
                         <option value="4">4 chỗ</option>
                         <option value="5">5 chỗ</option>
                         <option value="7">7 chỗ</option>
-                        <option value="9">9 chỗ</option>
                         <option value="16">16 chỗ</option>
                     </select>
                     <div class="error-message" id="seatsError"></div>
@@ -506,25 +504,22 @@
             </div>
 
             <!-- Giá thuê -->
-            <div class="form-group">
-                <label class="required">
-                    Giá thuê mỗi ngày (VNĐ)
-                    <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Tối thiểu 100,000 VNĐ/ngày</span>
-                        </span>
-                </label>
+<!--            <div class="form-group">-->
+<!--                <label class="required">-->
+<!--                    Giá thuê mỗi ngày (VNĐ)-->
+<!--                    <span class="tooltip">ℹ️-->
+<!--                            <span class="tooltiptext">Tối thiểu 100,000 VNĐ/ngày</span>-->
+<!--                        </span>-->
+<!--                </label>-->
                 <input
-                        type="number"
+                        type="hidden"
                         name="pricePerDay"
                         id="pricePerDay"
-                        placeholder="VD: 1500000"
-                        min="100000"
-                        step="10000"
-                        required
+
                 >
-                <div class="error-message" id="pricePerDayError"></div>
-                <small style="color: #6b7280;">Giá đề xuất dựa trên ước tính: <strong id="suggestedPrice">--</strong></small>
-            </div>
+<!--                <div class="error-message" id="pricePerDayError"></div>-->
+<!--                <small style="color: #6b7280;">Giá đề xuất dựa trên ước tính: <strong id="suggestedPrice">&#45;&#45;</strong></small>-->
+<!--            </div>-->
 
             <!-- Mô tả -->
             <div class="form-group">
@@ -579,45 +574,129 @@
         }
     });
 </script>
+<!--<script>-->
+<!--    const STEP1_KEY = "carStep1";-->
+
+<!--    document.getElementById("setupForm").addEventListener("submit", function (e) {-->
+<!--        e.preventDefault(); // ❗ CỰC KỲ QUAN TRỌNG-->
+
+<!--        const step1Data = {-->
+<!--            brandName: document.getElementById("displayBrand").innerText,-->
+<!--            modelName: document.getElementById("displayModel").innerText,-->
+<!--            year: document.getElementById("displayYear").innerText,-->
+<!--            city: document.getElementById("displayCity").innerText,-->
+<!--            estimatedMonthlyIncome: Number(-->
+<!--                document.getElementById("displayIncome").innerText.replace(/[^\d]/g, "")-->
+<!--            ),-->
+
+<!--            licensePlate: document.getElementById("licensePlate").value,-->
+<!--            color: document.getElementById("color").value,-->
+<!--            transmissionType: document.getElementById("transmissionType").value,-->
+<!--            fuelType: document.getElementById("fuelType").value,-->
+<!--            seats: document.getElementById("seats").value,-->
+<!--            pricePerDay: Number(document.getElementById("pricePerDay").value),-->
+<!--            description: document.getElementById("description").value-->
+<!--        };-->
+<!--        // ===== validate nhanh =====-->
+<!--        if (!step1Data.licensePlate || !step1Data.pricePerDay) {-->
+<!--            alert("Vui lòng nhập đầy đủ thông tin bắt buộc");-->
+<!--            return;-->
+<!--        }-->
+
+<!--        // ===== SAVE SESSION =====-->
+<!--        sessionStorage.setItem(STEP1_KEY, JSON.stringify(step1Data));-->
+
+<!--        console.log("✅ STEP 1 SAVED:", step1Data);-->
+
+<!--        // ===== REDIRECT =====-->
+<!--        window.location.href = "/owner/create-car-step2";-->
+<!--    });-->
+<!--</script>-->
+
+
 <script>
     const STEP1_KEY = "carStep1";
+    let apiData = {}; // Biến toàn cục để giữ dữ liệu gốc từ API
 
+    // 1. Load dữ liệu từ Session API khi vào trang
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            const res = await fetch("/api/income-estimate/session");
+            const json = await res.json();
+
+            if (!json.success) {
+                alert("Phiên làm việc hết hạn, vui lòng ước tính lại thu nhập.");
+                window.location.href = "/income-estimate";
+                return;
+            }
+
+            apiData = json.data; // Lưu lại dữ liệu gốc
+
+            // Hiển thị lên UI
+            document.getElementById("displayBrand").innerText = apiData.brandName;
+            document.getElementById("displayModel").innerText = apiData.modelName;
+            document.getElementById("displayYear").innerText = apiData.year;
+            document.getElementById("displayCity").innerText = apiData.city;
+            document.getElementById("displayIncome").innerText =
+                Number(apiData.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
+
+            // Gán giá thuê vào hidden input
+            document.getElementById("pricePerDay").value = apiData.suggestedPricePerDay;
+
+        } catch (err) {
+            console.error("Lỗi:", err);
+            window.location.href = "/income-estimate";
+        }
+    });
+
+    // 2. Xử lý sự kiện Submit Form
     document.getElementById("setupForm").addEventListener("submit", function (e) {
-        e.preventDefault(); // ❗ CỰC KỲ QUAN TRỌNG
+        e.preventDefault();
 
+        const licensePlateInput = document.getElementById("licensePlate").value.trim().toUpperCase();
+
+        // Đóng gói dữ liệu Step 1
         const step1Data = {
-            // ===== info từ income-estimate =====
-            brandName: document.getElementById("displayBrand").innerText,
-            modelName: document.getElementById("displayModel").innerText,
-            year: document.getElementById("displayYear").innerText,
-            city: document.getElementById("displayCity").innerText,
-            estimatedMonthlyIncome: document.getElementById("displayIncome").innerText,
+            // Lấy từ dữ liệu gốc API (An toàn hơn lấy từ innerText)
+            brand: apiData.brandName,
+            model: apiData.modelName,
+            year: parseInt(apiData.year),
+            city: apiData.city,
 
-            // ===== form step 1 =====
-            licensePlate: document.getElementById("licensePlate").value,
+            // Lấy từ Form nhập liệu
+            licensePlate: licensePlateInput,
             color: document.getElementById("color").value,
             transmissionType: document.getElementById("transmissionType").value,
             fuelType: document.getElementById("fuelType").value,
-            seats: document.getElementById("seats").value,
-            pricePerDay: document.getElementById("pricePerDay").value,
-            description: document.getElementById("description").value
+            seats: parseInt(document.getElementById("seats").value),
+            pricePerDay: Number(document.getElementById("pricePerDay").value),
+            description: document.getElementById("description").value.trim()
         };
 
-        // ===== validate nhanh =====
-        if (!step1Data.licensePlate || !step1Data.pricePerDay) {
-            alert("Vui lòng nhập đầy đủ thông tin bắt buộc");
+        // Validate cơ bản tại Client
+        if (!step1Data.licensePlate || step1Data.licensePlate.length < 5) {
+            alert("Vui lòng nhập biển số xe hợp lệ");
             return;
         }
 
-        // ===== SAVE SESSION =====
+        // LƯU VÀO SESSION STORAGE
         sessionStorage.setItem(STEP1_KEY, JSON.stringify(step1Data));
 
-        console.log("✅ STEP 1 SAVED:", step1Data);
+        console.log("🚀 Step 1 Data ready:", step1Data);
 
-        // ===== REDIRECT =====
+        // Chuyển hướng sang Step 2
         window.location.href = "/owner/create-car-step2";
     });
+
+    // Bonus: Đếm ký tự cho phần mô tả
+    document.getElementById("description").addEventListener("input", function() {
+        document.getElementById("charCount").innerText = this.value.length;
+    });
 </script>
+
+
+
+
 
 
 

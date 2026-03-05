@@ -76,7 +76,7 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
     private BigDecimal calculateBasePrice(String brandName, Integer year, String city) {
 
         // Giá nền KHÔNG BAO GIỜ = 0
-        BigDecimal basePrice = BigDecimal.valueOf(1_000_000);
+        BigDecimal basePrice = BigDecimal.valueOf(1_000_00);
 
         // ===== HỆ SỐ HÃNG XE =====
         Map<String, BigDecimal> brandFactor = Map.of(

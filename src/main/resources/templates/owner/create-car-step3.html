@@ -763,332 +763,201 @@
 </div>
 
 <script>
-    const API_BASE_URL = 'http://localhost:8080/api';
-    let step1Data = null;
-    let step2Data = null;
-    let uploadedDocuments = {};
+    /**
+ * QUẢN LÝ ĐĂNG KÝ XE - BƯỚC 3: GIẤY TỜ
+ */
 
-    // Document types
-    const REQUIRED_DOCS = ['REGISTRATION', 'INSURANCE', 'OWNER_LICENSE', 'OWNER_ID'];
+const API_BASE_URL = '/api';
+const STEP1_STORAGE_KEY = "carStep1";
+const STEP2_STORAGE_KEY = "carStep2";
+const REQUIRED_DOCS = ['REGISTRATION', 'INSURANCE', 'OWNER_LICENSE', 'OWNER_ID'];
 
-    // Load data from previous steps
-    document.addEventListener('DOMContentLoaded', function() {
-        step1Data = JSON.parse(sessionStorage.getItem('step1Data'));
-        step2Data = JSON.parse(sessionStorage.getItem('step2Data'));
+// Lưu trữ ID trả về từ Server sau khi upload thành công
+let uploadedDocumentIds = {
+    'REGISTRATION': null,
+    'INSURANCE': null,
+    'OWNER_LICENSE': null,
+    'OWNER_ID': null
+};
 
-        if (!step1Data || !step2Data) {
-            alert('Không tìm thấy thông tin bước trước. Vui lòng quay lại.');
-            window.location.href = 'create-car-step1.html';
-            return;
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Kiểm tra dữ liệu từ các bước trước
+    const s1Raw = sessionStorage.getItem(STEP1_STORAGE_KEY);
+    const s2Raw = sessionStorage.getItem(STEP2_STORAGE_KEY);
 
-        displaySummary();
-        loadExistingDocuments();
-    });
-
-    // Display summary
-    function displaySummary() {
-        document.getElementById('summaryBrand').textContent = step1Data.brandName || step1Data.brand;
-        document.getElementById('summaryModel').textContent = step1Data.modelName || step1Data.model;
-        document.getElementById('summaryLicensePlate').textContent = step1Data.licensePlate;
-        document.getElementById('summaryLocation').textContent =
-            (step2Data.district || '') + ', ' + (step2Data.city || step1Data.city);
-        document.getElementById('summaryPrice').textContent =
-            parseInt(step1Data.pricePerDay).toLocaleString('vi-VN');
+    if (!s1Raw || !s2Raw) {
+        alert('Dữ liệu các bước trước không tồn tại. Vui lòng quay lại Bước 1.');
+        window.location.href = '/owner/create-car-step1';
+        return;
     }
 
-    // Load existing documents
-    async function loadExistingDocuments() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/owner/car-documents`);
-            const result = await response.json();
+    const s1 = JSON.parse(s1Raw);
+    const s2 = JSON.parse(s2Raw);
 
-            if (result.success && result.data) {
-                result.data.forEach(doc => {
-                    uploadedDocuments[doc.documentType] = doc;
-                    showFilePreview(doc.documentType, doc);
-                });
+    // 2. Hiển thị tóm tắt thông tin cho người dùng xem lại
+    renderSummary(s1, s2);
+});
 
-                checkAllDocuments();
-            }
-        } catch (error) {
-            console.error('Error loading documents:', error);
-        }
-    }
+function renderSummary(s1, s2) {
+    document.getElementById('summaryBrand').innerText = s1.brandName || s1.brand || "--";
+    document.getElementById('summaryModel').innerText = s1.modelName || s1.model || "--";
+    document.getElementById('summaryLicensePlate').innerText = s1.licensePlate || "--";
+    document.getElementById('summaryPrice').innerText = Number(s1.pricePerDay || 0).toLocaleString('vi-VN');
 
-    // Trigger file input
-    function triggerFileInput(docType) {
-        document.getElementById('file-' + docType).click();
-    }
+    // Ghép địa chỉ từ Step 2
+    const fullAddress = `${s2.address || ''}, ${s2.ward || ''}, ${s2.district || ''}, ${s1.city || ''}`;
+    document.getElementById('summaryLocation').innerText = fullAddress.replace(/(, )+/g, ', ').replace(/^, |, $/g, '');
+}
 
-    // Handle file select
-    async function handleFileSelect(event, docType) {
-        const file = event.target.files[0];
-        if (!file) return;
+/**
+ * XỬ LÝ UPLOAD FILE
+ */
+function triggerFileInput(docType) {
+    document.getElementById(`file-${docType}`).click();
+}
 
-        // Validate file
-        if (!validateFile(file)) {
-            return;
-        }
+async function handleFileSelect(event, docType) {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        // Upload file
-        await uploadFile(file, docType);
-    }
+    // Validation cơ bản
+    if (file.size > 10 * 1024 * 1024) { return alert('File không được quá 10MB'); }
 
-    // Validate file
-    function validateFile(file) {
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('documentType', docType);
 
-        if (file.size > maxSize) {
-            alert('File quá lớn! Kích thước tối đa 10MB.');
-            return false;
-        }
+    try {
+        // Hiển thị trạng thái đang xử lý
+        toggleLoading(docType, true);
 
-        if (!allowedTypes.includes(file.type)) {
-            alert('Định dạng file không được hỗ trợ! Chỉ chấp nhận PDF, JPG, PNG.');
-            return false;
-        }
+        const response = await fetch(`${API_BASE_URL}/owner/car-documents/upload`, {
+            method: 'POST',
+            body: formData
+        });
 
-        return true;
-    }
+        const result = await response.json();
 
-    // Upload file
-    async function uploadFile(file, docType) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('documentType', docType);
+        if (result.success) {
+            // LƯU ID VÀO DANH SÁCH (Dùng để gửi Final Submit)
+            uploadedDocumentIds[docType] = result.data.id;
 
-        // Show progress
-        const progressEl = document.getElementById('progress-' + docType);
-        const progressFillEl = document.getElementById('progress-fill-' + docType);
-        progressEl.classList.add('show');
-
-        // Simulate progress (in real app, use XMLHttpRequest for progress tracking)
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 10;
-            progressFillEl.style.width = progress + '%';
-
-            if (progress >= 90) {
-                clearInterval(interval);
-            }
-        }, 100);
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/owner/car-documents/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-
-            clearInterval(interval);
-            progressFillEl.style.width = '100%';
-
-            setTimeout(() => {
-                progressEl.classList.remove('show');
-                progressFillEl.style.width = '0%';
-            }, 500);
-
-            if (result.success) {
-                uploadedDocuments[docType] = result.data;
-                showFilePreview(docType, result.data);
-                checkAllDocuments();
-            } else {
-                alert('Upload thất bại: ' + result.message);
-            }
-        } catch (error) {
-            clearInterval(interval);
-            progressEl.classList.remove('show');
-            console.error('Upload error:', error);
-            alert('Không thể upload file. Vui lòng thử lại!');
-        }
-    }
-
-    // Show file preview
-    function showFilePreview(docType, data) {
-        const uploadArea = document.getElementById('upload-area-' + docType);
-        const preview = document.getElementById('preview-' + docType);
-        const status = document.getElementById('status-' + docType);
-
-        // Hide upload area
-        uploadArea.style.display = 'none';
-
-        // Show preview
-        preview.classList.add('show');
-        document.getElementById('filename-' + docType).textContent = data.fileName;
-        document.getElementById('filesize-' + docType).textContent = formatFileSize(data.fileSize);
-
-        // Update status
-        status.textContent = 'Đã upload';
-        status.classList.remove('status-pending');
-        status.classList.add('status-uploaded');
-    }
-
-    // Delete document
-    async function deleteDocument(docType) {
-        if (!confirm('Bạn có chắc muốn xóa giấy tờ này?')) {
-            return;
-        }
-
-        const doc = uploadedDocuments[docType];
-        if (!doc) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/owner/car-documents/${doc.id}`, {
-                method: 'DELETE'
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                delete uploadedDocuments[docType];
-                hideFilePreview(docType);
-                checkAllDocuments();
-            } else {
-                alert('Xóa thất bại: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Không thể xóa file. Vui lòng thử lại!');
-        }
-    }
-
-    // Hide file preview
-    function hideFilePreview(docType) {
-        const uploadArea = document.getElementById('upload-area-' + docType);
-        const preview = document.getElementById('preview-' + docType);
-        const status = document.getElementById('status-' + docType);
-
-        // Show upload area
-        uploadArea.style.display = 'block';
-
-        // Hide preview
-        preview.classList.remove('show');
-
-        // Update status
-        status.textContent = 'Chưa upload';
-        status.classList.remove('status-uploaded');
-        status.classList.add('status-pending');
-
-        // Reset file input
-        document.getElementById('file-' + docType).value = '';
-    }
-
-    // Check all documents
-    function checkAllDocuments() {
-        const hasAll = REQUIRED_DOCS.every(docType => uploadedDocuments[docType]);
-
-        const submitBtn = document.getElementById('submitBtn');
-        const alertWarning = document.getElementById('alertWarning');
-        const alertSuccess = document.getElementById('alertSuccess');
-
-        if (hasAll) {
-            submitBtn.disabled = false;
-            alertWarning.classList.remove('show');
-            alertSuccess.classList.add('show');
+            showPreview(docType, result.data);
+            validateCompletion();
         } else {
-            submitBtn.disabled = true;
-            alertWarning.classList.add('show');
-            alertSuccess.classList.remove('show');
+            alert('Lỗi upload: ' + result.message);
+            toggleLoading(docType, false);
         }
+    } catch (error) {
+        console.error(error);
+        alert('Không thể kết nối đến server');
+        toggleLoading(docType, false);
     }
+}
 
-    // Submit final form
-    async function submitFinalForm() {
-        if (!confirm('Xác nhận hoàn tất đăng ký xe? Xe của bạn sẽ được gửi đến admin để phê duyệt.')) {
-            return;
-        }
+function showPreview(docType, data) {
+    document.getElementById(`upload-area-${docType}`).style.display = 'none';
+    document.getElementById(`progress-${docType}`).classList.remove('show');
 
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.innerHTML;
+    const preview = document.getElementById(`preview-${docType}`);
+    preview.classList.add('show');
+    document.getElementById(`filename-${docType}`).innerText = data.fileName;
+    document.getElementById(`filesize-${docType}`).innerText = (data.fileSize / 1024).toFixed(1) + ' KB';
 
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading"></span> Đang xử lý...';
+    const statusBadge = document.getElementById(`status-${docType}`);
+    statusBadge.innerText = "Đã upload";
+    statusBadge.className = "status-badge status-uploaded";
+}
 
-        try {
-            // Prepare final data
-            const finalData = {
-                step1Data: step1Data,
-                step2Data: step2Data,
-                documentIds: Object.values(uploadedDocuments).map(doc => doc.id),
-                ownerId: 1 // TODO: Get from JWT
-            };
+function deleteDocument(docType) {
+    uploadedDocumentIds[docType] = null;
+    document.getElementById(`preview-${docType}`).classList.remove('show');
+    document.getElementById(`upload-area-${docType}`).style.display = 'block';
+    document.getElementById(`file-${docType}`).value = '';
 
-            console.log('Final Submit Data:', finalData);
+    const statusBadge = document.getElementById(`status-${docType}`);
+    statusBadge.innerText = "Chưa upload";
+    statusBadge.className = "status-badge status-pending";
 
-            const response = await fetch(`${API_BASE_URL}/owner/cars/create-complete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(finalData)
-            });
+    validateCompletion();
+}
 
-            const result = await response.json();
+function toggleLoading(docType, isLoading) {
+    const progress = document.getElementById(`progress-${docType}`);
+    const area = document.getElementById(`upload-area-${docType}`);
+    if (isLoading) {
+        area.style.display = 'none';
+        progress.classList.add('show');
+        document.getElementById(`progress-fill-${docType}`).style.width = '100%';
+    }
+}
 
-            if (result.success) {
-                // Clear session storage
-                sessionStorage.removeItem('incomeEstimateData');
-                sessionStorage.removeItem('step1Data');
-                sessionStorage.removeItem('step2Data');
+/**
+ * KIỂM TRA ĐIỀU KIỆN HOÀN TẤT
+ */
+function validateCompletion() {
+    const isFull = REQUIRED_DOCS.every(type => uploadedDocumentIds[type] !== null);
+    const submitBtn = document.getElementById('submitBtn');
 
-                // Show success message
-                alert('🎉 Đăng ký xe thành công!\n\n' +
-                      'Xe của bạn đã được gửi đến admin để phê duyệt.\n' +
-                      'Chúng tôi sẽ thông báo kết quả sớm nhất có thể.');
+    submitBtn.disabled = !isFull;
+    document.getElementById('alertWarning').style.display = isFull ? 'none' : 'block';
+    document.getElementById('alertSuccess').style.display = isFull ? 'block' : 'none';
+}
 
-                // Redirect to owner dashboard or home
-                // window.location.href = 'owner-dashboard.html';
-                console.log('Created Car:', result.data);
-            } else {
-                alert('❌ Đăng ký thất bại: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Submit error:', error);
-            alert('❌ Không thể hoàn tất đăng ký. Vui lòng thử lại!');
-        } finally {
+/**
+ * GỬI FORM CUỐI CÙNG (FINAL POST)
+ */
+async function submitFinalForm() {
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading"></span> Đang lưu hệ thống...';
+
+    // 1. Lấy dữ liệu sạch từ Session
+    const step1 = JSON.parse(sessionStorage.getItem(STEP1_STORAGE_KEY));
+    const step2 = JSON.parse(sessionStorage.getItem(STEP2_STORAGE_KEY));
+
+    // 2. Chuyển Map ID thành List (Long)
+    const docIdList = Object.values(uploadedDocumentIds).filter(id => id !== null);
+
+    // 3. Đóng gói Payload theo cấu trúc FinalCarSubmitDTO
+    const payload = {
+        step1Data: step1,
+        step2Data: step2,
+        documentIds: docIdList,
+        ownerId: 1 // Gợi ý: Backend nên lấy ID từ Session User đăng nhập
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/owner/cars/create-complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert('🎉 Chúc mừng! Xe của bạn đã được đăng ký thành công.');
+            sessionStorage.clear();
+            window.location.href = '/owner/owner-car-list';
+        } else {
+            alert('Lỗi lưu xe: ' + (result.message || 'Unknown Error'));
             submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
+            submitBtn.innerText = '🎉 Hoàn tất đăng ký';
         }
+    } catch (error) {
+        alert('Lỗi kết nối server: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = '🎉 Hoàn tất đăng ký';
     }
+}
 
-    // Go back
-    function goBack() {
-        window.location.href = 'create-car-step2.html';
-    }
-
-    // Format file size
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    }
-
-    // Drag and drop support
-    document.querySelectorAll('.upload-section').forEach(section => {
-        const docType = section.dataset.type;
-
-        section.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            section.classList.add('active');
-        });
-
-        section.addEventListener('dragleave', () => {
-            section.classList.remove('active');
-        });
-
-        section.addEventListener('drop', (e) => {
-            e.preventDefault();
-            section.classList.remove('active');
-
-            const file = e.dataTransfer.files[0];
-            if (file && validateFile(file)) {
-                uploadFile(file, docType);
-            }
-        });
-    });
+function goBack() {
+    window.location.href = '/owner/create-car-step2';
+}
 </script>
+
+
+
 </body>
 </html>

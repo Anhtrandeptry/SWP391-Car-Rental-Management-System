@@ -1,8 +1,7 @@
 package fpt.swp391.carrentalsystem.controller.owner;
 
-
-import fpt.swp391.carrentalsystem.dto.request.CarDocumentDTO;
 import fpt.swp391.carrentalsystem.dto.request.FinalCarSubmitDTO;
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
 import fpt.swp391.carrentalsystem.service.FinalCarCreationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,36 +21,36 @@ public class OwnerFinalCarController {
     private final FinalCarCreationService finalCarCreationService;
 
     /**
-     * API submit cuối cùng để tạo xe hoàn chỉnh
      * POST /api/owner/cars/create-complete
-     * Access: Owner only
      */
     @PostMapping("/create-complete")
-    public ResponseEntity<ApiResponse<CarDocumentDTO>> createCompleteCar(
+    public ResponseEntity<ApiResponse<CarResponseDTO>> createCompleteCar(
             @Valid @RequestBody FinalCarSubmitDTO submitDTO) {
 
-        // TODO: Get ownerId from JWT token and set vào submitDTO
+        // TODO: Sau này lấy ownerId từ JWT
         submitDTO.setOwnerId(1L); // Hardcode tạm
 
-        try {
-            CarDocumentDTO createdCar = finalCarCreationService.createCompleteCar(submitDTO);
+        CarResponseDTO createdCar = finalCarCreationService.createCompleteCar(submitDTO);
 
-            return new ResponseEntity<>(
-                    new ApiResponse<>(true, "Tạo xe thành công! Đang chờ admin phê duyệt.", createdCar),
-                    HttpStatus.CREATED
-            );
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(
-                    new ApiResponse<>(false, e.getMessage(), null)
-            );
-        }
+        ApiResponse<CarResponseDTO> response =
+                new ApiResponse<>(true,
+                        "Tạo xe thành công! Đang chờ admin phê duyệt.",
+                        createdCar);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Inner class cho API Response
+    /**
+     * Response wrapper chung
+     */
     public static class ApiResponse<T> {
+
         private boolean success;
         private String message;
         private T data;
+
+        public ApiResponse() {
+        }
 
         public ApiResponse(boolean success, String message, T data) {
             this.success = success;
@@ -59,12 +58,28 @@ public class OwnerFinalCarController {
             this.data = data;
         }
 
-        // Getters and Setters
-        public boolean isSuccess() { return success; }
-        public void setSuccess(boolean success) { this.success = success; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
-        public T getData() { return data; }
-        public void setData(T data) { this.data = data; }
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public T getData() {
+            return data;
+        }
+
+        public void setData(T data) {
+            this.data = data;
+        }
     }
 }

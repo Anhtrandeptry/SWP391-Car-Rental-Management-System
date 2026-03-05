@@ -1,144 +1,142 @@
-//package fpt.swp391.carrentalsystem.controller.owner;
-////import fpt.swp391.carrentalsystem.dto.request.CarRequestDTO;
-//import jakarta.validation.Valid;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
+package fpt.swp391.carrentalsystem.controller.owner;
 
-///**
-// * Controller quản lý xe cho Owner (Chủ xe)
-// */
-//@RestController
-//@RequestMapping("/api/owner/cars")
-//@RequiredArgsConstructor
-//@CrossOrigin(origins = "*")
-//public class OwnerCarController {
-//
-//    private final CarService carService;
-//
-//    /**
-//     * API tạo xe mới
-//     * POST /api/owner/cars
-//     * Access: Owner only
-//     */
-//    @PostMapping
-//    public ResponseEntity<ApiResponse<CarResponseDTO>> createCar(
-//            @Valid @RequestBody CarRequestDTO carRequestDTO) {
-//
-//        // TODO: Lấy ownerId từ JWT token sau khi implement authentication
-//        // Long ownerId = getCurrentUserId();
-//        // carRequestDTO.setOwnerId(ownerId);
-//
-//        CarResponseDTO createdCar = carService.createCar(carRequestDTO);
-//        return new ResponseEntity<>(
-//                new ApiResponse<>(true, "Tạo xe thành công", createdCar),
-//                HttpStatus.CREATED
-//        );
-//    }
-//
-//    /**
-//     * API lấy danh sách xe của owner đang đăng nhập
-//     * GET /api/owner/cars
-//     * Access: Owner only
-//     */
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<List<CarResponseDTO>>> getMyCars() {
-//        // TODO: Lấy ownerId từ JWT token
-//        Long ownerId = 1L; // Hardcode tạm, sau sẽ lấy từ JWT
-//
-//        List<CarResponseDTO> cars = carService.getCarsByOwnerId(ownerId);
-//        return ResponseEntity.ok(
-//                new ApiResponse<>(true, "Lấy danh sách xe của bạn thành công", cars)
-//        );
-//    }
-//
-//    /**
-//     * API lấy thông tin xe theo ID (chỉ xe của owner)
-//     * GET /api/owner/cars/{id}
-//     * Access: Owner only
-//     */
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ApiResponse<CarResponseDTO>> getMyCarById(@PathVariable Long id) {
-//        // TODO: Kiểm tra xe có thuộc owner đang đăng nhập không
-//
-//        CarResponseDTO car = carService.getCarById(id);
-//        return ResponseEntity.ok(
-//                new ApiResponse<>(true, "Lấy thông tin xe thành công", car)
-//        );
-//    }
-//
-//    /**
-//     * API cập nhật thông tin xe
-//     * PUT /api/owner/cars/{id}
-//     * Access: Owner only (chỉ update xe của mình)
-//     */
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ApiResponse<CarResponseDTO>> updateMyCar(
-//            @PathVariable Long id,
-//            @Valid @RequestBody CarRequestDTO carRequestDTO) {
-//
-//        // TODO: Kiểm tra xe có thuộc owner đang đăng nhập không
-//
-//        CarResponseDTO updatedCar = carService.updateCar(id, carRequestDTO);
-//        return ResponseEntity.ok(
-//                new ApiResponse<>(true, "Cập nhật xe thành công", updatedCar)
-//        );
-//    }
-//
-//    /**
-//     * API xóa xe
-//     * DELETE /api/owner/cars/{id}
-//     * Access: Owner only (chỉ delete xe của mình)
-//     */
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<ApiResponse<Void>> deleteMyCar(@PathVariable Long id) {
-//        // TODO: Kiểm tra xe có thuộc owner đang đăng nhập không
-//
-//        carService.deleteCar(id);
-//        return ResponseEntity.ok(
-//                new ApiResponse<>(true, "Xóa xe thành công", null)
-//        );
-//    }
-//
-//    /**
-//     * API tính toán lại thu nhập ước tính cho xe
-//     * POST /api/owner/cars/{id}/calculate-income
-//     * Access: Owner only
-//     */
-//    @PostMapping("/{id}/calculate-income")
-//    public ResponseEntity<ApiResponse<CarResponseDTO>> calculateMyCarIncome(@PathVariable Long id) {
-//        // TODO: Kiểm tra xe có thuộc owner đang đăng nhập không
-//
-//        CarResponseDTO car = carService.calculateEstimatedIncome(id);
-//        return ResponseEntity.ok(
-//                new ApiResponse<>(true, "Tính toán thu nhập ước tính thành công", car)
-//        );
-//    }
-//
-//    // Inner class cho API Response
-//    public static class ApiResponse<T> {
-//        private boolean success;
-//        private String message;
-//        private T data;
-//
-//        public ApiResponse(boolean success, String message, T data) {
-//            this.success = success;
-//            this.message = message;
-//            this.data = data;
-//        }
-//
-//        // Getters and Setters
-//        public boolean isSuccess() { return success; }
-//        public void setSuccess(boolean success) { this.success = success; }
-//        public String getMessage() { return message; }
-//        public void setMessage(String message) { this.message = message; }
-//        public T getData() { return data; }
-//        public void setData(T data) { this.data = data; }
-//    }
-//}
+import fpt.swp391.carrentalsystem.dto.request.FinalCarSubmitDTO;
+import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.security.CustomUserDetails;
+import fpt.swp391.carrentalsystem.service.FinalCarCreationService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+//import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+@Controller
+@RequiredArgsConstructor
+public class OwnerCarController {
+
+    private final FinalCarCreationService finalCarCreationService;
+    private final CarRepository carRepository;
+
+    // ======================================================
+    // 1. ĐIỀU HƯỚNG GIAO DIỆN (VIEW)
+    // ======================================================
+
+    @GetMapping("/owner-car-list")
+    public String showCarListPage() {
+        // Trả về file owner-car-list.html trong folder templates
+        return "owner/owner-car-list";
+    }
+
+    // ======================================================
+    // 2. API XỬ LÝ DỮ LIỆU (REST)
+    // ======================================================
+
+    /**
+     * API nhận toàn bộ dữ liệu từ Step 3 (gom cả sessionStorage từ Frontend)
+     */
+    @PostMapping("/api/owner/complete-car-registration")
+    @ResponseBody
+    public ResponseEntity<?> completeRegistration(@RequestBody FinalCarSubmitDTO submitDTO) {
+        try {
+            // Gọi Service bạn đã viết để lưu vào Database
+            finalCarCreationService.createCompleteCar(submitDTO);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Đăng ký xe thành công!"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * API lấy danh sách xe cho trang owner-car-list.html
+     */
+    @GetMapping("/api/owner/cars")
+    @ResponseBody
+    public ResponseEntity<?> getOwnerCars(HttpSession session) {
+        // Lấy ownerId từ Session (giả định bạn lưu khi đăng nhập)
+        Long ownerId = (Long) session.getAttribute("userId");
+        if (ownerId == null) ownerId = 1L; // Giá trị mặc định để test nếu chưa có login
+
+        // Sử dụng phương thức findByOwnerId có sẵn trong Repository của bạn
+        List<Car> cars = carRepository.findByOwnerId(ownerId);
+
+        // Trả về đúng cấu trúc JSON mà file HTML đang chờ (result.success và result.data)
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", cars
+        ));
+    }
+
+    @DeleteMapping("/api/owner/cars/{id}")
+    @ResponseBody
+    public ResponseEntity<?> deleteCar(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails // Lấy thẳng user ở đây
+    ) {
+        // 1. Kiểm tra nếu chưa login (userDetails sẽ null)
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Bạn chưa đăng nhập"));
+        }
+
+        // 2. Lấy ID trực tiếp cực kỳ ngắn gọn
+        Long ownerId = userDetails.getId();
+
+        // 3. Gọi Repository thực hiện xóa mềm (như Bước 1 đã làm)
+        int updatedRows = carRepository.softDeleteCar(id, ownerId);
+
+        if (updatedRows > 0) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "Xóa xe thành công!"));
+        } else {
+            return ResponseEntity.status(403).body(Map.of("message", "Không tìm thấy xe hoặc bạn không có quyền xóa"));
+        }
+    }
+    // 1. API lấy dữ liệu 1 xe
+    @GetMapping("/api/owner/cars/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getCarDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Car car = carRepository.findById(id).orElse(null);
+        if (car != null && car.getOwnerId().equals(userDetails.getId())) {
+            return ResponseEntity.ok(Map.of("success", true, "data", car));
+        }
+        return ResponseEntity.status(404).body(Map.of("message", "Xe không tồn tại"));
+    }
+
+    // 2. API Cập nhật (PUT)
+    @PutMapping("/api/owner/cars/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateCar(@PathVariable Long id, @RequestBody Map<String, Object> payload, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Car car = carRepository.findById(id).orElse(null);
+        if (car != null && car.getOwnerId().equals(userDetails.getId())) {
+            // Cập nhật các trường gửi lên từ JSON
+            car.setPricePerDay(new BigDecimal(payload.get("pricePerDay").toString()));
+            car.setCity(payload.get("city").toString());
+            car.setDescription(payload.get("description").toString());
+
+            carRepository.save(car);
+            return ResponseEntity.ok(Map.of("success", true));
+        }
+        return ResponseEntity.status(403).build();
+    }
+    @GetMapping("/owner/edit-car/{id}")
+    public String showEditCarPage(@PathVariable Long id, Model model) {
+        // Chúng ta truyền ID vào model để Frontend có thể lấy ra dùng
+        model.addAttribute("carId", id);
+        return "owner/owner-edit-car"; // Trả về file owner-edit-car.html
+    }
+}

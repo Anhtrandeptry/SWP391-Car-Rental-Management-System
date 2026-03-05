@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa thông tin xe</title>
+    <style>
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: sans-serif; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .btn-save { background: #14b8a6; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #6b7280; color: white; text-decoration: none; padding: 12px 25px; border-radius: 6px; display: inline-block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Chỉnh sửa thông tin xe</h2>
+    <hr><br>
+    <form id="editCarForm">
+        <div class="form-group">
+            <label>Tên xe (Brand & Model)</label>
+            <input type="text" id="carName" readonly style="background: #f3f4f6;">
+        </div>
+        <div class="form-group">
+            <label>Giá thuê mỗi ngày (VNĐ)</label>
+            <input type="number" id="pricePerDay" required>
+        </div>
+        <div class="form-group">
+            <label>Thành phố</label>
+            <input type="text" id="city" required>
+        </div>
+        <div class="form-group">
+            <label>Mô tả chi tiết</label>
+            <textarea id="description" rows="4"></textarea>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn-save">Lưu thay đổi</button>
+            <a href="/owner-car-list" class="btn-cancel">Hủy bỏ</a>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    const carId = [[${carId}]]; // Lấy ID từ Controller truyền sang
+
+    // 1. Khi trang web load xong, lấy dữ liệu xe từ API để hiển thị lên Form
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const response = await fetch(`/api/owner/cars/${carId}`);
+            const result = await response.json();
+            if (result.success) {
+                const car = result.data;
+                document.getElementById('carName').value = car.brand + " " + (car.model || "");
+                document.getElementById('pricePerDay').value = car.pricePerDay;
+                document.getElementById('city').value = car.city;
+                document.getElementById('description').value = car.description;
+            }
+        } catch (error) {
+            alert("Không thể tải dữ liệu xe!");
+        }
+    });
+
+    // 2. Xử lý khi nhấn nút Lưu (Gửi dữ liệu lên Server)
+    document.getElementById('editCarForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const updatedData = {
+            pricePerDay: document.getElementById('pricePerDay').value,
+            city: document.getElementById('city').value,
+            description: document.getElementById('description').value
+        };
+
+        try {
+            const response = await fetch(`/api/owner/cars/${carId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert("Cập nhật thành công!");
+                window.location.href = "/owner-car-list";
+            }
+        } catch (error) {
+            alert("Lỗi khi cập nhật!");
+        }
+    });
+</script>
+</body>
+</html>

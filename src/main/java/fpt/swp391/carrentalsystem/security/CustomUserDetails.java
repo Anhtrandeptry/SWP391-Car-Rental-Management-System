@@ -17,6 +17,11 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    // Lấy ID trực tiếp từ đối tượng user bên trong
+    public Long getId() {
+        return user.getId();
+    }
+
     @Override
     public String getUsername() {
         return user.getEmail();
@@ -24,7 +29,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPasswordHash(); // 🔥 DÒNG QUYẾT ĐỊNH
+        return user.getPasswordHash();
     }
 
     @Override
@@ -43,4 +48,3 @@ public class CustomUserDetails implements UserDetails {
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
 }
-

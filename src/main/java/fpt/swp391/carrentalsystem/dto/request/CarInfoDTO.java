@@ -42,11 +42,7 @@ public class CarInfoDTO {
     @Size(max = 100, message = "Phường/Xã không được vượt quá 100 ký tự")
     private String ward;
 
-    @Size(max = 50, message = "Vĩ độ không hợp lệ")
-    private String latitude;
 
-    @Size(max = 50, message = "Kinh độ không hợp lệ")
-    private String longitude;
 
     // ========== Thông tin kỹ thuật ==========
     @NotNull(message = "Số km đã đi không được để trống")
