@@ -1,9 +1,11 @@
 package fpt.swp391.carrentalsystem.dto;
 
 public class UpdateProfileForm {
+    @NotBlank(message = "Họ không được để trống")
     private String firstName;
     private String lastName;
     private String gender;
+
     private String phoneNumber;
     private String email;
     private String address;

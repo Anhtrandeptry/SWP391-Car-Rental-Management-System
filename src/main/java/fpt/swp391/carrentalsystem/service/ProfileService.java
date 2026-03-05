@@ -22,7 +22,7 @@ public class ProfileService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ========== 1) GET PROFILE ==========
+    // GET PROFILE
     public UserProfile getProfile(long userId) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found id=" + userId));
@@ -41,22 +41,39 @@ public class ProfileService {
         return dto;
     }
 
-    // ========== 2) UPDATE PROFILE ==========
+    // UPDATE PROFILE
     public void updateProfile(long userId, UpdateProfileForm f) {
         User u = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found id=" + userId));
 
         u.setFirstName(f.getFirstName());
         u.setLastName(f.getLastName());
-
-        // gender trong entity là enum Gender
-        // form đang là String -> map lại:
         if (f.getGender() != null && !f.getGender().isBlank()) {
             try {
                 u.setGender(fpt.swp391.carrentalsystem.enums.Gender.valueOf(f.getGender()));
             } catch (Exception ignored) {
-                // nếu form gửi "Nam/Nữ" thì bạn phải map riêng, còn hiện tại dùng Male/Female/Other
             }
+        }
+        //validate số điện thoại phải 10 kí tự
+        if (f.getPhoneNumber() != null && !f.getPhoneNumber().isBlank()) {
+            if (!f.getPhoneNumber().matches("\\d{10}")) {
+                throw new RuntimeException("Số điện thoại phải gồm đúng 10 chữ số.");
+            }
+            u.setPhoneNumber(f.getPhoneNumber());
+        }
+        // validate căn cước 12 số
+        if (f.getNationalId() != null && !f.getNationalId().isBlank()) {
+            if (!f.getNationalId().matches("\\d{12}")) {
+                throw new RuntimeException("Căn cước công dân phải gồm đúng 12 chữ số.");
+            }
+            u.setNationalId(f.getNationalId());
+        }
+        // validate blx ô tô 12 số
+        if (f.getDriversLicense() != null && !f.getDriversLicense().isBlank()) {
+            if (!f.getDriversLicense().matches("\\d{12}")) {
+                throw new RuntimeException("Bằng lái xe phải gồm đúng 12 chữ số.");
+            }
+            u.setDriversLicense(f.getDriversLicense());
         }
 
         u.setPhoneNumber(f.getPhoneNumber());
