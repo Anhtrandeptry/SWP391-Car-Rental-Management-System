@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán - Car Rental System</title>
+    <title>Thanh Toán VietQR - Car Rental System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -43,12 +44,24 @@
             margin: 0 auto;
             padding: 15px;
             background: white;
-            border: 3px dashed #ddd;
-            border-radius: 8px;
+            border: 3px solid #667eea;
+            border-radius: 12px;
         }
         .qr-code img {
             max-width: 100%;
             height: auto;
+            border-radius: 8px;
+        }
+        .bank-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .bank-info p {
+            margin: 5px 0;
+            font-size: 14px;
         }
         .payment-info {
             background: #f0f4ff;
@@ -73,6 +86,12 @@
             border-top: 2px solid #667eea;
             margin-top: 10px;
         }
+        .fee-item.pay-now {
+            background: #fff3cd;
+            padding: 12px 10px;
+            border-radius: 8px;
+            margin: 10px -10px;
+        }
         .warning-box {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -84,10 +103,25 @@
         }
         .timer {
             text-align: center;
-            color: #dc3545;
-            font-size: 24px;
+            font-size: 36px;
             font-weight: 700;
             margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .timer.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .timer.danger {
+            background: #f8d7da;
+            color: #721c24;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
         .button-group {
             display: flex;
@@ -95,9 +129,9 @@
             margin-top: 30px;
         }
         .btn-confirm {
-            flex: 1;
+            flex: 2;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -108,14 +142,14 @@
         }
         .btn-confirm:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
         }
-        .btn-back {
+        .btn-cancel {
             flex: 1;
             padding: 14px;
-            background: #e9ecef;
-            color: #555;
-            border: 2px solid #ddd;
+            background: #dc3545;
+            color: white;
+            border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
@@ -123,81 +157,111 @@
             transition: all 0.2s;
             text-decoration: none;
             text-align: center;
-            line-height: 1;
         }
-        .btn-back:hover {
-            background: #ddd;
-            color: #333;
+        .btn-cancel:hover {
+            background: #c82333;
+            color: white;
         }
     </style>
 </head>
 <body>
 <div class="payment-container">
-    <h2>💳 Thanh Toán Phí Giữ Chỗ</h2>
+    <h2><i class="bi bi-qr-code-scan"></i> Thanh Toán VietQR</h2>
 
     <div class="qr-section">
-        <h4>Quét mã QR để thanh toán</h4>
+        <h4><i class="bi bi-phone"></i> Quét mã QR bằng ứng dụng ngân hàng</h4>
         <div class="qr-code">
-            <img th:src="${payment.qrCodeUrl}" alt="QR Code">
+            <img th:src="${payment.qrCodeUrl}" alt="VietQR Code">
         </div>
-        <p style="margin-top: 15px; color: #666;">
-            Hoặc nhập mã: <strong th:text="'BOOKING_' + ${payment.bookingId}">-</strong>
-        </p>
+
+        <div class="bank-info">
+            <p><strong>Nội dung chuyển khoản:</strong></p>
+            <p class="h5" th:text="'BOOKING' + ${payment.bookingId}" style="color: #667eea;">BOOKING123</p>
+            <p class="text-muted mt-2">
+                <i class="bi bi-info-circle"></i> Vui lòng giữ nguyên nội dung chuyển khoản
+            </p>
+        </div>
     </div>
 
     <div class="payment-info">
-        <h5 style="color: #667eea; margin-bottom: 15px; font-weight: 700;">📋 Chi Tiết Thanh Toán</h5>
-        <div class="fee-item">
-            <span>Phí giữ chỗ (cần thanh toán):</span>
-            <span th:text="${payment.holdingFee} + ' VND'" style="font-weight: 600;">-</span>
+        <h5 style="color: #667eea; margin-bottom: 15px; font-weight: 700;">
+            <i class="bi bi-receipt"></i> Chi Tiết Thanh Toán
+        </h5>
+        <div class="fee-item pay-now">
+            <span><strong><i class="bi bi-credit-card"></i> Phí giữ chỗ (thanh toán ngay):</strong></span>
+            <span th:text="${#numbers.formatDecimal(payment.holdingFee, 0, 'COMMA', 0, 'POINT')} + ' VND'" style="font-weight: 700; color: #856404;">-</span>
         </div>
         <div class="fee-item">
-            <span>Phí thế chấp (khi nhận xe):</span>
-            <span th:text="${payment.depositAmount} + ' VND'" style="font-weight: 600;">-</span>
+            <span><i class="bi bi-shield-check"></i> Phí thế chấp (thanh toán khi nhận xe):</span>
+            <span th:text="${#numbers.formatDecimal(payment.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'" style="font-weight: 600;">-</span>
         </div>
         <div class="fee-item">
-            <span>Phí thuê xe:</span>
-            <span th:text="${payment.rentalFee} + ' VND'" style="font-weight: 600;">-</span>
+            <span><i class="bi bi-calendar-range"></i> Phí thuê xe:</span>
+            <span th:text="${#numbers.formatDecimal(payment.rentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'" style="font-weight: 600;">-</span>
         </div>
         <div class="fee-item total">
-            <span>Tổng cộng:</span>
-            <span th:text="${payment.totalAmount} + ' VND'">-</span>
+            <span><i class="bi bi-cash-stack"></i> Tổng chi phí thuê xe:</span>
+            <span th:text="${#numbers.formatDecimal(payment.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</span>
         </div>
     </div>
 
     <div class="warning-box">
-        <strong>⏰ Lưu Ý: Bạn có 3 phút để thanh toán!</strong>
-        <br>Nếu hết thời gian, xe sẽ được mở khóa cho khách hàng khác.
+        <strong><i class="bi bi-exclamation-triangle"></i> Lưu Ý Quan Trọng:</strong>
+        <ul class="mb-0 mt-2">
+            <li>Bạn có <strong>5 phút</strong> để hoàn tất thanh toán</li>
+            <li>Sau khi chuyển khoản thành công, nhấn nút "Đã Thanh Toán"</li>
+            <li>Nếu hết thời gian, xe sẽ được mở khóa cho khách hàng khác</li>
+        </ul>
     </div>
 
-    <div class="timer" id="timer">03:00</div>
+    <div class="timer" id="timer">
+        <i class="bi bi-clock"></i> 05:00
+    </div>
 
     <div class="button-group">
-        <form th:action="@{/customer/booking/{bookingId}/confirm-payment(bookingId=${payment.bookingId})}" method="post" style="flex: 1;">
-            <button type="submit" class="btn-confirm w-100">✅ Thanh Toán Xong</button>
+        <form th:action="@{/customer/booking/{bookingId}/confirm-payment(bookingId=${payment.bookingId})}" method="post" style="flex: 2;">
+            <button type="submit" class="btn-confirm w-100">
+                <i class="bi bi-check-circle"></i> Đã Thanh Toán Xong
+            </button>
         </form>
-        <a href="/customer/booking" class="btn-back">← Quay Lại</a>
+        <form th:action="@{/customer/booking/{bookingId}/cancel(bookingId=${payment.bookingId})}" method="post" style="flex: 1;">
+            <button type="submit" class="btn-cancel w-100" onclick="return confirm('Bạn có chắc muốn hủy đơn đặt xe này?')">
+                <i class="bi bi-x-circle"></i> Hủy
+            </button>
+        </form>
     </div>
 </div>
 
 <script>
-    // Timer countdown
-    let timeLeft = 3 * 60; // 3 minutes in seconds
+    // Timer countdown - 5 minutes
+    let timeLeft = 5 * 60;
     const timerDisplay = document.getElementById('timer');
 
-    setInterval(() => {
+    const countdown = setInterval(() => {
         timeLeft--;
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
-        timerDisplay.textContent =
+
+        timerDisplay.innerHTML = '<i class="bi bi-clock"></i> ' +
             String(minutes).padStart(2, '0') + ':' +
             String(seconds).padStart(2, '0');
 
+        // Change color based on time remaining
+        if (timeLeft <= 60) {
+            timerDisplay.className = 'timer danger';
+        } else if (timeLeft <= 120) {
+            timerDisplay.className = 'timer warning';
+        }
+
         if (timeLeft <= 0) {
-            timerDisplay.style.color = '#dc3545';
-            timerDisplay.textContent = 'HẾT HẠN';
-            // Optionally redirect after timeout
-            // setTimeout(() => window.location.href = '/customer/booking', 1000);
+            clearInterval(countdown);
+            timerDisplay.innerHTML = '<i class="bi bi-exclamation-circle"></i> HẾT HẠN';
+            timerDisplay.className = 'timer danger';
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                alert('Hết thời gian thanh toán. Đơn đặt xe đã bị hủy.');
+                window.location.href = '/customer/booking';
+            }, 2000);
         }
     }, 1000);
 </script>
@@ -205,4 +269,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

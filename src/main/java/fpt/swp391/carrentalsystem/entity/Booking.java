@@ -70,7 +70,7 @@ public class Booking {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.paymentDeadline = LocalDateTime.now().plusMinutes(3);
+        this.paymentDeadline = LocalDateTime.now().plusMinutes(5); // 5 minutes payment timeout
         this.status = BookingStatus.PAYMENT_PENDING;
         this.paymentStatus = PaymentStatus.UNPAID;
     }

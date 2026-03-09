@@ -69,6 +69,9 @@ public class Car {
     @Column(name = "average_rating", precision = 2, scale = 1)
     private BigDecimal averageRating = BigDecimal.ZERO;
 
+    @Column(name = "reservation_expire_time")
+    private LocalDateTime reservationExpireTime;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

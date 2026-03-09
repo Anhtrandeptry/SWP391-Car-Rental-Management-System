@@ -1,12 +1,15 @@
 package fpt.swp391.carrentalsystem.service;
+
 import fpt.swp391.carrentalsystem.dto.request.CreateBookingRequest;
 import fpt.swp391.carrentalsystem.dto.response.BookingConfirmationDto;
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.PaymentInfoDto;
+import fpt.swp391.carrentalsystem.dto.response.RentalHistoryDto;
 import fpt.swp391.carrentalsystem.entity.Booking;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.BookingStatus;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 import fpt.swp391.carrentalsystem.mapper.BookingMapper;
 import fpt.swp391.carrentalsystem.mapper.CarMapper;
@@ -17,41 +20,68 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
+
     private final BookingRepository bookingRepository;
     private final CarRepository carRepository;
     private final UserRepository userRepository;
     private final BookingMapper bookingMapper;
     private final NotificationService notificationService;
     private final CarMapper carMapper;
+
     private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
+    private static final int PAYMENT_TIMEOUT_MINUTES = 5;
+
     @Override
     public BookingConfirmationDto createBooking(CreateBookingRequest request, Long userId) {
         User customer = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Car car = carRepository.findById(request.getCarId())
+
+        // Use pessimistic lock to prevent race condition
+        Car car = carRepository.findByIdWithLock(request.getCarId())
                 .orElseThrow(() -> new RuntimeException("Car not found"));
+
+        // Validate dates
         if (!request.getEndDate().isAfter(request.getStartDate())) {
             throw new RuntimeException("End date must be after start date");
         }
+
+        // Check if car is available (status check)
+        if (car.getStatus() != CarStatus.AVAILABLE) {
+            throw new RuntimeException("Car is not available for booking. Current status: " + car.getStatus());
+        }
+
+        // Check for overlapping bookings
         boolean isAvailable = isCarAvailable(car.getCarId(), request.getStartDate(), request.getEndDate());
         if (!isAvailable) {
             throw new RuntimeException("Car is not available for selected dates");
         }
+
+        // Reserve the car
+        car.setStatus(CarStatus.RESERVED);
+        car.setReservationExpireTime(LocalDateTime.now().plusMinutes(PAYMENT_TIMEOUT_MINUTES));
+        carRepository.save(car);
+
+        // Calculate fees
         long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate());
         if (days == 0) days = 1;
+
         BigDecimal rentalFee = car.getPricePerDay().multiply(BigDecimal.valueOf(days));
         BigDecimal totalAmount = rentalFee.add(HOLDING_FEE).add(DEPOSIT_AMOUNT);
+
+        // Create booking
         Booking booking = Booking.builder()
                 .customer(customer)
                 .car(car)
@@ -64,47 +94,83 @@ public class BookingServiceImpl implements BookingService {
                 .totalAmount(totalAmount)
                 .status(BookingStatus.PAYMENT_PENDING)
                 .paymentStatus(PaymentStatus.UNPAID)
-                .paymentDeadline(LocalDateTime.now().plusMinutes(3))
+                .paymentDeadline(LocalDateTime.now().plusMinutes(PAYMENT_TIMEOUT_MINUTES))
                 .build();
+
         Booking savedBooking = bookingRepository.save(booking);
-        log.info("Booking created: {}", savedBooking.getBookingId());
+        log.info("Booking created: {} for car: {} (reserved until {})",
+                savedBooking.getBookingId(), car.getCarId(), car.getReservationExpireTime());
+
         return bookingMapper.toConfirmationDto(savedBooking);
     }
+
     @Override
     @Transactional(readOnly = true)
     public PaymentInfoDto getPaymentInfo(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Generate VietQR URL
+        String qrCodeUrl = generateVietQRUrl(booking);
+
         return PaymentInfoDto.builder()
                 .bookingId(bookingId)
                 .holdingFee(booking.getHoldingFee())
                 .depositAmount(booking.getDepositAmount())
                 .rentalFee(booking.getRentalFee())
                 .totalAmount(booking.getTotalAmount())
+                .qrCodeUrl(qrCodeUrl)
                 .build();
     }
+
     @Override
     public void confirmPayment(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check if payment deadline has passed
+        if (booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Payment deadline has passed. Please create a new booking.");
+        }
+
+        // Update booking status
         booking.setPaymentStatus(PaymentStatus.PAID);
         booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
+
+        // Update car status to BOOKED and clear reservation time
+        Car car = booking.getCar();
+        car.setStatus(CarStatus.BOOKED);
+        car.setReservationExpireTime(null);
+        carRepository.save(car);
 
         // Send notifications
         notificationService.sendPaymentSuccessEmail(booking);
         notificationService.sendOwnerNotification(booking);
 
-        log.info("Payment confirmed for booking: {}", bookingId);
+        log.info("Payment confirmed for booking: {}, car status set to BOOKED", bookingId);
     }
+
     @Override
     public void releaseExpiredBooking(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
         if (booking.getPaymentDeadline().isBefore(LocalDateTime.now())
                 && booking.getPaymentStatus() == PaymentStatus.UNPAID) {
+
+            // Cancel the booking
             booking.setStatus(BookingStatus.CANCELLED);
             bookingRepository.save(booking);
+
+            // Release the car reservation
+            Car car = booking.getCar();
+            if (car.getStatus() == CarStatus.RESERVED) {
+                car.setStatus(CarStatus.AVAILABLE);
+                car.setReservationExpireTime(null);
+                carRepository.save(car);
+                log.info("Car {} released back to AVAILABLE due to expired booking", car.getCarId());
+            }
 
             // Send cancellation notification
             notificationService.sendBookingCancelledEmail(booking);
@@ -112,21 +178,141 @@ public class BookingServiceImpl implements BookingService {
             log.info("Expired booking cancelled: {}", bookingId);
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CarResponseDto> getAvailableCars() {
+        List<Car> cars = carRepository.findByStatus(CarStatus.AVAILABLE);
+        log.info("Fetched {} available cars for booking page", cars.size());
+        return carMapper.toDtoList(cars);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RentalHistoryDto> getCustomerRentalHistory(Long customerId) {
+        List<Booking> bookings = bookingRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        return bookings.stream()
+                .map(this::toRentalHistoryDtoForCustomer)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void cancelBookingBeforePayment(Integer bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify ownership
+        if (!booking.getCustomer().getId().equals(userId)) {
+            throw new RuntimeException("You don't have permission to cancel this booking");
+        }
+
+        // Can only cancel if payment is pending
+        if (booking.getStatus() != BookingStatus.PAYMENT_PENDING) {
+            throw new RuntimeException("Cannot cancel. Booking status is: " + booking.getStatus());
+        }
+
+        // Cancel booking
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        // Release car reservation
+        Car car = booking.getCar();
+        if (car.getStatus() == CarStatus.RESERVED) {
+            car.setStatus(CarStatus.AVAILABLE);
+            car.setReservationExpireTime(null);
+            carRepository.save(car);
+        }
+
+        log.info("Booking {} cancelled before payment by user {}", bookingId, userId);
+    }
+
+    @Override
+    public void cancelBookingAfterPayment(Integer bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify ownership
+        if (!booking.getCustomer().getId().equals(userId)) {
+            throw new RuntimeException("You don't have permission to cancel this booking");
+        }
+
+        // Can only cancel if confirmed and paid
+        if (booking.getStatus() != BookingStatus.CONFIRMED || booking.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new RuntimeException("Cannot cancel. Booking is not in CONFIRMED status or not PAID");
+        }
+
+        // Cancel booking - deposit is NOT refunded
+        booking.setStatus(BookingStatus.CANCELLED);
+        // Note: paymentStatus remains PAID but booking is CANCELLED
+        // This booking will NOT be counted in revenue calculation
+        bookingRepository.save(booking);
+
+        // Release car back to available
+        Car car = booking.getCar();
+        car.setStatus(CarStatus.AVAILABLE);
+        car.setReservationExpireTime(null);
+        carRepository.save(car);
+
+        // Send cancellation notification
+        notificationService.sendBookingCancelledEmail(booking);
+
+        log.info("Booking {} cancelled after payment by user {} (deposit not refunded)", bookingId, userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RentalHistoryDto getBookingDetails(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        return toRentalHistoryDtoForCustomer(booking);
+    }
+
     private boolean isCarAvailable(Integer carId, LocalDateTime startDate, LocalDateTime endDate) {
         return bookingRepository.countOverlappingBookings(
                 carId, startDate, endDate, BookingStatus.CONFIRMED) == 0;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<CarResponseDto> getAvailableCars() {
+    private RentalHistoryDto toRentalHistoryDtoForCustomer(Booking booking) {
+        User owner = booking.getCar().getOwner();
+        Car car = booking.getCar();
 
-        List<Car> cars = carRepository.findAll();
-
-        log.info("Fetched {} cars for booking page", cars.size());
-
-        return carMapper.toDtoList(cars);
+        return RentalHistoryDto.builder()
+                .bookingId(booking.getBookingId())
+                .carId(car.getCarId())
+                .carName(car.getName())
+                .carBrand(car.getBrand())
+                .carModel(car.getModel())
+                .licensePlate(car.getLicensePlate())
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .pickupLocation(booking.getPickupLocation())
+                .rentalFee(booking.getRentalFee())
+                .depositAmount(booking.getDepositAmount())
+                .holdingFee(booking.getHoldingFee())
+                .totalAmount(booking.getTotalAmount())
+                .status(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .createdAt(booking.getCreatedAt())
+                .ownerName(owner.getFirstName() + " " + owner.getLastName())
+                .ownerPhone(owner.getPhoneNumber())
+                .ownerEmail(owner.getEmail())
+                .build();
     }
 
+    /**
+     * Generate VietQR URL for payment
+     */
+    private String generateVietQRUrl(Booking booking) {
+        // VietQR format: https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-{TEMPLATE}.png?amount={AMOUNT}&addInfo={DESCRIPTION}
+        String bankId = "970415"; // VietinBank (example - can be changed)
+        String accountNo = "1234567890"; // Bank account number (should be from config)
+        String template = "compact2";
+        long amount = booking.getHoldingFee().longValue();
+        String description = "BOOKING" + booking.getBookingId();
 
+        return String.format(
+                "https://img.vietqr.io/image/%s-%s-%s.png?amount=%d&addInfo=%s&accountName=CAR%%20RENTAL%%20SYSTEM",
+                bankId, accountNo, template, amount, description
+        );
+    }
 }

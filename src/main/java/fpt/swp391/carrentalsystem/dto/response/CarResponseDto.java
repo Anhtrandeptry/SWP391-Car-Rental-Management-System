@@ -10,8 +10,17 @@ public class CarResponseDto {
     private String name;
     private String brand;
     private String model;
+    private String carType;
     private BigDecimal pricePerDay;
     private String location;
     private Integer seats;
     private String fuelType;
+    private String licensePlate;
+    private String status;
+    private String description;
+    private BigDecimal averageRating;
+
+    // Owner info
+    private String ownerName;
+    private String ownerPhone;
 }
