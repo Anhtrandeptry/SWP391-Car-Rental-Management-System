@@ -4,34 +4,38 @@ import fpt.swp391.carrentalsystem.entity.Car;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CarRepository extends JpaRepository<Car, Long> {
 
-    List<Car> findByStatus(String status);
-
-
-    List<Car> findByOwnerId(Long ownerId);
-
-    @Query("SELECT c FROM Car c WHERE c.status = 'Available' " +
-            "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-            "AND (:seats IS NULL OR c.seats = :seats) " +
+    @Query("SELECT c FROM Car c WHERE c.status = fpt.swp391.carrentalsystem.enums.CarStatus.Available " +
+            "AND (:location IS NULL OR :location = '' OR c.location = :location) " +
             "AND (:brand IS NULL OR :brand = '' OR c.brand = :brand) " +
+            "AND (:seats IS NULL OR c.seats = :seats) " +
             "AND (:carType IS NULL OR :carType = '' OR c.carType = :carType) " +
             "AND (:fuelType IS NULL OR :fuelType = '' OR CAST(c.fuelType AS string) = :fuelType) " +
-            "AND (:location IS NULL OR :location = '' OR LOWER(c.location) LIKE LOWER(CONCAT('%', :location, '%')))")
-    List<Car> filterAvailableCars(
+            "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+            "AND (cast(:startDate as timestamp) IS NULL OR c.id NOT IN (" +
+            "   SELECT b.car.id FROM Booking b " +
+            "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.Accepted, " +
+            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.Pending) " +
+            "   AND b.startDate < :endDate " +
+            "   AND b.endDate > :startDate" +
+            "))")
+    List<Car> searchCarsCombined(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("location") String location,
             @Param("name") String name,
-            @Param("seats") Integer seats,
             @Param("brand") String brand,
+            @Param("seats") Integer seats,
             @Param("carType") String carType,
-            @Param("fuelType") String fuelType,
-            @Param("location") String location
+            @Param("fuelType") String fuelType
     );
 
-    @Query("SELECT c FROM Car c WHERE c.status = 'Available'")
-    List<Car> findAllAvailable();
+    @Query("SELECT DISTINCT c.location FROM Car c WHERE c.location IS NOT NULL AND c.location <> ''")
+    List<String> findDistinctLocations();
 
     @Query("SELECT DISTINCT c.brand FROM Car c WHERE c.brand IS NOT NULL")
     List<String> findDistinctBrands();
@@ -39,11 +43,12 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query("SELECT DISTINCT c.carType FROM Car c WHERE c.carType IS NOT NULL")
     List<String> findDistinctCarTypes();
 
-    @Query("SELECT DISTINCT c.fuelType FROM Car c WHERE c.fuelType IS NOT NULL")
+    @Query("SELECT DISTINCT CAST(c.fuelType AS string) FROM Car c WHERE c.fuelType IS NOT NULL")
     List<String> findDistinctFuelTypes();
 
     @Query("SELECT DISTINCT c.seats FROM Car c WHERE c.seats IS NOT NULL")
     List<Integer> findDistinctSeats();
 
-    List<Car> findByNameContainingIgnoreCaseAndStatus(String name, String status);
+    List<Car> findByOwnerId(Long ownerId);
+    List<Car> findByStatus(String status);
 }

@@ -2,390 +2,170 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"/>
-    <title>Car Listings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thuê xe tự lái - Customer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-    box-sizing: border-box;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --dark-bg: #0f172a;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
 
-body {
-    margin: 0;
-    background: #f6f8fb;
-    color: #111827;
-}
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { margin: 0; background: #f4f7fa; color: var(--text-main); }
+        .container { width: 95%; max-width: 1300px; margin: 0 auto; padding-bottom: 50px; }
 
-.container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+        /* HEADER CUSTOMER */
+        .page-header { padding: 1.5rem 0; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
 
-/* ================= HEADER ================= */
-.page-header {
-    padding: 1.5rem 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
+        .profile-btn {
+            width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
+            border: 2px solid var(--primary); transition: 0.3s; display: block;
+        }
+        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
 
-.logo {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #10b981;
-}
+        /* SEARCH WRAPPER */
+        .search-wrapper {
+            background: linear-gradient(135deg, #1e293b, var(--dark-bg));
+            padding: 40px; border-radius: 24px; margin-bottom: 30px; color: #fff;
+        }
 
-/* HEADER ACTIONS (login / profile) */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
+        .main-search-form {
+            background: #fff;
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1.5fr 0.5fr;
+            padding: 12px; border-radius: 16px; gap: 10px; align-items: center;
+        }
 
-/* PROFILE ICON (CUSTOMER) */
-.profile-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid #10b981;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    transition: box-shadow 0.15s ease;
-}
+        .search-item {
+            display: flex; flex-direction: column; padding: 5px 15px; border-right: 1px solid #e5e7eb;
+        }
+        .search-item:nth-child(3) { border-right: none; }
 
-.profile-btn img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+        .search-item label {
+            font-size: 0.65rem; font-weight: 800; color: var(--text-muted);
+            margin-bottom: 5px; text-transform: uppercase;
+        }
 
-.profile-btn:hover {
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
-}
+        .datetime-group { display: flex; gap: 8px; align-items: center; }
 
-/* ================= SEARCH WRAPPER ================= */
-.search-wrapper {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    padding: 2rem;
-    border-radius: 16px;
-    margin-bottom: 2.5rem;
-    color: #fff;
-}
+        .search-item select, .search-item input {
+            border: none; outline: none; font-size: 0.95rem; font-weight: 600;
+            background: transparent; color: #111; width: 100%;
+        }
 
-.search-wrapper h2 {
-    margin: 0 0 1.2rem 0;
-    font-size: 1.4rem;
-}
+        .btn-submit-search {
+            background: var(--primary); color: #fff; border: none; height: 100%;
+            border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem;
+            min-height: 60px;
+        }
 
-/* SEARCH BOX */
-.search-box {
-    display: flex;
-    gap: 0.75rem;
-    background: #ffffff;
-    padding: 0.75rem;
-    border-radius: 14px;
-    align-items: center;
-}
+        /* FILTER BAR */
+        .filter-bar {
+            display: flex; gap: 12px; margin-bottom: 30px; background: #fff;
+            padding: 15px 20px; border-radius: 14px; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .filter-bar select { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; min-width: 130px; }
+        .btn-reset { margin-left: auto; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; }
 
-.search-box input {
-    flex: 1;
-    padding: 0.85rem 1rem;
-    border: none;
-    outline: none;
-    font-size: 0.95rem;
-    border-radius: 10px;
-    background: #f9fafb;
-}
-
-.search-box button {
-    padding: 0.85rem 1.4rem;
-    border: none;
-    border-radius: 10px;
-    background: #10b981;
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.search-box button:hover {
-    background: #059669;
-}
-
-/* CLEAR SEARCH BUTTON */
-.clear-btn {
-    padding: 0.75rem 1.1rem;
-    border-radius: 10px;
-    background: #f3f4f6;
-    color: #374151;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: 2px solid transparent;
-    transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.clear-btn:hover {
-    background: #e5e7eb;
-    border-color: #d1d5db;
-}
-
-/* ================= FILTER ================= */
-.filter-box {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: -1.5rem;
-    margin-bottom: 2.5rem;
-    background: #ffffff;
-    padding: 1.1rem;
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.filter-box select,
-.filter-box input[type="text"] {
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    border: 2px solid #6b7280;
-    font-size: 0.85rem;
-    background: #ffffff;
-    min-width: 140px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.filter-box select:hover,
-.filter-box input[type="text"]:hover {
-    border-color: #374151;
-}
-
-.filter-box select:focus,
-.filter-box input[type="text"]:focus {
-    outline: none;
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-}
-
-.filter-box button {
-    padding: 0.75rem 1.4rem;
-    border-radius: 10px;
-    border: none;
-    background: #10b981;
-    color: #ffffff;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.filter-box button:hover {
-    background: #059669;
-}
-
-/* FILTER ACTIONS */
-.filter-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-/* RESET FILTER BUTTON (FIXED) */
-.reset-filter-btn {
-    padding: 0.7rem 1.1rem;
-    border-radius: 10px;
-    background: #f9fafb;
-    color: #6b7280;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: 2px dashed #d1d5db;
-    transition: all 0.15s ease;
-}
-
-.reset-filter-btn:hover {
-    background: #f3f4f6;
-    color: #374151;
-    border-color: #9ca3af;
-}
-
-/* ================= CAR LIST ================= */
-.car-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
-}
-
-.car-item {
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.car-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-}
-
-.car-item img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-}
-
-.car-meta {
-    padding: 1rem;
-}
-
-.car-meta h3 {
-    margin: 0 0 0.4rem 0;
-    font-size: 1rem;
-}
-
-.car-meta p {
-    margin: 0.2rem 0;
-    font-size: 0.85rem;
-    color: #4b5563;
-}
-
-.car-price {
-    margin-top: 0.6rem;
-    font-size: 1rem;
-    font-weight: 800;
-    color: #111827;
-}
-
-.rating {
-    margin-top: 0.3rem;
-    font-size: 0.85rem;
-}
-
+        /* CAR GRID */
+        .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .car-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-decoration: none; color: inherit; transition: 0.3s; }
+        .car-card:hover { transform: translateY(-5px); }
+        .car-img { width: 100%; height: 190px; object-fit: cover; }
+        .car-info { padding: 15px 20px; }
+        .car-price { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-
-    <!-- HEADER -->
-    <div class="page-header header-flex">
-        <div class="logo">CRMS</div>
-
-        <!-- PROFILE ICON -->
+    <header class="page-header">
+        <a th:href="@{/customer/cars}" class="logo">CRMS</a>
         <div class="header-actions">
-            <a th:href="@{/customer/profile}" class="profile-btn" title="Profile">
-                <img src="/images/profile-icon.png" alt="Profile" style="width:32px;">
+            <a th:href="@{/customer/profile}" class="profile-btn" title="Hồ sơ của tôi">
+                <img src="/images/profile-icon.png" alt="Profile">
             </a>
         </div>
-    </div>
+    </header>
 
-    <!-- SEARCH -->
-    <div class="search-wrapper">
-        <h2>Tìm xe tự lái</h2>
+    <form th:action="@{/customer/cars}" method="get">
+        <div class="search-wrapper">
+            <h2 style="margin-top:0">Chào mừng trở lại! Bạn muốn thuê xe nào?</h2>
+            <div class="main-search-form">
+                <div class="search-item">
+                    <label><i class="fas fa-map-marker-alt"></i> Địa điểm</label>
+                    <select name="location">
+                        <option value="">Bạn muốn đi đâu?</option>
+                        <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}" th:selected="${loc == location}"></option>
+                    </select>
+                </div>
 
-        <form th:action="@{/customer/cars}" method="get" class="search-box">
-            <input type="text"
-                   name="name"
-                   placeholder="Chọn địa điểm / tên xe"
-                   th:value="${name}"/>
+                <div class="search-item">
+                    <label>Bắt đầu</label>
+                    <div class="datetime-group">
+                        <input type="date" name="startDate" th:value="${startDate}" required>
+                        <input type="time" name="startTime" th:value="${startTime != null ? startTime : '09:00'}">
+                    </div>
+                </div>
 
-            <button type="submit">TÌM XE</button>
-            <a th:href="@{/customer/cars}" class="clear-btn">XÓA</a>
-        </form>
-    </div>
+                <div class="search-item">
+                    <label>Kết thúc</label>
+                    <div class="datetime-group">
+                        <input type="date" name="endDate" th:value="${endDate}" required>
+                        <input type="time" name="endTime" th:value="${endTime != null ? endTime : '09:00'}">
+                    </div>
+                </div>
 
-    <!-- FILTER -->
-    <form th:action="@{/customer/cars}" method="get" class="filter-box">
+                <button type="submit" class="btn-submit-search">TÌM XE</button>
+            </div>
+        </div>
 
-        <!-- SEATS -->
-        <select name="seats">
-            <option value="">Số chỗ</option>
-            <option th:each="s : ${seatsList}"
-                    th:value="${s}"
-                    th:text="${s}"
-                    th:selected="${s == seats}">
-            </option>
-        </select>
-
-        <!-- BRAND -->
-        <select name="brand">
-            <option value="">Hãng xe</option>
-            <option th:each="b : ${brands}"
-                    th:value="${b}"
-                    th:text="${b}"
-                    th:selected="${b == brand}">
-            </option>
-        </select>
-
-        <!-- CAR TYPE -->
-        <select name="carType">
-            <option value="">Loại xe</option>
-            <option th:each="t : ${carTypes}"
-                    th:value="${t}"
-                    th:text="${t}"
-                    th:selected="${t == carType}">
-            </option>
-        </select>
-
-        <!-- FUEL TYPE -->
-        <select name="fuelType">
-            <option value="">Nhiên liệu</option>
-            <option th:each="f : ${fuelTypes}"
-                    th:value="${f}"
-                    th:text="${f}"
-                    th:selected="${f == fuelType}">
-            </option>
-        </select>
-
-        <!-- LOCATION -->
-        <input type="text"
-               name="location"
-               placeholder="Địa điểm"
-               th:value="${location}"/>
-
-        <!-- ACTIONS -->
-        <div class="filter-actions">
-            <button type="submit">LỌC</button>
-            <a th:href="@{/customer/cars}" class="reset-filter-btn">
-                XÓA LỌC
-            </a>
+        <div class="filter-bar">
+            <select name="brand" onchange="this.form.submit()">
+                <option value="">Hãng xe</option>
+                <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${b == brand}"></option>
+            </select>
+            <select name="seats" onchange="this.form.submit()">
+                <option value="">Số chỗ</option>
+                <option th:each="s : ${seatsList}" th:value="${s}" th:text="${s} + ' chỗ'" th:selected="${s == seats}"></option>
+            </select>
+            <select name="carType" onchange="this.form.submit()">
+                <option value="">Loại xe</option>
+                <option th:each="t : ${carTypes}" th:value="${t}" th:text="${t}" th:selected="${t == carType}"></option>
+            </select>
+            <a th:href="@{/customer/cars}" class="btn-reset"><i class="fas fa-sync"></i> Xóa bộ lọc</a>
         </div>
     </form>
 
-    <!-- EMPTY RESULT -->
-    <div th:if="${cars.empty}">
-        <p>Không tìm thấy xe.</p>
-    </div>
-
-    <!-- CAR LIST -->
-    <div class="car-list" th:if="${!cars.empty}">
-        <div class="car-item" th:each="car : ${cars}">
-            <a th:href="@{/customer/cars/{id}(id=${car.id})}" class="car-link">
-
-                <img th:if="${car.mainImageUrl != null}"
-                     th:src="@{${car.mainImageUrl}}"/>
-
-                <img th:unless="${car.mainImageUrl != null}"
-                     src="/images/placeholder-car.png"/>
-
-                <div class="car-meta">
-                    <h3 th:text="${car.name}"></h3>
-                    <p th:text="${car.brand} + ' - ' + ${car.model}"></p>
-                    <p th:text="${car.location}"></p>
-
-                    <p class="car-price"
-                       th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K/ngày'">
-                    </p>
-
-                    <p class="rating">
-                        ⭐ <span th:text="${car.averageRating}"></span>
-                    </p>
+    <div class="car-grid">
+        <a th:each="car : ${cars}" th:href="@{/customer/cars/{id}(id=${car.id})}" class="car-card">
+            <img th:src="${car.mainImageUrl != null ? car.mainImageUrl : '/images/placeholder-car.png'}" class="car-img">
+            <div class="car-info">
+                <div style="font-weight:700; margin-bottom:5px" th:text="${car.name}"></div>
+                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+                    <i class="fas fa-map-marker-alt"></i> <span th:text="${car.location}"></span>
                 </div>
-
-            </a>
-        </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:12px;">
+                    <div class="car-price">
+                        <th:block th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')}"></th:block>K <span style="font-size:0.7rem; color:gray">/ngày</span>
+                    </div>
+                    <div style="font-size:0.85rem; font-weight:600;">⭐ <span th:text="${car.averageRating}"></span></div>
+                </div>
+            </div>
+        </a>
     </div>
 
+    <div th:if="${cars.empty}" style="text-align:center; padding:80px 0; color:var(--text-muted);">
+        <i class="fas fa-car-side" style="font-size:3rem; margin-bottom:15px; opacity:0.3;"></i>
+        <p>Hiện tại không có xe nào trống trong khung giờ bạn chọn.</p>
+    </div>
 </div>
 
 </body>

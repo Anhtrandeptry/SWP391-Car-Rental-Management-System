@@ -2,7 +2,7 @@ package fpt.swp391.carrentalsystem.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+
 public class Car {
 
     @Id
@@ -62,8 +63,8 @@ public class Car {
     @Column(name = "license_plate", length = 20, unique = true)
     private String licensePlate;
 
-    @Column(name = "status", length = 20)
-    private String status = "Pending";
+    @Enumerated(EnumType.STRING)
+    private CarStatus status;
 
     @Column(name = "average_rating", precision = 2, scale = 1)
     private BigDecimal averageRating = BigDecimal.ZERO;

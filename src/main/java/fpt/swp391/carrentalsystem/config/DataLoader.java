@@ -11,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -70,7 +71,7 @@ public class DataLoader implements CommandLineRunner {
             car.setDescription("This is a " + brand + " " + (i + 1) + " in excellent condition.");
             car.setRegistrationDate(LocalDate.now().minusYears(1 + i % 5));
             car.setLicensePlate("ABC-" + (1000 + i));
-            car.setStatus("Available");
+            car.setStatus(CarStatus.Available);
             car.setAverageRating(new BigDecimal("4.5"));
 
             List<CarImage> images = new ArrayList<>();

@@ -1,21 +1,18 @@
 package fpt.swp391.carrentalsystem.controller.common;
 
 import fpt.swp391.carrentalsystem.service.CarService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/public")
+@RequiredArgsConstructor
 public class CarController {
 
     private final CarService carService;
 
-    public CarController(CarService carService) {
-        this.carService = carService;
-    }
-
-    // ===== LIST CARS =====
     @GetMapping("/cars")
     public String listCars(
             @RequestParam(required = false) String name,
@@ -24,33 +21,29 @@ public class CarController {
             @RequestParam(required = false) String carType,
             @RequestParam(required = false) String fuelType,
             @RequestParam(required = false) String location,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) String endTime,
             Model model
     ) {
+        model.addAttribute("cars", carService.searchCars(location, startDate, startTime, endDate, endTime, name, seats, brand, carType, fuelType));
 
-        model.addAttribute("cars",
-                carService.filterCars(name, seats, brand, carType, fuelType, location));
-
+        model.addAttribute("locations", carService.getAllLocations());
         model.addAttribute("brands", carService.getAllBrands());
         model.addAttribute("carTypes", carService.getAllCarTypes());
         model.addAttribute("fuelTypes", carService.getAllFuelTypes());
         model.addAttribute("seatsList", carService.getAllSeats());
 
-        model.addAttribute("name", name);
-        model.addAttribute("seats", seats);
-        model.addAttribute("brand", brand);
-        model.addAttribute("carType", carType);
-        model.addAttribute("fuelType", fuelType);
         model.addAttribute("location", location);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("startTime", startTime);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("endTime", endTime);
+        model.addAttribute("brand", brand);
+        model.addAttribute("seats", seats);
+        model.addAttribute("carType", carType);
 
         return "public/cars";
-    }
-
-    // ===== CAR DETAIL (PUBLIC) =====
-    @GetMapping("/cars/{id}")
-    public String carDetail(@PathVariable Long id, Model model) {
-
-        model.addAttribute("car", carService.getCarById(id));
-
-        return "public/car-detail";
     }
 }

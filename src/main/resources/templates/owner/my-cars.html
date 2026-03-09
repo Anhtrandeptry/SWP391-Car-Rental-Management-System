@@ -1,68 +1,167 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Quản lý xe của tôi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Xe - CRMS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #00a58e; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; color: #888; border-bottom: 2px solid #eee; font-size: 13px; }
-        td { padding: 15px 12px; border-bottom: 1px solid #eee; }
-        .car-info { display: flex; align-items: center; gap: 15px; }
-        .car-info img { width: 70px; height: 45px; border-radius: 5px; object-fit: cover; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .status-available { background: #e6f7f5; color: #00a58e; }
-        .status-pending { background: #fff4e6; color: #ff922b; }
-        .btn-manage { color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 5px; text-decoration: none; font-size: 13px; }
-        .btn-manage:hover { background: var(--primary); color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb; color: #333; line-height: 1.6;
+        }
+        header {
+            background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px; position: sticky; top: 0; z-index: 100;
+        }
+        .header-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #14b8a6; font-size: 1.5rem; text-decoration: none; }
+
+        .container { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-title { font-size: 1.8rem; font-weight: 700; color: #111827; }
+
+        .btn-add {
+            padding: 12px 24px; background-color: #14b8a6; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; text-decoration: none; display: inline-block;
+        }
+        .btn-add:hover { background-color: #0d9488; transform: translateY(-2px); }
+
+        /* Tabs Filter */
+        .tabs-container {
+            display: flex; gap: 10px; margin-bottom: 30px; background: #fff;
+            padding: 6px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            width: fit-content;
+        }
+        .tab-btn {
+            padding: 8px 20px; border: none; background: none; border-radius: 8px;
+            cursor: pointer; font-weight: 600; color: #6b7280; transition: 0.3s;
+        }
+        .tab-btn.active { background: #14b8a6; color: white; }
+        .tab-btn:hover:not(.active) { background: #f3f4f6; }
+
+        /* Car Grid */
+        .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        .car-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.3s; }
+        .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .car-image { width: 100%; height: 200px; object-fit: cover; background: #eee; }
+        .car-content { padding: 20px; }
+
+        .car-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .car-name { font-size: 1.2rem; font-weight: 700; color: #111827; }
+        .car-license { color: #6b7280; font-size: 0.85rem; margin-top: 4px; }
+
+        /* Badges */
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-available { background: #d1fae5; color: #065f46; }
+
+        .car-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; padding: 15px 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; }
+        .detail-label { color: #9ca3af; font-size: 0.75rem; }
+        .detail-value { font-weight: 600; font-size: 0.9rem; color: #374151; }
+
+        .car-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-action {
+            flex: 1; padding: 10px; border-radius: 8px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-size: 0.85rem; text-decoration: none; transition: 0.2s;
+        }
+        .btn-img { background: #e0f2f1; color: #00796b; border: 1px solid #b2dfdb; }
+        .btn-edit { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+
+        .empty-state { text-align: center; padding: 80px 0; grid-column: 1 / -1; display: none; }
     </style>
 </head>
 <body>
+
+<header>
+    <div class="header-container">
+        <a href="/owner/my-cars" class="logo-section">CRMS</a>
+        <div class="user-info" th:if="${#authentication != null}">
+            Chào, <span th:text="${#authentication.principal.user.firstName}">Chủ xe</span> 👋
+        </div>
+    </div>
+</header>
+
 <div class="container">
-    <div class="header">
-        <h2>Quản lý xe của tôi</h2>
-        <a href="/owner/add-car" style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">+ Thêm xe mới</a>
+    <div class="page-header">
+        <h1 class="page-title">Xe của tôi</h1>
+        <a th:href="@{/owner/add-car}" class="btn-add"><i class="fas fa-plus"></i> Đăng ký xe mới</a>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>XE</th>
-            <th>ĐỊA ĐIỂM</th>
-            <th>GIÁ/NGÀY</th>
-            <th>TRẠNG THÁI</th>
-            <th>HÀNH ĐỘNG</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="car : ${cars}">
-            <td>
-                <div class="car-info">
-                    <img th:src="${car.mainImageUrl}" alt="car">
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="filterByStatus('ALL', this)">Tất cả xe</button>
+        <button class="tab-btn" onclick="filterByStatus('Pending', this)">Xe chờ duyệt</button>
+        <button class="tab-btn" onclick="filterByStatus('Available', this)">Xe hoạt động</button>
+    </div>
+
+    <div class="car-grid" id="carGrid">
+        <div th:each="car : ${cars}" class="car-card" th:attr="data-status=${car.status}">
+            <img th:src="${car.mainImageUrl != null ? car.mainImageUrl : 'https://via.placeholder.com/400x250?text=No+Image'}" class="car-image">
+
+            <div class="car-content">
+                <div class="car-header">
                     <div>
-                        <strong th:text="${car.name}">Name</strong><br>
-                        <small th:text="'ID: #' + ${car.id}" style="color: #bbb;">#1</small>
+                        <div class="car-name" th:text="${car.name}">Tên xe</div>
+                        <div class="car-license" th:text="'ID: #' + ${car.id}">ID</div>
                     </div>
+                    <span th:class="'status-badge status-' + ${#strings.toLowerCase(car.status)}"
+                          th:text="${car.status == 'Available' ? 'Hoạt động' : (car.status == 'Pending' ? 'Chờ duyệt' : car.status)}">
+                    </span>
                 </div>
-            </td>
-            <td th:text="${car.location}">Hà Nội</td>
-            <td><b th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + 'K'">830K</b></td>
-            <td>
-                <span th:if="${car.status == 'Available'}" class="status-badge status-available">Hoạt động</span>
-                <span th:if="${car.status == 'Pending'}" class="status-badge status-pending">Đang chờ duyệt</span>
-            </td>
-            <td>
-                <a th:href="@{/owner/cars/{id}/images(id=${car.id})}" class="btn-manage">
-                    <i class="fas fa-images"></i> Quản lý ảnh
-                </a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+
+                <div class="car-details">
+                    <div><p class="detail-label">ĐỊA ĐIỂM</p><p class="detail-value" th:text="${car.location}"></p></div>
+                    <div><p class="detail-label">GIÁ THUÊ</p><p class="detail-value" style="color: #14b8a6;" th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + 'đ'"></p></div>
+                </div>
+
+                <div class="car-actions">
+                    <a th:href="@{/owner/cars/{id}/images(id=${car.id})}" class="btn-action btn-img"><i class="fas fa-images"></i> Ảnh</a>
+                    <a th:href="@{/owner/edit-car/{id}(id=${car.id})}" class="btn-action btn-edit"><i class="fas fa-edit"></i> Sửa</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="filterEmptyState" class="empty-state">
+            <i class="fas fa-search" style="font-size: 3rem; color: #e5e7eb; margin-bottom: 1rem;"></i>
+            <p style="color: #9ca3af;">Không tìm thấy xe nào ở trạng thái này.</p>
+        </div>
+    </div>
 </div>
+
+<script>
+    function filterByStatus(status, btn) {
+        // 1. Đổi active cho nút
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 2. Lọc các Card xe
+        const cards = document.querySelectorAll('.car-card');
+        let hasVisibleCard = false;
+
+        cards.forEach(card => {
+            const cardStatus = card.getAttribute('data-status');
+
+            // Nếu chọn ALL hoặc status khớp với data-status của card
+            if (status === 'ALL' || cardStatus === status) {
+                card.style.display = 'block';
+                hasVisibleCard = true;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // 3. Hiển thị thông báo trống nếu không có xe nào khớp
+        const emptyState = document.getElementById('filterEmptyState');
+        if (!hasVisibleCard) {
+            emptyState.style.display = 'block';
+        } else {
+            emptyState.style.display = 'none';
+        }
+    }
+</script>
+
 </body>
 </html>
