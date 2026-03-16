@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phiếu trả xe | CRMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-light: #f0fdfa;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background: var(--card);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background-color: #fff;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .card-header-custom h6 {
+            margin: 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .icon-box {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .damage-alert {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        /* Timeline Styling tương đồng trang tạo */
+        .timeline { position: relative; padding-left: 40px; list-style: none; }
+        .timeline::before { content: ""; position: absolute; left: 15px; top: 10px; bottom: 10px; width: 2px; background: #e2e8f0; }
+        .timeline-item { position: relative; margin-bottom: 25px; }
+        .timeline-icon { position: absolute; left: -40px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: white; z-index: 1; border: 1px solid var(--border); }
+        .bg-light-cyan { background-color: #e0f2fe; color: #0ea5e9; }
+        .bg-light-yellow { background-color: #fef3c7; color: #d97706; }
+        .bg-light-green { background-color: #dcfce7; color: #16a34a; }
+
+        @media print {
+            .btn-back, .no-print { display: none !important; }
+            .card { border: none; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="page-header d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a th:href="@{/customer/return/list-car-return}" class="text-decoration-none text-muted">Lịch sử trả xe</a></li>
+                    <li class="breadcrumb-item active">Chi tiết phiếu #<span th:text="${carReturn.returnId}"></span></li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0">Chi tiết phiếu trả xe</h2>
+        </div>
+        <div class="text-end no-print">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-printer me-1"></i> In phiếu
+            </button>
+            <small>Ngày lập phiếu: <strong th:text="${#temporals.format(carReturn.createdAt, 'dd/MM/yyyy')}">14/03/2026</strong></small>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header-custom">
+                    <h6><i class="bi bi-file-earmark-text icon-box"></i> Thông tin hợp đồng</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-group mb-3">
+                        <div class="info-label">Mã đặt xe</div>
+                        <div class="info-value text-primary" th:text="'#BK-' + ${carReturn.booking.bookingId}">#BK-001</div>
+                    </div>
+                    <div class="info-group mb-3">
+                        <div class="info-label">Phương tiện</div>
+                        <div class="info-value" th:text="${carReturn.booking.car.name}">Toyota 4Runner</div>
+                        <span class="badge bg-dark" th:text="${carReturn.booking.car.licensePlate}">30A-12345</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="mb-4 fw-bold">Lịch trình thời gian</h6>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon bg-light-cyan"><i class="bi bi-calendar-event"></i></div>
+                            <div class="timeline-content">
+                                <span class="info-label">Nhận xe</span>
+                                <div class="info-value" th:text="${#temporals.format(carReturn.booking.startDate, 'dd/MM/yyyy HH:mm')}">15/01/2026 08:00</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon bg-light-yellow"><i class="bi bi-clock"></i></div>
+                            <div class="timeline-content">
+                                <span class="info-label">Hạn trả dự kiến</span>
+                                <div class="info-value" th:text="${#temporals.format(carReturn.booking.endDate, 'dd/MM/yyyy HH:mm')}">17/01/2026 14:00</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item mb-0">
+                            <div class="timeline-icon bg-light-green"><i class="bi bi-check2-circle"></i></div>
+                            <div class="timeline-content">
+                                <span class="info-label">Thực tế đã trả</span>
+                                <div class="info-value text-success" th:text="${#temporals.format(carReturn.actualReturnDate, 'dd/MM/yyyy HH:mm')}">17/01/2026 15:30</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header-custom">
+                    <h6><i class="bi bi-clipboard-check icon-box"></i> Thông số ghi nhận khi trả</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="info-label">Số Odometer (km)</div>
+                                <div class="h4 fw-bold mb-0" th:text="${carReturn.odometerReading}">55,320</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="info-label">Tình trạng vệ sinh</div>
+                                <div class="h4 fw-bold mb-0" th:text="${carReturn.cleaningStatus}">Sạch sẽ</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-group mb-4">
+                        <div class="info-label">Phát sinh hư hỏng</div>
+                        <div th:if="${carReturn.damageDetected}" class="damage-alert">
+                            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Có phát hiện hư hỏng</div>
+                            <p class="mb-0 small" th:text="${carReturn.damageDescription}">Mô tả hư hỏng ở đây...</p>
+                        </div>
+                        <div th:unless="${carReturn.damageDetected}" class="text-success fw-bold">
+                            <i class="bi bi-shield-check me-2"></i>Không có hư hỏng phát sinh
+                        </div>
+                    </div>
+
+                    <div class="info-group mb-4">
+                        <div class="info-label">Xác nhận từ chủ xe</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span th:if="${carReturn.ownerConfirmation}" class="status-badge bg-success text-white">
+                                <i class="bi bi-check-circle-fill me-1"></i> Đã xác nhận
+                            </span>
+                            <span th:unless="${carReturn.ownerConfirmation}" class="status-badge bg-warning text-dark">
+                                <i class="bi bi-hourglass-split me-1"></i> Chờ chủ xe kiểm tra
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="info-label">Khoản khấu trừ / Phí phạt</div>
+                            <div class="h3 fw-bold text-danger mb-0" 
+                                 th:text="${#numbers.formatDecimal(carReturn.penaltyAmount, 0, 'COMMA', 0, 'POINT') + ' VNĐ'}">
+                                0 VNĐ
+                            </div>
+                        </div>
+                        <a th:href="@{/customer/return/list-car-return}" class="btn btn-secondary px-4 btn-action no-print">
+                            <i class="bi bi-arrow-left me-2"></i> Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4 no-print">
+                <p class="text-muted small">Nếu có thắc mắc về phiếu trả xe này, vui lòng liên hệ bộ phận chăm sóc khách hàng.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

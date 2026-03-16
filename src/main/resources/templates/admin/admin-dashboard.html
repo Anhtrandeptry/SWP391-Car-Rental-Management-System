@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Admin Dashboard - CRMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root{
+            --bg: #f8f9fa;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --line: #e5e7eb;
+
+            --primary: #0d6efd;
+            --primary-light: #3b82f6;
+            --primary-dark: #0056b3;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        a{
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* TOP HEADER */
+        .header{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--panel);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left{
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-section{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo{
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-info h1{
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-info span{
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .header-right{
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-box{
+            position: relative;
+        }
+
+        .search-box input{
+            width: 300px;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus{
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .search-box i{
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+
+        .header-actions{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-btn{
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover{
+            background: var(--line);
+            color: var(--text);
+        }
+
+        .icon-btn .badge{
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .user-menu{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0.6rem 0.4rem 0.4rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-menu:hover{
+            background: var(--bg);
+        }
+
+        .avatar{
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--danger), var(--warning));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .user-info{
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info .name{
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .user-info .role{
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            position: fixed;
+            left: 0;
+            top: var(--header-height);
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--panel);
+            border-right: 1px solid var(--line);
+            overflow-y: auto;
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section{
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title{
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            padding: 0 0.75rem;
+        }
+
+        .nav-menu{
+            list-style: none;
+        }
+
+        .nav-item{
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover{
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .nav-link.active{
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-link i{
+            font-size: 1.1rem;
+            width: 20px;
+        }
+
+        .logout-btn{
+            width: calc(100% - 2rem);
+            margin: 0 1rem;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover{
+            background: var(--danger);
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main-content{
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-header{
+            margin-bottom: 2rem;
+        }
+
+        .page-title{
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle{
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card{
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover{
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon{
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue{
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .stat-icon.green{
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .stat-icon.orange{
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .stat-icon.purple{
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+        }
+
+        .stat-content{
+            flex: 1;
+        }
+
+        .stat-label{
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-value{
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .stat-change{
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.up{
+            color: var(--success);
+        }
+
+        .stat-change.down{
+            color: var(--danger);
+        }
+
+        /* CARDS GRID */
+        .cards-grid{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .card-title{
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .card-action{
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card-action:hover{
+            text-decoration: underline;
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions{
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .action-item{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: var(--bg);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .action-item:hover{
+            background: var(--line);
+            transform: translateX(4px);
+        }
+
+        .action-icon{
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .action-content{
+            flex: 1;
+        }
+
+        .action-title{
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .action-desc{
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .action-arrow{
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* WELCOME BANNER */
+        .welcome-banner{
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before{
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-content{
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-title{
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text{
+            opacity: 0.9;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px){
+            .sidebar{
+                transform: translateX(-100%);
+            }
+            .main-content{
+                margin-left: 0;
+            }
+            .stats-grid{
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px){
+            .header{
+                padding: 0 1rem;
+            }
+            .search-box{
+                display: none;
+            }
+            .main-content{
+                padding: 1rem;
+            }
+            .cards-grid{
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-left">
+        <div class="logo-section">
+            <div class="logo">
+                <i class="bi bi-car-front-fill"></i>
+            </div>
+            <div class="brand-info">
+                <h1>CRMS</h1>
+                <span>Car Rental System</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-right">
+            <div class="user-menu">
+                <div class="avatar">AD</div>
+                <div class="user-info">
+                    <span class="name">Administrator</span>
+                    <span class="role">Quản trị viên</span>
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+<aside class="sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-title">Quản trị hệ thống</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a th:href="@{/admin/dashboard}" class="nav-link active">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Tổng quan (Dashboard)</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/admin/customers}" class="nav-link">
+                    <i class="bi bi-people"></i>
+                    <span>Quản lý người dùng</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/admin/cars}" class="nav-link">
+                    <i class="bi bi-car-front"></i>
+                    <span>Quản lý xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/admin/bookings}" class="nav-link">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Quản lý đơn đặt xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/admin/reports/revenue}" class="nav-link">
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+                    <span>Quản lý báo cáo</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-title">Tài khoản</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a th:href="@{/admin/profile}" class="nav-link">
+                    <i class="bi bi-person"></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/admin/settings}" class="nav-link">
+                    <i class="bi bi-sliders"></i>
+                    <span>Cài đặt hệ thống</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <form th:action="@{/auth/logout}" method="post" style="margin-top: auto; margin-bottom: 20px;">
+        <button type="submit" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i>
+            Đăng xuất
+        </button>
+    </form>
+</aside>
+
+<main class="main-content">
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <h2 class="welcome-title">Xin chào, Administrator!</h2>
+            <p class="welcome-text">
+                Chào mừng bạn đến với trang quản trị CRMS. Tại đây bạn có thể kiểm soát người dùng, phê duyệt đơn đặt xe, theo dõi doanh thu và xử lý các báo cáo của hệ thống.
+            </p>
+        </div>
+    </div>
+
+    <div class="page-header">
+        <h1 class="page-title">Admin Dashboard</h1>
+        <p class="page-subtitle">Tổng quan số liệu và hoạt động của toàn bộ hệ thống</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Tổng người dùng</div>
+                <div class="stat-value" th:text="${adminStats != null ? adminStats.totalUsers : '1,250'}">1,250</div>
+                <div class="stat-change up">
+                    <i class="bi bi-arrow-up"></i>
+                    <span>+15% so với tháng trước</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="bi bi-car-front"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Tổng xe hệ thống</div>
+                <div class="stat-value" th:text="${adminStats != null ? adminStats.totalCars : '345'}">345</div>
+                <div class="stat-change up">
+                    <i class="bi bi-arrow-up"></i>
+                    <span>+12 xe mới</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Báo cáo chờ xử lý</div>
+                <div class="stat-value" th:text="${adminStats != null ? adminStats.pendingReports : '18'}">18</div>
+                <div class="stat-change down">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Cần phê duyệt sớm</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Doanh thu tháng</div>
+                <div class="stat-value">85.4M</div>
+                <div class="stat-change up">
+                    <i class="bi bi-arrow-up"></i>
+                    <span>+22% so với tháng trước</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="cards-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Thao tác quản trị</h3>
+                <span class="card-action">Xem thêm</span>
+            </div>
+
+            <div class="quick-actions">
+                <a th:href="@{/admin/users/new}" class="action-item">
+                    <div class="action-icon">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Thêm người dùng</div>
+                        <div class="action-desc">Tạo tài khoản quản lý hoặc nhân viên mới</div>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+
+                <a th:href="@{/admin/cars/new}" class="action-item">
+                    <div class="action-icon">
+                        <i class="bi bi-car-front"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Thêm xe mới</div>
+                        <div class="action-desc">Đăng ký thêm phương tiện vào hệ thống</div>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+
+                <a th:href="@{/admin/reports}" class="action-item">
+                    <div class="action-icon">
+                        <i class="bi bi-file-check"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Duyệt báo cáo</div>
+                        <div class="action-desc">Kiểm tra và xử lý các báo cáo từ khách hàng</div>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+                
+                <a th:href="@{/admin/settings}" class="action-item">
+                    <div class="action-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Cài đặt phí thuê</div>
+                        <div class="action-desc">Điều chỉnh bảng giá và thuế phí hệ thống</div>
+                    </div>
+                    <i class="bi bi-chevron-right action-arrow"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Log hệ thống gần đây</h3>
+                <span class="card-action">Tất cả log</span>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-item" style="cursor: default;">
+                    <div class="action-icon" style="background: #e0f2fe; color: #0891b2;">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Tài khoản mới đăng ký</div>
+                        <div class="action-desc">15 phút trước • Tran Van A</div>
+                    </div>
+                </div>
+
+                <div class="action-item" style="cursor: default;">
+                    <div class="action-icon" style="background: #fef3c7; color: #d97706;">
+                        <i class="bi bi-calendar-plus"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Đơn đặt xe mới #1042</div>
+                        <div class="action-desc">1 giờ trước • Honda Civic</div>
+                    </div>
+                </div>
+
+                <div class="action-item" style="cursor: default;">
+                    <div class="action-icon" style="background: #fce7f3; color: #db2777;">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Báo cáo sự cố</div>
+                        <div class="action-desc">2 giờ trước • Xe Mazda CX-5 trầy xước</div>
+                    </div>
+                </div>
+
+                <div class="action-item" style="cursor: default;">
+                    <div class="action-icon" style="background: #dcfce7; color: #16a34a;">
+                        <i class="bi bi-check-all"></i>
+                    </div>
+                    <div class="action-content">
+                        <div class="action-title">Duyệt đơn thành công</div>
+                        <div class="action-desc">5 giờ trước • Admin đã duyệt đơn #1041</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <title>Chỉnh sửa hồ sơ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f7fb; }
+        .wrap { max-width: 1050px; margin: 30px auto; }
+        .cardx { background:#fff; border:1px solid #eee; border-radius:12px; padding:22px; }
+        .title { font-weight:700; margin-bottom:16px; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="cardx">
+
+        <h4 class="title">Chỉnh sửa hồ sơ cá nhân</h4>
+
+        <!-- FORM -->
+        <form th:action="@{/profile/edit}"
+              th:object="${form}"
+              method="post">
+
+            <div class="row g-3">
+
+                <!-- FIRST NAME -->
+                <div class="col-md-6">
+                    <label class="form-label">Họ <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control"
+                           th:field="*{firstName}"
+                           th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('firstName')}"
+                         th:errors="*{firstName}">
+                    </div>
+                </div>
+
+                <!-- LAST NAME -->
+                <div class="col-md-6">
+                    <label class="form-label">Tên <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control"
+                           th:field="*{lastName}"
+                           th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('lastName')}"
+                         th:errors="*{lastName}">
+                    </div>
+                </div>
+
+                <!-- GENDER -->
+                <div class="col-md-6">
+                    <label class="form-label">Giới tính <span class="text-danger">*</span></label>
+                    <select class="form-select"
+                            th:field="*{gender}"
+                            th:classappend="${#fields.hasErrors('gender')} ? 'is-invalid' : ''">
+                        <option value="">-- Chọn giới tính --</option>
+                        <option value="MALE">Nam</option>
+                        <option value="FEMALE">Nữ</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('gender')}"
+                         th:errors="*{gender}">
+                    </div>
+                </div>
+
+                <!-- PHONE -->
+                <div class="col-md-6">
+                    <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control"
+                           th:field="*{phoneNumber}"
+                           th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid' : ''">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('phoneNumber')}"
+                         th:errors="*{phoneNumber}">
+                    </div>
+                </div>
+
+                <!-- EMAIL -->
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control"
+                           th:field="*{email}" readonly>
+                </div>
+
+                <!-- NATIONAL ID -->
+                <div class="col-md-6">
+                    <label class="form-label">Căn cước công dân <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control"
+                           th:field="*{nationalId}"
+                           th:classappend="${#fields.hasErrors('nationalId')} ? 'is-invalid' : ''">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('nationalId')}"
+                         th:errors="*{nationalId}">
+                    </div>
+                </div>
+
+                <!-- DRIVER LICENSE -->
+                <div class="col-md-6">
+                    <label class="form-label">Giấy phép lái xe <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control"
+                           th:field="*{driversLicense}"
+                           th:classappend="${#fields.hasErrors('driversLicense')} ? 'is-invalid' : ''">
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('driversLicense')}"
+                         th:errors="*{driversLicense}">
+                    </div>
+                </div>
+
+                <!-- ADDRESS -->
+                <div class="col-12">
+                    <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                    <textarea class="form-control"
+                              rows="3"
+                              th:field="*{address}"
+                              th:classappend="${#fields.hasErrors('address')} ? 'is-invalid' : ''"></textarea>
+
+                    <div class="invalid-feedback"
+                         th:if="${#fields.hasErrors('address')}"
+                         th:errors="*{address}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                <a href="/profile" class="btn btn-outline-secondary px-4">Hủy</a>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+</body>
+</html>

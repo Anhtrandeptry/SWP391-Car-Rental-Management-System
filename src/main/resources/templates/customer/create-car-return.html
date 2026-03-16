@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghi nhận trả xe | CRMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d9488;
+            --primary-light: #f0fdfa;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        /* Card Styling */
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            background: var(--card);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .card-header-custom {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background-color: #fff;
+        }
+
+        .card-header-custom h6 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+
+        /* Info Display */
+        .info-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .price-tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        /* Form Elements */
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+        }
+
+        /* Custom Section Spacing */
+        .return-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Damage Box */
+        .damage-area {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        /* Buttons */
+        .btn-action {
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-confirm:hover {
+            background: #0b7a6f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+        }
+
+        .btn-back {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-back:hover {
+            background: #f1f5f9;
+        }
+
+        /* Icons */
+        .icon-box {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        /* Timeline Styling */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            list-style: none;
+        }
+
+        /* Đường kẻ dọc nối các điểm */
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        /* Vòng tròn chứa icon */
+        .timeline-icon {
+            position: absolute;
+            left: -40px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: white;
+            z-index: 1;
+        }
+
+        /* Màu sắc từng trạng thái */
+        .bg-light-cyan { background-color: #e0f2fe; color: #0ea5e9; } /* Nhận xe */
+        .bg-light-yellow { background-color: #fef3c7; color: #d97706; } /* Dự kiến */
+        .bg-light-green { background-color: #dcfce7; color: #16a34a; } /* Thực tế */
+
+        .timeline-content .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .timeline-content .time-val {
+            font-weight: 700;
+            font-size: 15px;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .timeline-content .late-tag {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 4px;
+            display: block;
+        }
+        .card-body-time{
+            padding-left: 0px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="page-header d-flex justify-content-between align-items-end">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a th:href="@{/customer/return/list-car-return}" class="text-decoration-none text-muted">Quản lý xe</a></li>
+                    <li class="breadcrumb-item active">Trả xe</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold m-0">Ghi nhận trả xe</h2>
+        </div>
+        <div class="text-end text-muted d-none d-md-block">
+            <small >Ngày thực hiện: <strong id="displayActualTimeHeader" >14/03/2026</strong></small>
+        </div>
+    </div>
+
+    <form th:action="@{/customer/return/confirm}" method="post" th:object="${carReturnDto}">
+        <div class="row g-4">
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header-custom">
+                        <h6><i class="bi bi-info-circle icon-box"></i> Chi tiết đặt xe</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-group">
+                            <div class="info-label">Mã đặt xe</div>
+                            <div class="info-value text-primary" th:text="'#BK-' + ${booking.bookingId}">#BK-2026-001234</div>
+                        </div>
+
+                        <div class="info-group">
+                            <div class="info-label">Khách hàng</div>
+                            <div class="info-value" th:text="${booking.customer?.firstName +' '+booking.customer?.lastName}">Nguyễn Văn An</div>
+                            <small class="text-muted" th:text="${booking.customer?.phoneNumber}">0912345678</small><br>
+                            <small class="text-muted" th:text="${booking.customer?.email}">hai@gmail.com</small>
+                        </div>
+
+                        <hr>
+
+                        <div class="info-group">
+                            <div class="info-label">Phương tiện</div>
+                            <div class="info-value" th:text="${booking.car?.name}">TOYOTA 4RUNNER 2.5</div>
+                            <div class="badge bg-dark mt-1" th:text="${booking.car?.licensePlate}">30A-12345</div>
+                        </div>
+
+                        <div class="card-body-time">
+                        <h6 class="mb-4 fw-bold">Thời gian</h6>
+                        
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-light-cyan">
+                                    <i class="bi bi-calendar-event"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <span class="label">Nhận xe</span>
+                                    <div class="time-val" th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">
+                                        15/01/2026 <br> 08:00
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item">
+                                <div class="timeline-icon bg-light-yellow">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <span class="label">Trả xe dự kiến</span>
+                                    <div class="time-val" th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">
+                                        17/01/2026 <br> 14:00
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- <div class="timeline-item mb-0">
+                                <div class="timeline-icon bg-light-green">
+                                    <i class="bi bi-check-lg"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <span class="label">Trả xe thực tế</span>
+                                    
+                                    <div class="time-val text-success" id="displayActualTime"></div>
+
+                                    <input type="hidden" id="actualReturnDateHidden" th:field="*{actualReturnDate}">
+                                    
+                                    <input type="hidden" id="rawEndDate" th:value="${#temporals.format(booking.endDate, 'yyyy-MM-dd HH:mm:ss')}">
+                                    
+                                    <span class="late-tag" id="lateMessage" style="display:none; color: #ef4444; font-size: 12px; font-weight: bold;"></span>
+                                </div>
+                            </div> -->
+
+                            
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="price-tag">
+                            <div class="info-label" style="color: var(--primary)">Tổng tiền thuê gốc</div>
+                            <div class="h4 fw-bold mb-0" th:text="${#numbers.formatDecimal(booking.totalAmount, 0, 'COMMA', 0, 'POINT') + 'đ'}">2,000,000đ</div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="return-section">
+                    
+                    <div class="card">
+                        <div class="card-header-custom">
+                            <h6><i class="bi bi-clock-history icon-box"></i> Thông số thực tế khi trả</h6>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" th:field="*{bookingId}">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label class="form-label">Ngày giờ trả xe thực tế</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="bi bi-calendar-check"></i></span>
+                                        <input type="datetime-local" class="form-control" th:field="*{actualReturnDate}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label">Số odo đã đi</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" th:field="*{odometerReading}" placeholder="" required>
+                                        <span class="input-group-text">km</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-custom">
+                            <h6><i class="bi bi-shield-check icon-box"></i> Kiểm tra tình trạng</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Vệ sinh nội ngoại thất</label>
+                                    <select class="form-select" th:field="*{cleaningStatus}">
+                                        <option value="Sạch">Sạch sẽ</option>
+                                        <option value="Bình thường">Bình thường</option>
+                                        <option value="Bẩn">Cần vệ sinh chuyên sâu</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phát sinh hư hỏng?</label>
+                                    <div class="form-control d-flex align-items-center">
+                                        <div class="form-check form-switch m-0">
+                                            <input class="form-check-input" type="checkbox" id="damageCheck" th:field="*{damageDetected}">
+                                            <label class="form-check-label fw-bold text-danger" for="damageCheck">Có hư hỏng</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12" id="damageDetail" style="display: none;">
+                                    <label class="form-label">Mô tả chi tiết hư hỏng</label>
+                                    <textarea class="form-control" rows="2" th:field="*{damageDescription}" placeholder="Vết trầy xước, móp méo..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="card">
+                        <div class="card-header-custom d-flex justify-content-between align-items-center">
+                            <h6><i class="bi bi-cash-stack icon-box"></i> Chi phí phát sinh</h6>
+                            <span class="badge rounded-pill bg-light text-dark">Tự động cộng vào hóa đơn</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <p class="text-muted small mb-md-0">Nhập tổng tiền phạt (quá giờ, hư hỏng, vệ sinh, xăng...).</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="number" class="form-control form-control-lg text-end fw-bold text-danger" 
+                                               th:field="*{penaltyAmount}" placeholder="0">
+                                        <span class="input-group-text fw-bold">VNĐ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <div class="d-flex gap-3 mt-2">
+                        <button type="button" class="btn btn-back btn-action flex-grow-1" 
+                                th:onclick="|window.location.href='@{/customer/return/list-car-return}'|">
+                            <i class="bi bi-arrow-left me-2"></i> Quay lại
+                        </button>
+                        <button type="submit" class="btn btn-confirm btn-action flex-grow-2">
+                            Xác nhận hoàn tất trả xe <i class="bi-check2-all ms-2"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    // 1. Xử lý Hiện/Ẩn mô tả hư hỏng
+    const damageCheck = document.getElementById('damageCheck');
+    const damageDetail = document.getElementById('damageDetail');
+    const headerTime = document.getElementById("displayActualTimeHeader");
+    
+    if(headerTime){
+        const now = new Date();
+
+        const day = String(now.getDate()).padStart(2,'0');
+        const month = String(now.getMonth() + 1).padStart(2,'0');
+        const year = now.getFullYear();
+
+        headerTime.innerText = `${day}/${month}/${year}`;
+    }
+
+    if (damageCheck && damageDetail) {
+        damageCheck.addEventListener('change', function() {
+            damageDetail.style.display = this.checked ? 'block' : 'none';
+        });
+        // Kiểm tra ngay khi load (đề phòng trường hợp page reload)
+        damageDetail.style.display = damageCheck.checked ? 'block' : 'none';
+    }
+
+    // 2. Xử lý Thời gian thực và Tính phút muộn
+    document.addEventListener('DOMContentLoaded', function() {
+        const displayDiv = document.getElementById('displayActualTime');
+        const hiddenInput = document.getElementById('actualReturnDateHidden');
+        const lateMsg = document.getElementById('lateMessage');
+        const rawEndDateInput = document.getElementById('rawEndDate');
+
+        // Lấy thời gian thực tại thời điểm load trang
+        const now = new Date();
+        
+        // Định dạng hiển thị (dd/MM/yyyy HH:mm)
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+
+        // Hiển thị lên giao diện DIV
+        if (displayDiv) {
+            displayDiv.innerHTML = `${day}/${month}/${year} <br> ${hours}:${minutes}`;
+        }
+
+        // Gán giá trị vào Hidden Input để gửi về Controller (Định dạng ISO)
+        const isoString = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+        if (hiddenInput) {
+            hiddenInput.value = isoString;
+        }
+
+        // Xử lý tính toán số phút muộn
+        if (rawEndDateInput && rawEndDateInput.value) {
+            // Thay khoảng trắng bằng 'T' để Date object đọc được chính xác trên mọi trình duyệt
+            const endDate = new Date(rawEndDateInput.value.replace(' ', 'T'));
+
+            if (!isNaN(endDate.getTime())) {
+                const diffMs = now - endDate;
+                const diffMinutes = Math.floor(diffMs / 60000);
+
+                if (diffMinutes > 0) {
+                    const h = Math.floor(diffMinutes / 60);
+                    const m = diffMinutes % 60;
+                    
+                    if (lateMsg) {
+                        lateMsg.innerText = h > 0 ? `Muộn ${h} giờ ${m} phút` : `Muộn ${m} phút`;
+                        lateMsg.style.display = 'block';
+                    }
+                } else {
+                    if (lateMsg) lateMsg.style.display = 'none';
+                }
+            }
+        }
+    });
+
+    // 3. Sự kiện nút Back (Như yêu cầu ban đầu của bạn)
+    const btnBack = document.querySelector('.btn-back');
+    if (btnBack) {
+        btnBack.addEventListener('click', function() {
+            window.location.href = /*[[@{/customer/return/list-car-return}]]*/ '/customer/return/list-car-return';
+        });
+    }
+</script>
+
+</body>
+</html>

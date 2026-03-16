@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Statistics - CRMS Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            /* === BIẾN MÀU TỪ ADMIN DASHBOARD === */
+            --bg: #f8f9fa;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --line: #e5e7eb;
+
+            --primary: #0d6efd;
+            --primary-light: #3b82f6;
+            --primary-dark: #0056b3;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+
+            --radius: 12px;
+
+            /* === BIẾN MÀU CHO BẢNG CUSTOMER TƯƠNG THÍCH === */
+            --primary-blue: var(--primary);
+            --bg-gray: var(--bg);
+            --text-dark: var(--text);
+            --text-light: var(--muted);
+            --border-color: var(--line);
+            --green: var(--success);
+            --red: var(--danger);
+            --yellow: var(--warning);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* =========================================
+           TOP HEADER (LẤY TỪ ADMIN DASHBOARD)
+        ========================================= */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+            background: var(--panel); border-bottom: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; z-index: 1000; box-shadow: var(--shadow-sm);
+        }
+        .header-left { display: flex; align-items: center; gap: 1.5rem; }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; }
+        .logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; box-shadow: var(--shadow); }
+        .brand-info h1 { font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+        .brand-info span { font-size: 0.75rem; color: var(--muted); }
+        .header-right { display: flex; align-items: center; gap: 1.5rem; }
+        .search-box { position: relative; }
+        .search-box input { width: 300px; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.875rem; transition: all 0.2s; }
+        .search-box input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1); }
+        .search-box i { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .user-menu { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0.6rem 0.4rem 0.4rem; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; }
+        .user-menu:hover { background: var(--bg); }
+        .avatar-header { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--danger), var(--warning)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+        .user-info-header { display: flex; flex-direction: column; }
+        .user-info-header .name { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+        .user-info-header .role { font-size: 0.75rem; color: var(--muted); }
+
+        /* =========================================
+           SIDEBAR (LẤY TỪ ADMIN DASHBOARD)
+        ========================================= */
+        .sidebar {
+            position: fixed; left: 0; top: var(--header-height); bottom: 0;
+            width: var(--sidebar-width); background: var(--panel); border-right: 1px solid var(--line);
+            overflow-y: auto; padding: 1.5rem 0; display: flex; flex-direction: column;
+        }
+        .sidebar-section { padding: 0 1rem; margin-bottom: 2rem; }
+        .sidebar-title { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; padding: 0 0.75rem; }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.25rem; }
+        .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 10px; color: var(--muted); font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+        .nav-link:hover { background: var(--bg); color: var(--text); }
+        .nav-link.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: var(--shadow); }
+        .nav-link i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .logout-btn { width: calc(100% - 2rem); margin: 0 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; color: var(--danger); font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+        .main-content { margin-left: var(--sidebar-width); margin-top: var(--header-height); padding: 2rem; }
+
+        /* === CUSTOM STYLES CHO BOOKING STATISTICS === */
+        .tabs-nav { display: flex; gap: 2rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
+        .tab-link { padding: 0.75rem 0.25rem; color: var(--muted); font-weight: 600; text-decoration: none; position: relative; }
+        .tab-link.active { color: var(--primary); }
+        .tab-link.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background: var(--primary); }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .btn-group-time { display: flex; background: #fff; padding: 0.25rem; border-radius: 10px; border: 1px solid var(--line); }
+        .btn-time { padding: 0.5rem 1rem; border: none; background: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: var(--muted); cursor: pointer; }
+        .btn-time.active { background: var(--primary); color: white; }
+
+        /* Main Stats Cards */
+        .booking-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .summary-card { background: #fff; padding: 1.25rem; border-radius: var(--radius); border: 1px solid var(--line); }
+        .summary-card .title { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; display: flex; justify-content: space-between; }
+        .summary-card .val { font-size: 1.5rem; font-weight: 800; margin: 0.5rem 0; }
+        .summary-card .sub-text { font-size: 0.75rem; font-weight: 600; }
+
+        /* Status Detail Cards (Hàng ngang màu sắc) */
+        .status-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .status-pill { background: #fff; padding: 1rem; border-radius: var(--radius); border-left: 4px solid #ddd; position: relative; overflow: hidden; }
+        .pill-success { border-left-color: var(--success); }
+        .pill-primary { border-left-color: var(--primary); }
+        .pill-purple { border-left-color: var(--purple); }
+        .pill-warning { border-left-color: var(--warning); }
+        .pill-danger { border-left-color: var(--danger); }
+        
+        .status-pill h5 { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+        .status-pill .count { font-size: 1.25rem; font-weight: 700; display: flex; justify-content: space-between; align-items: flex-end; }
+        .status-pill .percent { font-size: 0.7rem; color: var(--muted); font-weight: 500; }
+
+        /* Chart Layout */
+        .grid-charts { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background: #fff; border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--line); }
+        .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+        /* Table Area */
+        .table-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--line); overflow: hidden; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { background: #f8fafc; padding: 1rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
+        .data-table td { padding: 1rem; border-bottom: 1px solid var(--line); font-size: 0.875rem; }
+        .status-indicator { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .btn-action { padding: 0.6rem 1.2rem; border-radius: 10px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: none; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: white; border: 1px solid var(--line); }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="bi bi-car-front-fill"></i>
+                </div>
+                <div class="brand-info">
+                    <h1>CRMS</h1>
+                    <span>Car Rental System</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="user-menu">
+                <div class="avatar-header">AD</div>
+                <div class="user-info-header">
+                    <span class="name">Administrator</span>
+                    <span class="role">Quản trị viên</span>
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Quản trị hệ thống</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Tổng quan (Dashboard)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/customers}" class="nav-link ">
+                        <i class="bi bi-people"></i>
+                        <span>Quản lý người dùng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/cars}" class="nav-link">
+                        <i class="bi bi-car-front"></i>
+                        <span>Quản lý xe</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/bookings}" class="nav-link">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Quản lý đơn đặt xe</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/reports/revenue}" class="nav-link active">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Quản lý báo cáo</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Tài khoản</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a th:href="@{/admin/profile}" class="nav-link">
+                        <i class="bi bi-person"></i>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/settings}" class="nav-link">
+                        <i class="bi bi-sliders"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <form th:action="@{/auth/logout}" method="post" style="margin-top: auto; margin-bottom: 20px;">
+            <button type="submit" class="logout-btn">
+                <i class="bi bi-box-arrow-right"></i>
+                Đăng xuất
+            </button>
+        </form>
+    </aside>
+
+    <main class="main-content">
+        <div class="tabs-nav">
+            <a th:href="@{/admin/reports/revenue}" 
+            class="tab-link" 
+            th:classappend="${activePage == 'revenue' ? 'active' : ''}">Báo cáo doanh thu</a>
+            
+            <a th:href="@{/admin/reports/booking-statistics}" 
+            class="tab-link" 
+            th:classappend="${activePage == 'booking' ? 'active' : ''}">Thống kê Booking</a>
+        </div>
+
+        <div class="toolbar">
+            <div class="btn-group-time">
+                <button class="btn-time">7 Ngày</button>
+                <button class="btn-time active">30 Ngày</button>
+                <button class="btn-time">Quý</button>
+                <button class="btn-time">Năm</button>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn-action btn-outline"><i class="bi bi-funnel"></i> Bộ lọc</button>
+                <button class="btn-action btn-primary" onclick="exportToExcel()">
+                    <i class="bi bi-download"></i> Xuất báo cáo
+                </button>
+            </div>
+        </div>
+
+        <div class="booking-summary">
+            <div class="summary-card">
+                <div class="title">TỔNG BOOKING <i class="bi bi-calendar3 color-primary"></i></div>
+                <div class="val">487</div>
+                <div class="sub-text text-success"><i class="bi bi-arrow-up"></i> 15.2% <span style="color: var(--muted); font-weight: normal;">so với kỳ trước</span></div>
+            </div>
+            <div class="summary-card">
+                <div class="title">HOÀN THÀNH <i class="bi bi-check-circle color-success"></i></div>
+                <div class="val">248</div>
+                <div class="sub-text text-success"><i class="bi bi-arrow-up"></i> 12.8% <span style="color: var(--muted); font-weight: normal;">so với kỳ trước</span></div>
+            </div>
+            <div class="summary-card">
+                <div class="title">TỶ LỆ HOÀN THÀNH <i class="bi bi-graph-up color-info"></i></div>
+                <div class="val">82.3%</div>
+                <div class="sub-text text-success"><i class="bi bi-arrow-up"></i> 5.3% <span style="color: var(--muted); font-weight: normal;">so với kỳ trước</span></div>
+            </div>
+            <div class="summary-card">
+                <div class="title">TỶ LỆ HỦY <i class="bi bi-exclamation-octagon color-danger"></i></div>
+                <div class="val">6.4%</div>
+                <div class="sub-text text-danger"><i class="bi bi-arrow-down"></i> 2.1% <span style="color: var(--muted); font-weight: normal;">so với kỳ trước</span></div>
+            </div>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-pill pill-success">
+                <h5>Hoàn Thành</h5>
+                <div class="count">248 <span class="percent">50.9%</span></div>
+            </div>
+            <div class="status-pill pill-primary">
+                <h5>Đã Xác Nhận</h5>
+                <div class="count">89 <span class="percent">18.3%</span></div>
+            </div>
+            <div class="status-pill pill-purple">
+                <h5>Đang Diễn Ra</h5>
+                <div class="count">67 <span class="percent">13.8%</span></div>
+            </div>
+            <div class="status-pill pill-warning">
+                <h5>Chờ Duyệt</h5>
+                <div class="count">52 <span class="percent">10.7%</span></div>
+            </div>
+            <div class="status-pill pill-danger">
+                <h5>Đã Hủy</h5>
+                <div class="count">31 <span class="percent">6.4%</span></div>
+            </div>
+        </div>
+
+        <div class="grid-charts">
+            <div class="card">
+                <h3>Phân Bổ Booking</h3>
+                <canvas id="bookingPieChart"></canvas>
+            </div>
+            <div class="card">
+                <h3>Xu Hướng Booking Theo Tháng</h3>
+                <canvas id="bookingTrendChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Chi Tiết Thống Kê Trạng Thái</h3>
+            <div class="table-card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Trạng Thái</th>
+                            <th>Số Lượng</th>
+                            <th>Tỷ Lệ</th>
+                            <th>So với kỳ trước</th>
+                            <th>Xu Hướng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><div class="status-indicator"><span class="dot" style="background: var(--success);"></span> Hoàn Thành</div></td>
+                            <td><strong>248</strong></td>
+                            <td>50.9%</td>
+                            <td class="text-success">+11%</td>
+                            <td class="text-success"><i class="bi bi-graph-up-arrow"></i></td>
+                        </tr>
+                        <tr>
+                            <td><div class="status-indicator"><span class="dot" style="background: var(--primary);"></span> Đã Xác Nhận</div></td>
+                            <td><strong>89</strong></td>
+                            <td>18.3%</td>
+                            <td class="text-success">+13%</td>
+                            <td class="text-success"><i class="bi bi-graph-up-arrow"></i></td>
+                        </tr>
+                        <tr>
+                            <td><div class="status-indicator"><span class="dot" style="background: var(--purple);"></span> Đang Diễn Ra</div></td>
+                            <td><strong>67</strong></td>
+                            <td>13.8%</td>
+                            <td class="text-success">+7%</td>
+                            <td class="text-success"><i class="bi bi-graph-up-arrow"></i></td>
+                        </tr>
+                        <tr>
+                            <td><div class="status-indicator"><span class="dot" style="background: var(--warning);"></span> Chờ Duyệt</div></td>
+                            <td><strong>52</strong></td>
+                            <td>10.7%</td>
+                            <td class="text-success">+10%</td>
+                            <td class="text-success"><i class="bi bi-graph-up-arrow"></i></td>
+                        </tr>
+                        <tr>
+                            <td><div class="status-indicator"><span class="dot" style="background: var(--danger);"></span> Đã Hủy</div></td>
+                            <td><strong>31</strong></td>
+                            <td>6.4%</td>
+                            <td class="text-danger">-1%</td>
+                            <td class="text-danger"><i class="bi bi-graph-down-arrow"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Cấu hình Chart.js
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+
+        // 1. Pie Chart - Phân bổ trạng thái
+        new Chart(document.getElementById('bookingPieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Hoàn thành', 'Đã xác nhận', 'Đang diễn ra', 'Chờ duyệt', 'Đã hủy'],
+                datasets: [{
+                    data: [248, 89, 67, 52, 31],
+                    backgroundColor: ['#10b981', '#0d6efd', '#8b5cf6', '#f59e0b', '#ef4444'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+
+        // 2. Bar Chart - Xu hướng (Gồm 3 cột: Tổng, Hoàn thành, Hủy)
+        new Chart(document.getElementById('bookingTrendChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'Tổng booking',
+                        data: [45, 52, 48, 58, 65, 68, 75, 71, 78, 82, 76, 88],
+                        backgroundColor: '#0d6efd',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Hoàn thành',
+                        data: [35, 42, 38, 47, 55, 54, 61, 58, 63, 67, 61, 72],
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Đã hủy',
+                        data: [2, 3, 2, 4, 3, 5, 2, 4, 3, 2, 4, 5],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, grid: { drawBorder: false, color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { position: 'top', labels: { usePointStyle: true } }
+                }
+            }
+        });
+
+        function exportCustomData() {
+            const data = [
+                ["Trạng Thái", "Số Lượng", "Tỷ Lệ", "So với kỳ trước"],
+                ["Hoàn Thành", 248, "50.9%", "+11%"],
+                ["Đã Xác Nhận", 89, "18.3%", "+13%"],
+                ["Đang Diễn Ra", 67, "13.8%", "+7%"],
+                ["Chờ Duyệt", 52, "10.7%", "+10%"],
+                ["Đã Hủy", 31, "6.4%", "-1%"]
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Booking_Report");
+            XLSX.writeFile(wb, "Bao_cao_chi_tiet.xlsx");
+        }
+
+        function exportToExcel() {
+            // 1. Chọn bảng dữ liệu cần xuất
+            const table = document.querySelector(".data-table");
+            
+            // 2. Tạo một Workbook mới
+            const wb = XLSX.utils.book_new();
+            
+            // 3. Chuyển đổi HTML Table sang Sheet
+            // Lưu ý: XLSX.utils.table_to_sheet sẽ lấy toàn bộ text trong các ô td
+            const ws = XLSX.utils.table_to_sheet(table);
+
+            // 4. Thêm Sheet vào Workbook với tên "Thống kê Booking"
+            XLSX.utils.book_append_sheet(wb, ws, "Booking_Statistics");
+
+            // 5. Tiến hành tải file về máy
+            // File sẽ có tên: Bao_cao_booking_ ngay_thang_nam.xlsx
+            const date = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `Bao_cao_booking_${date}.xlsx`);
+        }
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ chủ xe - Car Rental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-blue: #0056b3;
+            --bg-body: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --green: #22c55e;
+            --red: #ef4444;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-dark); padding: 40px 20px; }
+        .container { max-width: 1250px; margin: 0 auto; }
+
+        /* Breadcrumb & Header */
+        .breadcrumb { font-size: 0.9rem; color: var(--text-light); margin-bottom: 8px; }
+        .breadcrumb a { color: var(--primary-blue); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-header h1 { font-size: 1.8rem; font-weight: 700; color: #1e293b; }
+
+        /* Grid Layout */
+        .profile-grid { 
+            display: grid; 
+            grid-template-columns: 350px 1fr; 
+            gap: 24px; 
+            align-items: stretch; /* Đổi từ start sang stretch để 2 cột cao bằng nhau */
+        }
+        /* SIDEBAR - Cập nhật để tự động khớp chiều cao */
+        .card-sidebar { 
+            background: var(--white); 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            padding: 35px 24px; 
+            width: 100%; /* Để nó chiếm hết 350px của aside */
+            height: 100%; /* Quan trọng: Để cao bằng aside (chiều cao của hàng grid) */
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            height: 574px;
+        }
+
+        /* Đảm bảo aside luôn giãn theo hàng grid */
+        aside {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-avatar-section { text-align: center; margin-bottom: 24px; }
+        .avatar-circle { width: 80px; height: 80px; background: #eff6ff; color: var(--primary-blue); border-radius: 50%; display: grid; place-items: center; font-size: 2rem; margin: 0 auto 16px; }
+        .user-name { font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 8px; }
+        
+        .status-badge { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 auto; width: fit-content; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .status-badge.active { background: #f0fdf4; color: var(--green); }
+        .status-badge.disabled { background: #fef2f2; color: var(--red); }
+        .status-badge.pending { background: #fffbeb; color: #f59e0b; } 
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+        /* Information list */
+        .info-group { 
+            margin-top: 24px; 
+            border-top: 1px solid #f1f5f9; 
+            padding-top: 24px;
+            flex-grow: 1; 
+        }
+        .info-item { display: flex; gap: 12px; margin-bottom: 20px; align-items: flex-start; }
+        .info-item i { color: var(--text-light); width: 20px; margin-top: 3px; font-size: 0.95rem; }
+        .info-label { font-size: 0.75rem; color: var(--text-light); display: block; margin-bottom: 2px; }
+        .info-value { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); }
+
+        /* Nút Vô hiệu hóa bám đáy */
+        .sidebar-action { margin-top: auto; padding-top: 10px; }
+        .btn-disable-outline { 
+            width: 100%; padding: 12px; border: 1px solid #fee2e2; 
+            background: white; color: var(--red); border-radius: 8px; 
+            font-weight: 600; cursor: pointer; transition: 0.2s; 
+            text-align: center; text-decoration: none; display: block;
+        }
+        .btn-disable-outline:hover { background: #fff1f2; }
+
+        /* Cột bên phải */
+        .content-area { display: flex; flex-direction: column; gap: 24px; }
+        
+        .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .stat-box { padding: 24px; border-radius: 12px; background: var(--white); border: 1px solid var(--border-color); }
+        .stat-box .label { font-size: 0.85rem; color: var(--text-light); margin-bottom: 8px; }
+        .stat-box .val { font-size: 1.5rem; font-weight: 700; color: var(--primary-blue); }
+
+        .section-card { background: var(--white); border-radius: 16px; border: 1px solid var(--border-color); padding: 24px; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+        .empty-history { text-align: center; padding: 60px 0; color: var(--text-light); }
+        .empty-history i { font-size: 3rem; margin-bottom: 16px; opacity: 0.2; display: block; }
+
+        .system-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .sys-item { display: flex; align-items: center; gap: 12px; }
+        .sys-icon { width: 40px; height: 40px; background: #f8fafc; border-radius: 8px; display: grid; place-items: center; color: var(--text-light); }
+
+        .btn-back { padding: 8px 16px; background: var(--white); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-dark); text-decoration: none; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-back:hover { background: #f1f5f9; }
+    </style>
+</head>
+<body>
+
+<div class="container" th:if="${owner != null}">
+    <div class="breadcrumb">
+        <a href="/admin/owners">Chủ xe</a> / <span>Chi tiết hồ sơ</span>
+    </div>
+
+    <div class="page-header">
+        <h1>Hồ sơ chủ xe</h1>
+        <a href="/admin/owners" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="profile-grid">
+        <aside>
+            <div class="card-sidebar">
+                <div class="user-avatar-section">
+                    <div class="avatar-circle"><i class="fas fa-user-tie"></i></div>
+                    <h2 class="user-name" th:text="${owner.fullName}">Phạm Thu Dung</h2>
+                    <div class="status-badge" 
+                        th:classappend="${owner.status.name() == 'ACTIVE' ? 'active' : (owner.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
+                        <span class="dot"></span>
+                        <span th:text="${owner.status.name() == 'ACTIVE' ? 'Hoạt động' : (owner.status.name() == 'PENDING' ? 'Chờ duyệt' : 'Vô hiệu hóa')}">Hoạt động</span>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-item">
+                        <i class="far fa-envelope"></i>
+                        <div>
+                            <span class="info-label">Email chủ xe</span>
+                            <span class="info-value" th:text="${owner.email}">ptdung@example.com</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <div>
+                            <span class="info-label">Số điện thoại</span>
+                            <span class="info-value" th:text="${owner.phoneNumber}">0934567890</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <span class="info-label">Địa chỉ</span>
+                            <span class="info-value" th:text="${owner.address}">Cần Thơ</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <div>
+                            <span class="info-label">Đối tác từ</span>
+                            <span class="info-value" th:text="${#temporals.format(owner.createdAt, 'dd/MM/yyyy')}">10/02/2026</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-action">
+                    <form id="disableForm" th:action="@{/admin/owners/disable(id=${owner.id})}" method="post">
+                        <button type="button" class="btn-disable-outline" onclick="confirmDisable()">Vô hiệu hóa tài khoản</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <div class="mini-stats">
+                <div class="stat-box">
+                    <p class="label">Tổng doanh thu</p>
+                    <p class="val" th:text="${#numbers.formatDecimal(owner.totalRevenue, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</p>
+                </div>
+                <div class="stat-box">
+                    <p class="label">Số lượt cho thuê</p>
+                    <p class="val">0</p>
+                </div>
+            </div>
+
+            <section class="section-card">
+                <div class="section-title">
+                    <span>Lịch sử cho thuê xe gần đây</span>
+                    <i class="fas fa-history" style="color: var(--text-light)"></i>
+                </div>
+                <div class="empty-history">
+                    <i class="fas fa-car-side"></i>
+                    <p>Chưa có dữ liệu giao dịch cho người dùng này.</p>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="section-title">Thông tin hệ thống</div>
+                <div class="system-grid">
+                    <div class="sys-item">
+                        <div class="sys-icon"><i class="fas fa-sign-in-alt"></i></div>
+                        <div>
+                            <span class="info-label">Đăng nhập cuối</span>
+                            <span class="info-value">Chưa có dữ liệu</span>
+                        </div>
+                    </div>
+                    <div class="sys-item">
+                        <div class="sys-icon"><i class="fas fa-shield-alt"></i></div>
+                        <div>
+                            <span class="info-label">Xác thực 2 lớp</span>
+                            <span class="info-value">Đã tắt</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+    function confirmDisable() {
+        Swal.fire({
+            title: 'Xác nhận vô hiệu hóa?',
+            text: "Chủ xe này sẽ không thể đăng xe hoặc nhận yêu cầu thuê mới!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) document.getElementById('disableForm').submit();
+        });
+    }
+</script>
+
+</body>
+</html>

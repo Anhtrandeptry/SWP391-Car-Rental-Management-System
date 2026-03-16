@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner | Xác nhận hoàn tất trả xe</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root { --primary-color: #0d9488; --secondary-bg: #f8fafc; }
+        body { background-color: #f1f5f9; font-family: 'Inter', system-ui, sans-serif; }
+        .card { border: none; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .section-header { border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; margin-bottom: 20px; font-weight: 700; color: #1e293b; }
+        .data-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+        .data-label { color: #64748b; font-size: 0.9rem; }
+        .data-value { font-weight: 600; color: #334155; }
+        .penalty-input { font-size: 1.25rem; font-weight: 700; color: #dc2626; border: 2px solid #fecaca; }
+        .penalty-input:focus { border-color: #dc2626; box-shadow: 0 0 0 0.25rem rgba(220, 38, 38, 0.1); }
+        .btn-approve { background-color: var(--primary-color); color: white; border: none; font-weight: 600; transition: all 0.2s; }
+        .btn-approve:hover { background-color: #0f766e; transform: translateY(-1px); }
+        .alert-confirm { background-color: #f0fdfa; border: 1px solid #ccfbf1; }
+        .btn-approve {
+            transition: all 0.3s ease;
+        }
+        .btn-approve:hover {
+            background-color: #0f766e !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3) !important;
+        }
+    </style>
+</head>
+<body>
+<div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    <span th:text="${successMsg}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    <span th:text="${errorMsg}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div class="container py-5">
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/owner/return/list-car-return}" class="text-decoration-none">Quản lý trả xe</a></li>
+                <li class="breadcrumb-item active">Xác nhận đơn #<span th:text="${carReturn.booking.bookingId}"></span></li>
+            </ol>
+        </nav>
+        <h3 class="fw-bold text-dark">Phê duyệt & Tính phí hoàn trả</h3>
+    </div>
+
+    <form th:action="@{/owner/return/confirm/{id}(id=${carReturn.returnId})}" method="post">
+        <input type="hidden" name="returnId" th:value="${carReturn.returnId}">
+        
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="card h-100 p-4">
+                    <h5 class="section-header"><i class="bi bi-file-earmark-text me-2"></i>Dữ liệu khách hàng đã khai báo</h5>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="data-label text-uppercase small fw-bold">Số ODO khi trả</label>
+                                <div class="fs-4 fw-bold text-primary" th:text="${carReturn.odometerReading + ' km'}">55,320 km</div>
+                                <div class="small text-muted mt-1">Lúc nhận: 55,000 km</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <label class="data-label text-uppercase small fw-bold">Tình trạng vệ sinh</label>
+                                <div class="fs-4 fw-bold text-dark" th:text="${carReturn.cleaningStatus}">Sạch sẽ</div>
+                                <div class="small text-muted mt-1">Khách tự khai báo</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 border rounded">
+                                <label class="data-label text-uppercase small fw-bold">Mô tả hư hỏng (nếu có)</label>
+                                <p class="mb-0 fw-medium" th:text="${carReturn.damageDescription != null && !carReturn.damageDescription.isEmpty() ? carReturn.damageDescription : 'Không có hư hỏng được báo cáo'}">
+                                    Không có hư hỏng
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <h6 class="fw-bold mt-2">Thông tin khách thuê</h6>
+                            <div class="data-row">
+                                <span class="data-label">Họ tên:</span>
+                                <span class="data-value" th:text="${carReturn.booking.customer.firstName + ' ' + carReturn.booking.customer.lastName}">Nguyễn Văn An</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Số điện thoại:</span>
+                                <span class="data-value" th:text="${carReturn.booking.customer.phoneNumber}">0912 345 678</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card p-4 border-primary border-top border-4 shadow">
+                    <h5 class="section-header text-primary"><i class="bi bi-calculator me-2"></i>Quyết định tài chính</h5>
+                    
+                    <div class="mb-4 text-center p-3 bg-warning bg-opacity-10 rounded">
+                        <div class="text-warning-emphasis small fw-bold mb-1 text-uppercase">Phí thuê gốc (Đã thu)</div>
+                        <h4 class="fw-bold mb-0 text-dark" th:text="${#numbers.formatDecimal(carReturn.booking.totalAmount, 0, 'COMMA', 0, 'POINT') + ' VND'}">2,000,000 VND</h4>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-danger">Số tiền phạt phát sinh (VND)</label>
+                        <div class="d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                            <div class="flex-grow-1">
+                                <h4 class="mb-0 fw-bold text-danger">
+                                    <span th:text="${#numbers.formatDecimal(carReturn.penaltyAmount, 0, 'COMMA', 0, 'POINT')}">0</span> VND
+                                </h4>
+                                <input type="hidden" name="penaltyAmount" th:value="${carReturn.penaltyAmount}">
+                            </div>
+                            
+                            <a th:href="@{/owner/return/calculate-penalty/{id}(id=${carReturn.returnId})}" 
+                            class="btn btn-outline-danger d-flex align-items-center gap-2 shadow-sm">
+                                <i class="bi bi-calculator"></i>
+                                <span>Tính phí ngay</span>
+                            </a>
+                        </div>
+                        <div class="form-text text-muted mt-2">
+                            * Hệ thống sẽ tự động tính dựa trên số giờ quá hạn, nhiên liệu và tình trạng xe.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Đánh giá khách hàng</label>
+                        <div class="d-flex gap-2 mb-2 text-warning fs-4" id="star-rating">
+                            <i class="bi bi-star-fill" data-value="1"></i>
+                            <i class="bi bi-star-fill" data-value="2"></i>
+                            <i class="bi bi-star-fill" data-value="3"></i>
+                            <i class="bi bi-star-fill" data-value="4"></i>
+                            <i class="bi bi-star-fill" data-value="5"></i>
+                        </div>
+                        <textarea name="ownerNote" class="form-control" rows="3" 
+                                  placeholder="Ghi chú nội bộ về tình trạng xe khi nhận lại hoặc lý do phạt..."></textarea>
+                    </div>
+
+                    <div class="alert alert-confirm mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="flexCheckDefault" required>
+                            <label class="form-check-label small fw-medium" for="flexCheckDefault">
+                                Tôi xác nhận xe đã về kho và đã thu đủ tiền phạt từ khách hàng.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div th:if="${!carReturn.ownerConfirmation}" class="d-grid gap-2">
+                            <form th:action="@{/owner/return/confirm/{id}(id=${carReturn.returnId})}" method="post">
+                                <button type="submit" class="btn btn-approve py-3 fs-5 shadow-sm w-100" 
+                                        style="background-color: #0d9488; color: white; border: none; border-radius: 12px;">
+                                    <i class="bi bi-shield-check me-2"></i>HOÀN TẤT & ĐÓNG ĐƠN
+                                </button>
+                            </form>
+                            <p class="text-center text-muted mt-2 small">
+                                <i class="bi bi-info-circle me-1"></i> 
+                                Hành động này sẽ cập nhật trạng thái xe thành "Sẵn sàng" và kết thúc giao dịch.
+                            </p>
+                        </div>
+
+                        <div th:if="${carReturn.ownerConfirmation}" class="alert alert-success d-flex align-items-center border-0 py-3 shadow-sm" style="border-radius: 12px;">
+                            <i class="bi bi-check-circle-fill fs-3 me-3"></i>
+                            <div>
+                                <div class="fw-bold">Đơn hàng đã được đóng</div>
+                                <div class="small">Chủ xe đã xác nhận tình trạng và phí phạt vào lúc 
+                                    <span th:text="${#temporals.format(T(java.time.LocalDateTime).now(), 'dd/MM/yyyy HH:mm')}"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Script đơn giản để chọn sao đánh giá (nếu bạn muốn lưu số sao)
+    const stars = document.querySelectorAll('#star-rating i');
+    stars.forEach(star => {
+        star.style.cursor = 'pointer';
+        star.addEventListener('click', () => {
+            const val = star.getAttribute('data-value');
+            stars.forEach(s => {
+                s.classList.replace(s.getAttribute('data-value') <= val ? 'bi-star' : 'bi-star-fill', 
+                                    s.getAttribute('data-value') <= val ? 'bi-star-fill' : 'bi-star');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

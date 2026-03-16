@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Owner Management - CRMS</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            /* === BIẾN MÀU TỪ ADMIN DASHBOARD === */
+            --bg: #f8f9fa;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --line: #e5e7eb;
+
+            --primary: #0d6efd;
+            --primary-light: #3b82f6;
+            --primary-dark: #0056b3;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+
+            --radius: 12px;
+
+            /* === BIẾN MÀU CHO BẢNG CUSTOMER TƯƠNG THÍCH === */
+            --primary-blue: var(--primary);
+            --bg-gray: var(--bg);
+            --text-dark: var(--text);
+            --text-light: var(--muted);
+            --border-color: var(--line);
+            --green: var(--success);
+            --red: var(--danger);
+            --yellow: var(--warning);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        /* =========================================
+           TOP HEADER (LẤY TỪ ADMIN DASHBOARD)
+        ========================================= */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+            background: var(--panel); border-bottom: 1px solid var(--line);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 2rem; z-index: 1000; box-shadow: var(--shadow-sm);
+        }
+        .header-left { display: flex; align-items: center; gap: 1.5rem; }
+        .logo-section { display: flex; align-items: center; gap: 0.75rem; }
+        .logo { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; box-shadow: var(--shadow); }
+        .brand-info h1 { font-size: 1.1rem; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+        .brand-info span { font-size: 0.75rem; color: var(--muted); }
+        .header-right { display: flex; align-items: center; gap: 1.5rem; }
+        .search-box { position: relative; }
+        .search-box input { width: 300px; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--line); border-radius: var(--radius); font-size: 0.875rem; transition: all 0.2s; }
+        .search-box input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1); }
+        .search-box i { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+        .user-menu { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0.6rem 0.4rem 0.4rem; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; }
+        .user-menu:hover { background: var(--bg); }
+        .avatar-header { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--danger), var(--warning)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem; }
+        .user-info-header { display: flex; flex-direction: column; }
+        .user-info-header .name { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+        .user-info-header .role { font-size: 0.75rem; color: var(--muted); }
+
+        /* =========================================
+           SIDEBAR (LẤY TỪ ADMIN DASHBOARD)
+        ========================================= */
+        .sidebar {
+            position: fixed; left: 0; top: var(--header-height); bottom: 0;
+            width: var(--sidebar-width); background: var(--panel); border-right: 1px solid var(--line);
+            overflow-y: auto; padding: 1.5rem 0; display: flex; flex-direction: column;
+        }
+        .sidebar-section { padding: 0 1rem; margin-bottom: 2rem; }
+        .sidebar-title { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; padding: 0 0.75rem; }
+        .nav-menu { list-style: none; }
+        .nav-item { margin-bottom: 0.25rem; }
+        .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 10px; color: var(--muted); font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+        .nav-link:hover { background: var(--bg); color: var(--text); }
+        .nav-link.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; box-shadow: var(--shadow); }
+        .nav-link i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .logout-btn { width: calc(100% - 2rem); margin: 0 1rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; color: var(--danger); font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .logout-btn:hover { background: var(--danger); color: white; }
+
+        /* =========================================
+           MAIN CONTENT, THỐNG KÊ & BẢNG
+        ========================================= */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--panel); border-radius: var(--radius); padding: 1.25rem; border: 1px solid var(--line); display: flex; align-items: center; gap: 1.25rem; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+        .stat-icon.blue { background: rgba(13, 110, 253, 0.1); color: var(--primary); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .stat-icon.yellow { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .stat-info h3 { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+        .stat-info p { font-size: 1.5rem; font-weight: 700; }
+
+        /* Table Area */
+        .content-table { background: var(--panel); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--line); }
+        .table-header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 15px; }
+        .tab-group { display: flex; gap: 8px; }
+        .tab { padding: 10px 20px; font-weight: 500; cursor: pointer; color: var(--muted); display: flex; align-items: center; gap: 8px; border-radius: 8px; }
+        .tab.active { color: var(--primary); background: rgba(13, 110, 253, 0.1); }
+        .badge-tab { background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.75rem; color: var(--muted); padding: 12px; border-bottom: 1px solid var(--line); text-transform: uppercase; }
+        td { padding: 15px 12px; font-size: 0.875rem; border-bottom: 1px solid var(--line); }
+        tbody tr:hover { background-color: var(--bg); cursor: pointer; }
+        
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-pill.active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-pill.pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-pill.disabled { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+        /* Footer & Pagination */
+        .table-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; }
+        .page-btn { width: 36px; height: 36px; display: inline-grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; margin: 0 2px; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        /* Dropdown & Modal tương tự Customer */
+        .action-dropdown { position: relative; text-align: center; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background: white; min-width: 180px; box-shadow: var(--shadow-lg); z-index: 100; border-radius: 8px; border: 1px solid var(--line); padding: 5px 0; }
+        .dropdown-content.show { display: block; }
+        .dropdown-content a { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 0.85rem; }
+        .dropdown-content a:hover { background: var(--bg); }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 10% auto; width: 450px; border-radius: 16px; overflow: hidden; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateY(-20px); } to { transform: translateY(0); } }
+        .modal-header { padding: 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); }
+        .modal-footer { padding: 15px 20px; display: flex; justify-content: flex-end; gap: 12px; background: var(--bg); }
+        .btn-confirm { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; }
+        .btn-cancel { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--line); background: white; cursor: pointer; }
+
+        @media (max-width: 1024px){ .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-section">
+                <div class="logo"><i class="bi bi-car-front-fill"></i></div>
+                <div class="brand-info">
+                    <h1>CRMS</h1>
+                    <span>Car Rental System</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="user-menu">
+                <div class="avatar-header">AD</div>
+                <div class="user-info-header" style="display: flex; flex-direction: column; margin-left: 10px;">
+                    <span style="font-size: 0.875rem; font-weight: 600;">Administrator</span>
+                    <span style="font-size: 0.75rem; color: var(--muted);">Quản trị viên</span>
+                </div>
+                <i class="bi bi-chevron-down" style="margin-left: 10px;"></i>
+            </div>
+        </div>
+    </header>
+
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Quản trị hệ thống</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Tổng quan (Dashboard)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/customers}" class="nav-link active">
+                        <i class="bi bi-people"></i>
+                        <span>Quản lý người dùng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/cars}" class="nav-link">
+                        <i class="bi bi-car-front"></i>
+                        <span>Quản lý xe</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/bookings}" class="nav-link">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Quản lý đơn đặt xe</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/reports}" class="nav-link">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Quản lý báo cáo</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Tài khoản</div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a th:href="@{/admin/profile}" class="nav-link">
+                        <i class="bi bi-person"></i>
+                        <span>Hồ sơ cá nhân</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a th:href="@{/admin/settings}" class="nav-link">
+                        <i class="bi bi-sliders"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <form th:action="@{/auth/logout}" method="post" style="margin-top: auto; margin-bottom: 20px;">
+            <button type="submit" class="logout-btn">
+                <i class="bi bi-box-arrow-right"></i>
+                Đăng xuất
+            </button>
+        </form>
+    </aside>
+
+    <div class="main-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-user-tie"></i></div>
+                <div class="stat-info">
+                    <h3>Tổng chủ xe</h3>
+                    <p th:text="${stats != null ? stats.totalOwners : 0}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+                <div class="stat-info">
+                    <h3>Hoạt động</h3>
+                    <p th:text="${stats != null ? stats.activeOwners : 0}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fas fa-hourglass-half"></i></div>
+                <div class="stat-info">
+                    <h3>Chờ duyệt</h3>
+                    <p th:text="${stats != null ? stats.pendingOwners : 0}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-user-slash"></i></div>
+                <div class="stat-info">
+                    <h3>Đã khóa</h3>
+                    <p th:text="${stats != null ? stats.inactiveOwners : 0}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <main class="content-table">
+            <div class="table-header">
+                <div class="tab-group">
+                    <a th:href="@{/admin/customers}" class="tab">
+                        <i class="fas fa-users"></i> Customers
+                    </a>
+                    <a th:href="@{/admin/owners}" class="tab active">
+                        <i class="fas fa-car-side"></i> Owners
+                        <span class="badge-tab" th:text="${totalElements}">0</span>
+                    </a>
+                </div>
+                
+                <div class="search-container">
+                    <form th:action="@{/admin/owners}" method="get" style="display: flex; gap: 8px;">
+                        <input type="text" name="keyword" th:value="${keyword}" 
+                              placeholder="Tìm theo tên, email, sđt..." 
+                              class="search-bar" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); width: 250px; font-size: 0.85rem;">
+                        
+                        <div style="display: flex; align-items: center; gap: 5px; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: white;">
+                            <i class="fas fa-filter" style="color: var(--text-light); font-size: 0.9rem;"></i>
+                            <select name="status" onchange="this.form.submit()" style="border: none; outline: none; background: transparent; color: var(--text-dark); cursor: pointer; font-size: 0.85rem;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="ACTIVE" th:selected="${status?.name() == 'ACTIVE'}">Hoạt động</option>
+                                <option value="PENDING" th:selected="${status?.name() == 'PENDING'}">Chờ duyệt</option>
+                                <option value="DISABLED" th:selected="${status?.name() == 'DISABLED'}">Đã khóa</option>
+                            </select>
+                        </div>
+                        <button type="submit" style="padding: 8px 15px; border-radius: 8px; border: none; background: var(--primary); color: white;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>CHỦ XE</th>
+                        <th>EMAIL</th>
+                        <th>SỐ ĐIỆN THOẠI</th>
+                        <th style="text-align: center;">SỐ XE</th>
+                        <th>DOANH THU</th>
+                        <th>TRẠNG THÁI</th>
+                        <th>NGÀY TẠO</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="owner : ${owners}" th:onclick="|window.location.href='/admin/owners/detail-page?id=${owner.id}'|">
+                        <td style="font-weight: 600;" th:text="${owner.fullName}">Name</td>
+                        <td th:text="${owner.email}">Email</td>
+                        <td th:text="${owner.phoneNumber}">Phone</td>
+                        <td style="text-align: center;" th:text="${owner.numberOfCars}">0</td>
+                        <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(owner.totalRevenue != null ? owner.totalRevenue : 0, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</td>
+                        <td>
+                            <span class="status-pill" th:classappend="${owner.status.name() == 'ACTIVE' ? 'active' : (owner.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
+                                <span class="dot"></span>
+                                <span th:text="${owner.status.name()}">Status</span>
+                            </span>
+                        </td>
+                        <td th:text="${owner.createdAt != null ? #temporals.format(owner.createdAt, 'dd/MM/yyyy') : 'N/A'}">Date</td>                       
+                        <td class="action-dropdown" onclick="event.stopPropagation();">
+                            <i class="fas fa-ellipsis-v" style="cursor: pointer; padding: 5px;" onclick="toggleDropdown(this)"></i>
+                            <div class="dropdown-content">
+                                <a th:if="${owner.status.name() == 'PENDING'}" href="javascript:void(0)" 
+                                   th:onclick="confirmStatus('APPROVE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                                    <i class="fas fa-check-circle" style="color: var(--success)"></i> Phê duyệt
+                                </a>
+                                <a th:if="${owner.status.name() == 'ACTIVE'}" href="javascript:void(0)"
+                                   th:onclick="confirmStatus('DISABLE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                                    <i class="fas fa-user-slash" style="color: var(--danger)"></i> Vô hiệu hóa
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="table-footer">
+                <div style="font-size: 0.85rem; color: var(--muted);">
+                    Trang <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
+                </div>
+                <div th:if="${totalPages > 1}">
+                    <a th:href="@{/admin/owners(page=${currentPage - 1}, keyword=${keyword}, status=${status})}" 
+                       class="page-btn" th:classappend="${currentPage == 0} ? 'disabled' : ''"><i class="fas fa-chevron-left"></i></a>
+                    
+                    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                        <a th:href="@{/admin/owners(page=${i}, keyword=${keyword}, status=${status})}" 
+                           class="page-btn" th:classappend="${i == currentPage} ? 'active' : ''" th:text="${i + 1}">1</a>
+                    </span>
+
+                    <a th:href="@{/admin/owners(page=${currentPage + 1}, keyword=${keyword}, status=${status})}" 
+                       class="page-btn" th:classappend="${currentPage >= totalPages - 1} ? 'disabled' : ''"><i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle" style="color: var(--warning); font-size: 1.2rem;"></i>
+                <h3 id="modalTitle">Xác nhận thay đổi?</h3>
+            </div>
+            <div style="padding: 20px; background: var(--bg); display: flex; align-items: center; gap: 15px;">
+                <div class="avatar-header" style="background: var(--primary-light)"><i class="fas fa-user"></i></div>
+                <div>
+                    <div id="modalUserName" style="font-weight: 600">Username</div>
+                    <div id="modalUserEmail" style="font-size: 0.8rem; color: var(--muted)">email@example.com</div>
+                </div>
+            </div>
+            <form id="statusForm" method="post">
+                <input type="hidden" name="id" id="targetUserId" />
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+                    <button type="submit" class="btn-confirm" id="modalConfirmBtn">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown(element) {
+            event.stopPropagation();
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+            element.nextElementSibling.classList.toggle('show');
+        }
+
+        function confirmStatus(action, id, name, email) {
+            const modal = document.getElementById('confirmModal');
+            const form = document.getElementById('statusForm');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            
+            document.getElementById('targetUserId').value = id;
+            document.getElementById('modalUserName').innerText = name;
+            document.getElementById('modalUserEmail').innerText = email;
+
+            if (action === 'DISABLE') {
+                form.action = "/admin/owners/disable";
+                confirmBtn.innerText = "Khóa chủ xe";
+                confirmBtn.style.backgroundColor = "var(--danger)";
+            } else if (action === 'APPROVE') {
+                form.action = "/admin/owners/approve";
+                confirmBtn.innerText = "Phê duyệt";
+                confirmBtn.style.backgroundColor = "var(--success)";
+            }
+            modal.style.display = "block";
+        }
+
+        function closeModal() { document.getElementById('confirmModal').style.display = "none"; }
+        
+        window.onclick = function(event) {
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+            if (event.target == document.getElementById('confirmModal')) closeModal();
+        }
+    </script>
+</body>
+</html>

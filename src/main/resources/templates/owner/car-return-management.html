@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Customer Dashboard - CRMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root{
+            --bg: #f8f9fa;
+            --panel: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --line: #e5e7eb;
+
+            --primary: #0d6efd;
+            --primary-light: #3b82f6;
+            --primary-dark: #0056b3;
+
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+
+            --sidebar-width: 280px;
+            --header-height: 70px;
+
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        a{
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* TOP HEADER */
+        .header{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            background: var(--panel);
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left{
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-section{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo{
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .brand-info h1{
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .brand-info span{
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .header-right{
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-box{
+            position: relative;
+        }
+
+        .search-box input{
+            width: 300px;
+            padding: 0.6rem 1rem 0.6rem 2.5rem;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus{
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        }
+
+        .search-box i{
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+
+        .header-actions{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .icon-btn{
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover{
+            background: var(--line);
+            color: var(--text);
+        }
+
+        .icon-btn .badge{
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .user-menu{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.4rem 0.6rem 0.4rem 0.4rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .user-menu:hover{
+            background: var(--bg);
+        }
+
+        .avatar{
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .user-info{
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-info .name{
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .user-info .role{
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            position: fixed;
+            left: 0;
+            top: var(--header-height);
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--panel);
+            border-right: 1px solid var(--line);
+            overflow-y: auto;
+            padding: 1.5rem 0;
+        }
+
+        .sidebar-section{
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title{
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            padding: 0 0.75rem;
+        }
+
+        .nav-menu{
+            list-style: none;
+            padding-left: 0px;
+        }
+
+        .nav-item{
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover{
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .nav-link.active{
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-link i{
+            font-size: 1.1rem;
+            width: 20px;
+        }
+
+        .logout-btn{
+            width: calc(100% - 2rem);
+            margin: 0 1rem;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            color: var(--danger);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover{
+            background: var(--danger);
+            color: white;
+        }
+
+        /* MAIN CONTENT */
+        .main-content{
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        .page-header{
+            margin-bottom: 2rem;
+        }
+
+        .page-title{
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle{
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        /* STATS GRID */
+        .stats-grid{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card{
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover{
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon{
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue{
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .stat-icon.green{
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .stat-icon.orange{
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .stat-icon.purple{
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+        }
+
+        .stat-content{
+            flex: 1;
+        }
+
+        .stat-label{
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .stat-value{
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .stat-change{
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat-change.up{
+            color: var(--success);
+        }
+
+        .stat-change.down{
+            color: var(--danger);
+        }
+
+        /* CARDS GRID */
+        .cards-grid{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .card-title{
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .card-action{
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card-action:hover{
+            text-decoration: underline;
+        }
+
+        /* QUICK ACTIONS */
+        .quick-actions{
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .action-item{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: var(--bg);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .action-item:hover{
+            background: var(--line);
+            transform: translateX(4px);
+        }
+
+        .action-icon{
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .action-content{
+            flex: 1;
+        }
+
+        .action-title{
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .action-desc{
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .action-arrow{
+            color: var(--muted);
+            font-size: 1.1rem;
+        }
+
+        /* WELCOME BANNER */
+        .welcome-banner{
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before{
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .welcome-content{
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-title{
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-text{
+            opacity: 0.9;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* TABLE & BOOKING SPECIFIC */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .booking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .booking-table th {
+            text-align: left;
+            padding: 1rem;
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--line);
+        }
+
+        .booking-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+
+        .booking-id {
+            font-weight: 700;
+            color: var(--primary);
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .car-name {
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+        }
+
+        .car-plate {
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* STATUS BADGES */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-PAYMENT_PENDING { background: #fff7ed; color: #c2410c; }
+        .status-PENDING { background: #fefce8; color: #a16207; }
+        .status-CONFIRMED { background: #f0fdf4; color: #16a34a; }
+        .status-COMPLETED { background: #f1f5f9; color: #3172ce; }
+        .status-CANCELLED { background: #fef2f2; color: #dc2626; }
+
+        /* FILTER PILLS */
+        .filter-pill {
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--line);
+            background: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .filter-pill.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-icon-sm {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-icon-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            filter: brightness(0.95);
+        }
+
+        /* Màu trạng thái đồng bộ */
+        .status-CONFIRMED { background: #dcfce7; color: #16a34a; }
+        .status-PENDING { background: #fff7ed; color: #ea580c; }
+
+
+        .action-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-create-return {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-create-return i {
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-create-return:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            filter: brightness(1.1);
+        }
+
+        .btn-create-return:active {
+            transform: translateY(0);
+        }
+
+        .btn-create-return:hover i {
+            transform: rotate(90deg);
+        }
+
+        /* Tùy chỉnh responsive cho nút trên mobile */
+        @media (max-width: 576px) {
+            .btn-create-return {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px){
+            .sidebar{
+                transform: translateX(-100%);
+            }
+            .main-content{
+                margin-left: 0;
+            }
+            .stats-grid{
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px){
+            .header{
+                padding: 0 1rem;
+            }
+            .search-box{
+                display: none;
+            }
+            .main-content{
+                padding: 1rem;
+            }
+            .cards-grid{
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal-content{
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .modal-header{
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .modal-title{
+            font-weight: 700;
+        }
+
+        .modal-body{
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .modal-body table tbody tr:hover{
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+<!-- TOP HEADER -->
+<header class="header">
+    <div class="header-left">
+        <div class="logo-section">
+            <div class="logo">
+                <i class="bi bi-car-front-fill"></i>
+            </div>
+            <div class="brand-info">
+                <h1>CRMS</h1>
+                <span>Car Rental System</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-right">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Tìm kiếm...">
+        </div>
+
+        <div class="header-actions">
+            <button class="icon-btn">
+                <i class="bi bi-bell"></i>
+                <span class="badge">3</span>
+            </button>
+
+            <button class="icon-btn">
+                <i class="bi bi-gear"></i>
+            </button>
+
+            <div class="user-menu">
+                <div class="avatar">CN</div>
+                <div class="user-info">
+                    <span class="name">Customer</span>
+                    <span class="role">Khách hàng</span>
+                </div>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-section">
+        <div class="sidebar-title">Menu chính</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a th:href="@{/owner/dashboard}" class="nav-link ">
+                    <i class="bi bi-house-door"></i>
+                    <span>Trang chủ</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Đặt xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Lịch sử chuyến đi</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/owner/return/list-car-return}" class="nav-link active">
+                    <i class="bi bi-journal-text"></i> <span>Quản lí trả xe</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-section">
+        <div class="sidebar-title">Tài khoản</div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a th:href="@{/profile}" class="nav-link">
+                    <i class="bi bi-person"></i>
+                    <span>Hồ sơ cá nhân</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/profile/change-password}" class="nav-link">
+                    <i class="bi bi-key"></i>
+                    <span>Đổi mật khẩu</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-chat-left-text"></i>
+                    <span>Phản hồi của tôi</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="bi bi-send"></i>
+                    <span>Gửi phản hồi</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <form th:action="@{/auth/logout}" method="post" style="margin-top: auto;">
+        <button type="submit" class="logout-btn">
+            <i class="bi bi-box-arrow-right"></i>
+            Đăng xuất
+        </button>
+    </form>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+    <div class="page-header">
+        <h1 class="page-title">Lịch sử trả xe</h1>
+        <p class="page-subtitle">Xem lại danh sách các xe đã hoàn tất thủ tục trả hoặc đang chờ chủ xe xác nhận.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="bi bi-arrow-return-left"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Đơn đã trả</div>
+                <div class="stat-value" th:text="${returnList != null ? returnList.size() : 0}">0</div>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Tổng tiền phạt</div>
+                <div class="stat-value" style="font-size: 1.5rem;" 
+                     th:text="${#numbers.formatDecimal(#aggregates.sum(returnList.![penaltyAmount]) ?: 0, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" id="tableSearch" placeholder="Tìm biển số, mã đơn..." style="width: 250px;">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>Mã Booking</th>
+                        <th>Thông tin xe</th>
+                        <th>Ngày trả thực tế</th>
+                        <th>Odo/Vệ sinh</th>
+                        <th>Tiền phạt</th>
+                        <th>Xác nhận</th>
+                        <th style="text-align: center;">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="ret : ${returnList}">
+                        <td>
+                            <span class="booking-id" th:text="'#BK-' + ${ret.booking.bookingId}">#BK-000</span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div>
+                                    <div class="car-name" th:text="${ret.booking.car.brand + ' ' + ret.booking.car.model}">Tên xe</div>
+                                    <span class="car-plate" th:text="${ret.booking.car.licensePlate}">Biển số</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.85rem;">
+                                <i class="bi bi-calendar-check"></i> 
+                                <span th:text="${#temporals.format(ret.actualReturnDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size: 0.75rem;">
+                                <div><i class="bi bi-speedometer2"></i> <span th:text="${ret.odometerReading + ' km'}">0 km</span></div>
+                                <div style="color: var(--muted);"><i class="bi bi-stars"></i> <span th:text="${ret.cleaningStatus}">Sạch</span></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="price text-danger" 
+                                  th:text="${#numbers.formatDecimal(ret.penaltyAmount, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</span>
+                        </td>
+                        <td>
+                            <span th:if="${ret.ownerConfirmation}" class="status-badge status-CONFIRMED">
+                                <i class="bi bi-check-circle"></i> Đã duyệt
+                            </span>
+                            <span th:unless="${ret.ownerConfirmation}" class="status-badge status-PENDING">
+                                <i class="bi bi-hourglass-split"></i> Chờ duyệt
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; justify-content: center; gap: 0.5rem;">
+                                <a th:if="${!ret.ownerConfirmation}" 
+                                th:href="@{/owner/return/confirm-detail/{id}(id=${ret.returnId})}" 
+                                class="btn-icon-sm" 
+                                title="Xác nhận trả xe ngay" 
+                                style="color: var(--primary); background: #f0fdfa; border-radius: 6px; padding: 4px 8px;">
+                                    <i class="bi bi-check2-square"></i>
+                                    <span style="font-size: 0.75rem; font-weight: 600;">Duyệt</span>
+                                </a>
+
+                                <a th:if="${ret.ownerConfirmation}" 
+                                th:href="@{/owner/return/confirm-detail/{id}(id=${ret.returnId})}" 
+                                class="btn-icon-sm" 
+                                title="Xem lại chi tiết" 
+                                style="color: #64748b; background: #f8fafc; border-radius: 6px; padding: 4px 8px;">
+                                    <i class="bi bi-eye"></i>
+                                    <span style="font-size: 0.75rem; font-weight: 600;">Xem</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <tr th:if="${#lists.isEmpty(returnList)}">
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: var(--muted);">
+                            <i class="bi bi-clipboard-x" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
+                            Chưa có dữ liệu trả xe nào cho khách hàng này.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div class="modal fade" id="selectionModal" tabindex="-1" aria-labelledby="selectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: var(--radius); border: none; box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--line);">
+                <h5 class="modal-title" id="selectionModalLabel" style="font-weight: 700;">Chọn đơn xe cần trả</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="table-responsive">
+                    <table class="booking-table" style="margin-top: 0;">
+                        <thead>
+                            <tr style="background: var(--bg);">
+                                <th style="padding-left: 1.5rem;">Mã đơn</th>
+                                <th>Xe</th>
+                                <th>Thời gian thuê</th>
+                                <th style="text-align: right; padding-right: 1.5rem;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="b : ${pendingBookings}">
+                                <td style="padding-left: 1.5rem;">
+                                    <span class="booking-id" th:text="'#BK-' + ${b.bookingId}"></span>
+                                </td>
+                                <td>
+                                    <div class="car-name" th:text="${b.car.brand + ' ' + b.car.model}"></div>
+                                    <span class="car-plate" th:text="${b.car.licensePlate}"></span>
+                                </td>
+                                <td style="font-size: 0.85rem;">
+                                    <span th:text="${#temporals.format(b.startDate, 'dd/MM')} + ' - ' + ${#temporals.format(b.endDate, 'dd/MM')}"></span>
+                                </td>
+                                <td style="text-align: right; padding-right: 1.5rem;">
+                                    <button type="button" 
+                                            th:onclick="'confirmSelection(' + ${b.bookingId} + ')'"
+                                            class="btn btn-primary btn-sm" 
+                                            style="border-radius: 8px; font-weight: 600;">
+                                        Chọn đơn này
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(pendingBookings)}">
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--muted);">
+                                    Không có đơn hàng nào cần trả xe.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Khởi tạo đối tượng Modal của Bootstrap
+        const selectionModalElem = document.getElementById('selectionModal');
+        const myModal = new bootstrap.Modal(selectionModalElem);
+
+        // 2. Bắt sự kiện khi nhấn nút "Tạo đơn trả xe mới"
+    
+
+        // 3. Logic tìm kiếm nhanh trong Table chính (Bonus thêm cho bạn)
+        const searchInput = document.getElementById('tableSearch');
+        searchInput.addEventListener('keyup', function() {
+            const value = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.booking-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(value) ? '' : 'none';
+            });
+        });
+    });
+
+    function confirmSelection(bookingId) {
+    // Hiển thị một thông báo nhỏ hoặc đổi màu nút để tạo cảm giác "động"
+    console.log("Đã chọn đơn: " + bookingId);
+    
+    // Chuyển hướng trang sau 200ms để người dùng kịp thấy hiệu ứng click
+    setTimeout(() => {
+        window.location.href = '/customer/return/create-form?bookingId=' + bookingId;
+    }, 200);
+}
+</script>
+</body>
+</html>
