@@ -31,6 +31,7 @@ public class BrandSeeder implements CommandLineRunner {
         Brand toyota = new Brand();
         toyota.setName("TOYOTA");
         toyota.setLogoUrl("https://example.com/toyota-logo.png");
+
         toyota = brandRepository.save(toyota);
 
         List<CarModel> toyotaModels = Arrays.asList(
@@ -39,8 +40,10 @@ public class BrandSeeder implements CommandLineRunner {
                 createModel("VIOS 1.5", "1.5", "Xăng", toyota),
                 createModel("FORTUNER 2.4", "2.4", "Dầu", toyota),
                 createModel("COROLLA CROSS 1.8", "1.8", "Xăng", toyota)
+
         );
         carModelRepository.saveAll(toyotaModels);
+
 
         // HONDA
         Brand honda = new Brand();
@@ -83,6 +86,25 @@ public class BrandSeeder implements CommandLineRunner {
         );
         carModelRepository.saveAll(fordModels);
 
+        // VINFAST
+        Brand vinfast = new Brand();
+        vinfast.setName("VINFAST");
+        vinfast.setLogoUrl("https://example.com/vinfast-logo.png"); // Bạn thay bằng link logo thật nhé
+        vinfast = brandRepository.save(vinfast);
+
+        List<CarModel> vinfastModels = Arrays.asList(
+                createModel("VF 3", "Điện", "Điện", vinfast),
+                createModel("VF 5 Plus", "Điện", "Điện", vinfast),
+                createModel("VF 6", "Điện", "Điện", vinfast),
+                createModel("VF 7", "Điện", "Điện", vinfast),
+                createModel("VF 8", "Điện", "Điện", vinfast),
+                createModel("VF 9", "Điện", "Điện", vinfast),
+                createModel("LUX A2.0", "2.0", "Xăng", vinfast),  // Dòng xe xăng cũ
+                createModel("LUX SA2.0", "2.0", "Xăng", vinfast), // Dòng xe xăng cũ
+                createModel("FADIL 1.4", "1.4", "Xăng", vinfast)  // Dòng xe xăng cũ
+        );
+        carModelRepository.saveAll(vinfastModels);
+
         // KIA
         Brand kia = new Brand();
         kia.setName("KIA");
@@ -95,6 +117,7 @@ public class BrandSeeder implements CommandLineRunner {
                 createModel("SORENTO 2.2", "2.2", "Dầu", kia)
         );
         carModelRepository.saveAll(kiaModels);
+
 
         System.out.println("✅ Đã khởi tạo dữ liệu mẫu cho brands và models!");
     }

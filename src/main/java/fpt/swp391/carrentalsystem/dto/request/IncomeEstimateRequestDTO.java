@@ -12,11 +12,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class IncomeEstimateRequestDTO {
 
-    @NotNull(message = "ID hãng xe không được để trống")
-    private Long brandId;
+    @NotBlank(message = "ID hãng xe không được để trống")
+    private String brandId;  // make_id từ CarQuery API
 
-    @NotNull(message = "ID mẫu xe không được để trống")
-    private Long modelId;
+    @NotBlank(message = "Tên hãng xe không được để trống")
+    private String brandName;  // make_display từ CarQuery API
+
+    @NotBlank(message = "ID mẫu xe không được để trống")
+    private String modelId;  // model_name từ CarQuery API
+
+    @NotBlank(message = "Tên mẫu xe không được để trống")
+    private String modelName;  // model_name từ CarQuery API
 
     @NotNull(message = "Năm sản xuất không được để trống")
     private Integer year;

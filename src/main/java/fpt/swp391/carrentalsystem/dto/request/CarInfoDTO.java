@@ -34,6 +34,10 @@ public class CarInfoDTO {
     @Size(max = 200, message = "Địa chỉ không được vượt quá 200 ký tự")
     private String address;
 
+    @NotBlank(message = "Tỉnh/Thành phố không được để trống")
+    @Size(max = 100, message = "Tỉnh/Thành phố không được vượt quá 100 ký tự")
+    private String province;
+
     @NotBlank(message = "Quận/Huyện không được để trống")
     @Size(max = 100, message = "Quận/Huyện không được vượt quá 100 ký tự")
     private String district;

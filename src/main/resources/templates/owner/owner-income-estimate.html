@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ước tính thu nhập - CRMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #6b7280;
+            text-decoration: none;
+            transition: color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: #111827;
+        }
+
+        nav a.active {
+            color: #14b8a6;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background-color: #fecaca;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-section h1 {
+            font-size: 2.5rem;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .text-teal {
+            color: #14b8a6;
+        }
+
+        .text-bold {
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 32px;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background-color: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+
+        .income-box {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 32px;
+            color: white;
+            display: none;
+        }
+
+        .income-box.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .income-box h3 {
+            font-size: 1.125rem;
+            margin-bottom: 16px;
+            opacity: 0.9;
+        }
+
+        .income-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .income-period {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+
+        .income-recommendation {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px 24px;
+            background-color: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 24px;
+        }
+
+        .submit-btn:hover {
+            background-color: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .submit-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Nút tiếp tục đăng ký */
+        .continue-btn {
+            width: 100%;
+            padding: 20px 24px;
+            background-color: #059669;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 16px;
+            display: none;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .continue-btn.show {
+            display: block;
+        }
+
+        .continue-btn:hover {
+            background-color: #047857;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+
+        .image-section {
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .image-section {
+                display: block;
+            }
+        }
+
+        .image-wrapper {
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 8px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            text-decoration: none;
+            margin-bottom: 24px;
+        }
+
+        .back-link:hover {
+            color: #111827;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <span class="logo-text">CRMS</span>
+        </div>
+        <div class="user-info">
+            <span th:if="${#authentication != null}">
+                Chào, <strong th:text="${#authentication.name}">Chủ xe</strong>
+            </span>
+<!--            <a th:href="@{/owner/dashboard}" style="color: #14b8a6; text-decoration: none;">Dashboard</a>-->
+            <a href="/logout" class="logout-btn">Đăng xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <a href="/owner/dashboard" class="back-link">
+        ← Quay lại Dashboard
+    </a>
+
+    <div class="grid">
+        <div class="form-section">
+            <h1>
+                <span class="text-teal">Cho thuê nhẹ nhàng,</span><br>
+                <span class="text-teal">thu nhập thành thỏi cùng</span><br>
+                <span class="text-bold">CRMS</span>
+            </h1>
+            <p class="subtitle">Ước tính thu nhập từ xe của bạn</p>
+
+            <!-- SSR FORM: Thymeleaf form binding, submit goes to backend POST -->
+            <form th:action="@{/owner/income-estimate}" th:object="${incomeForm}" method="post">
+
+                <!-- Global error from backend (e.g., calculation.error) -->
+                <div th:if="${#fields.hasGlobalErrors()}" class="error-message" style="margin-bottom: 16px; padding: 12px; background: #fef2f2; border-radius: 8px;">
+                    <span th:each="err : ${#fields.globalErrors()}" th:text="${err}">Global error</span>
+                </div>
+
+                <!-- Hidden fields for display names (populated by JS from external API) -->
+                <input type="hidden" th:field="*{brandName}" id="brandNameHidden"/>
+                <input type="hidden" th:field="*{modelName}" id="modelNameHidden"/>
+
+                <!-- Hãng xe (brandId) — options loaded by JS from external API -->
+                <div class="form-group">
+                    <label for="brandId">Hãng xe</label>
+                    <select th:field="*{brandId}" id="brandId">
+                        <option value="">-- Đang tải hãng xe --</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('brandId')}" class="error-message">
+                        <span th:errors="*{brandId}">Brand error</span>
+                    </div>
+                </div>
+
+                <!-- Mẫu xe (modelId) — options loaded by JS based on selected brand -->
+                <div class="form-group">
+                    <label for="modelId">Mẫu xe</label>
+                    <select th:field="*{modelId}" id="modelId" disabled>
+                        <option value="">-- Chọn hãng xe trước --</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('modelId')}" class="error-message">
+                        <span th:errors="*{modelId}">Model error</span>
+                    </div>
+                </div>
+
+                <!-- Năm sản xuất (year) — generated by JS on page load -->
+                <div class="form-group">
+                    <label for="year">Năm sản xuất</label>
+                    <select th:field="*{year}" id="year">
+                        <option value="">-- Chọn năm sản xuất --</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('year')}" class="error-message">
+                        <span th:errors="*{year}">Year error</span>
+                    </div>
+                </div>
+
+                <!-- Thành phố (city) — loaded by JS from Provinces API -->
+                <div class="form-group">
+                    <label for="city">Thành phố</label>
+                    <select th:field="*{city}" id="city">
+                        <option value="">-- Đang tải tỉnh/thành phố --</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('city')}" class="error-message">
+                        <span th:errors="*{city}">City error</span>
+                    </div>
+                </div>
+
+                <!-- Giá thuê mỗi ngày (Manual Input - NOT auto-calculated) -->
+                <div class="form-group">
+                    <label for="pricePerDay">Giá thuê mỗi ngày (VNĐ) <span style="color: #ef4444;">*</span></label>
+                    <div style="position: relative;">
+                        <input type="number"
+                               th:field="*{pricePerDay}"
+                               id="pricePerDay"
+                               placeholder="VD: 100000"
+                               min="100000"
+                               step="1"
+                               required
+                               style="padding-right: 60px;"
+                               oninput="updateMonthlyEstimate()"/>
+                        <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; font-size: 0.875rem;">VNĐ</span>
+                    </div>
+                    <div th:if="${#fields.hasErrors('pricePerDay')}" class="error-message">
+                        <span th:errors="*{pricePerDay}">Price error</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">
+                        Tối thiểu: 100,000 VNĐ/ngày
+                    </div>
+                </div>
+
+                <!-- Live Monthly Income Preview (updated by JS) -->
+<!--                <div class="income-box show" id="incomePreviewBox" style="background: linear-gradient(135deg, #374151 0%, #4b5563 100%);">-->
+<!--                    <h3>Thu nhập ước tính (dự kiến)</h3>-->
+<!--                    <div class="income-amount" id="monthlyEstimatePreview">0 VNĐ</div>-->
+<!--                    <div class="income-period">mỗi tháng (20 ngày cho thuê)</div>-->
+<!--                    <div class="income-recommendation" style="opacity: 0.8;">-->
+<!--                        Nhập giá thuê để xem ước tính thu nhập-->
+<!--                    </div>-->
+<!--                </div>-->
+
+<!--                &lt;!&ndash; Income Estimation Result (shown after successful backend submission) &ndash;&gt;-->
+<!--                <div class="income-box" th:classappend="${showResult} ? 'show' : ''" id="incomeBox">-->
+<!--                    <h3>✅ Thu nhập ước tính chính thức</h3>-->
+<!--                    <div class="income-amount"-->
+<!--                         th:text="${estimateResult != null} ? ${#numbers.formatDecimal(estimateResult.estimatedMonthlyIncome, 0, 'COMMA', 0, 'POINT')} + ' VNĐ' : '0 VNĐ'">0 VNĐ</div>-->
+<!--                    <div class="income-period">mỗi tháng (20 ngày cho thuê)</div>-->
+<!--                    <div class="income-recommendation"-->
+<!--                         th:text="${estimateResult != null} ? ${estimateResult.recommendation} : ''">-->
+<!--                    </div>-->
+<!--                </div>-->
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn" th:text="${showResult} ? 'Cập nhật giá thuê' : 'Xác nhận giá thuê'">
+                    Xác nhận giá thuê
+                </button>
+
+                <!-- Continue Button (shown only after successful calculation) -->
+                <a th:href="@{/owner/create-car-step1}"
+                   class="continue-btn"
+                   th:classappend="${showResult} ? 'show' : ''">
+                    🚗 Đăng ký xe ngay
+                </a>
+            </form>
+        </div>
+
+        <div class="image-section">
+            <div class="image-wrapper">
+                <img
+                        src="https://images.unsplash.com/photo-1604445415362-2a9840bd5ff6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXIlMjBrZXlzJTIwaGFuZG92ZXIlMjBleGNoYW5nZXxlbnwxfHx8fDE3Njg2NjM2MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                        alt="Car key handover"
+                >
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /**
+     * FRONTEND JS: External API data fetching and live preview.
+     * NO auto-calculation of price — price is manually entered by user.
+     * JS is only for: populating dropdowns from external APIs,
+     * cascading dropdown behavior, syncing hidden fields, and live preview.
+     */
+
+    const PROVINCES_API = "https://provinces.open-api.vn/api/p/";
+    const CARQUERY_PROXY_API = "/api/carquery";
+    const CARQUERY_DIRECT_API = "https://www.carqueryapi.com/api/0.3/";
+
+    // Previous values from Thymeleaf (to re-select after validation error)
+    const savedBrandId = /*[[${incomeForm.brandId}]]*/ '';
+    const savedModelId = /*[[${incomeForm.modelId}]]*/ '';
+    const savedYear = /*[[${incomeForm.year}]]*/ '';
+    const savedCity = /*[[${incomeForm.city}]]*/ '';
+    const savedBrandName = /*[[${incomeForm.brandName}]]*/ '';
+    const savedModelName = /*[[${incomeForm.modelName}]]*/ '';
+    const savedPricePerDay = /*[[${incomeForm.pricePerDay}]]*/ '';
+
+    /* ===== LIVE MONTHLY ESTIMATE PREVIEW ===== */
+    function updateMonthlyEstimate() {
+        const priceInput = document.getElementById('pricePerDay');
+        const previewElement = document.getElementById('monthlyEstimatePreview');
+        const previewBox = document.getElementById('incomePreviewBox');
+
+        const price = parseFloat(priceInput.value) || 0;
+        const monthlyEstimate = price * 20; // 20 days per month
+
+        // Format with thousands separator
+        previewElement.textContent = formatCurrency(monthlyEstimate) + ' VNĐ';
+
+        // Update recommendation text
+        const recommendationEl = previewBox.querySelector('.income-recommendation');
+        if (price > 0) {
+            if (price < 500000) {
+                recommendationEl.textContent = 'Giá thuê thấp, có thể thu hút nhiều khách hàng.';
+            } else if (price < 1500000) {
+                recommendationEl.textContent = 'Giá thuê trung bình, phù hợp với phân khúc phổ thông.';
+            } else {
+                recommendationEl.textContent = 'Giá thuê cao, phù hợp với xe cao cấp hoặc xe mới.';
+            }
+        } else {
+            recommendationEl.textContent = 'Nhập giá thuê để xem ước tính thu nhập';
+        }
+    }
+
+    /* ===== FORMAT CURRENCY ===== */
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN').format(amount);
+    }
+
+    /* ===== HELPER: Fetch JSONP for CarQuery API (fallback) ===== */
+    function fetchJSONP(url) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const cbName = 'cq_cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const timeout = setTimeout(() => { cleanup(); reject(new Error('Timeout')); }, 8000);
+            function cleanup() { clearTimeout(timeout); if (script.parentNode) document.body.removeChild(script); delete window[cbName]; }
+            window[cbName] = function(data) { cleanup(); resolve(data); };
+            script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
+            script.onerror = () => { cleanup(); reject(new Error('Script failed')); };
+            document.body.appendChild(script);
+        });
+    }
+
+    /* ===== GENERATE YEAR OPTIONS ===== */
+    function generateYearOptions() {
+        const yearSelect = document.getElementById("year");
+        const currentYear = new Date().getFullYear();
+        // Keep any Thymeleaf-rendered option
+        yearSelect.innerHTML = '<option value="">-- Chọn năm sản xuất --</option>';
+        for (let y = currentYear; y >= 1990; y--) {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.textContent = y;
+            if (savedYear && parseInt(savedYear) === y) opt.selected = true;
+            yearSelect.appendChild(opt);
+        }
+    }
+
+    /* ===== LOAD CAR BRANDS FROM EXTERNAL API ===== */
+    async function loadCarBrands() {
+        const brandSelect = document.getElementById("brandId");
+        brandSelect.innerHTML = '<option value="">-- Đang tải hãng xe... --</option>';
+
+        let makes = null;
+        try {
+            const res = await fetch(CARQUERY_PROXY_API + "/makes");
+            if (res.ok) { const d = await res.json(); if (d && d.Makes && d.Makes.length > 0) makes = d.Makes; }
+        } catch (e) { console.warn("Proxy failed:", e.message); }
+
+        if (!makes) {
+            try {
+                const d = await fetchJSONP(CARQUERY_DIRECT_API + "?cmd=getMakes");
+                if (d && d.Makes && d.Makes.length > 0) makes = d.Makes;
+            } catch (e) { console.warn("JSONP failed:", e.message); }
+        }
+
+        if (!makes) { loadFallbackBrands(); return; }
+
+        brandSelect.innerHTML = '<option value="">-- Chọn hãng xe --</option>';
+        makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+        makes.forEach(make => {
+            const opt = document.createElement("option");
+            opt.value = make.make_id;
+            opt.textContent = make.make_display;
+            opt.dataset.displayName = make.make_display;
+            if (savedBrandId && savedBrandId === make.make_id) opt.selected = true;
+            brandSelect.appendChild(opt);
+        });
+
+        // If we had a saved brand, load its models too
+        if (savedBrandId) loadCarModels(savedBrandId);
+    }
+
+    function loadFallbackBrands() {
+        const brandSelect = document.getElementById("brandId");
+        const brands = [
+            {id:"audi",name:"Audi"},{id:"bmw",name:"BMW"},{id:"chevrolet",name:"Chevrolet"},
+            {id:"ford",name:"Ford"},{id:"honda",name:"Honda"},{id:"hyundai",name:"Hyundai"},
+            {id:"kia",name:"Kia"},{id:"lexus",name:"Lexus"},{id:"mazda",name:"Mazda"},
+            {id:"mercedes-benz",name:"Mercedes-Benz"},{id:"mitsubishi",name:"Mitsubishi"},
+            {id:"nissan",name:"Nissan"},{id:"peugeot",name:"Peugeot"},{id:"subaru",name:"Subaru"},
+            {id:"suzuki",name:"Suzuki"},{id:"toyota",name:"Toyota"},{id:"vinfast",name:"VinFast"},
+            {id:"volkswagen",name:"Volkswagen"}
+        ];
+        brandSelect.innerHTML = '<option value="">-- Chọn hãng xe --</option>';
+        brands.forEach(b => {
+            const opt = document.createElement("option");
+            opt.value = b.id; opt.textContent = b.name; opt.dataset.displayName = b.name;
+            if (savedBrandId && savedBrandId === b.id) opt.selected = true;
+            brandSelect.appendChild(opt);
+        });
+        if (savedBrandId) loadCarModels(savedBrandId);
+    }
+
+    /* ===== LOAD CAR MODELS FROM EXTERNAL API ===== */
+    async function loadCarModels(makeId) {
+        const modelSelect = document.getElementById("modelId");
+        modelSelect.innerHTML = '<option value="">-- Đang tải mẫu xe... --</option>';
+        modelSelect.disabled = true;
+        if (!makeId) { modelSelect.innerHTML = '<option value="">-- Chọn hãng xe trước --</option>'; return; }
+
+        let models = null;
+        try {
+            const res = await fetch(CARQUERY_PROXY_API + "/models?make=" + encodeURIComponent(makeId));
+            if (res.ok) { const d = await res.json(); if (d && d.Models && d.Models.length > 0) models = d.Models; }
+        } catch (e) { console.warn("Proxy models failed:", e.message); }
+
+        if (!models) {
+            try {
+                const d = await fetchJSONP(CARQUERY_DIRECT_API + "?cmd=getModels&make=" + encodeURIComponent(makeId));
+                if (d && d.Models && d.Models.length > 0) models = d.Models;
+            } catch (e) { console.warn("JSONP models failed:", e.message); }
+        }
+
+        if (!models) { loadFallbackModels(makeId); return; }
+
+        modelSelect.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
+        const seen = new Set();
+        models.filter(m => { if (seen.has(m.model_name)) return false; seen.add(m.model_name); return true; })
+              .sort((a, b) => a.model_name.localeCompare(b.model_name))
+              .forEach(m => {
+                  const opt = document.createElement("option");
+                  opt.value = m.model_name; opt.textContent = m.model_name; opt.dataset.displayName = m.model_name;
+                  if (savedModelId && savedModelId === m.model_name) opt.selected = true;
+                  modelSelect.appendChild(opt);
+              });
+        modelSelect.disabled = false;
+    }
+
+    function loadFallbackModels(makeId) {
+        const modelSelect = document.getElementById("modelId");
+        const fb = {
+            "toyota":["Camry","Corolla","Fortuner","Innova","Land Cruiser","RAV4","Vios","Yaris"],
+            "honda":["Accord","City","Civic","CR-V","HR-V","Jazz","Brio"],
+            "mazda":["CX-3","CX-5","CX-8","CX-30","Mazda2","Mazda3","Mazda6"],
+            "hyundai":["Accent","Creta","Elantra","Grand i10","Kona","Santa Fe","Tucson"],
+            "kia":["Carnival","Cerato","K3","Morning","Seltos","Sorento","Sportage"],
+            "ford":["EcoSport","Everest","Explorer","Ranger","Territory"],
+            "mercedes-benz":["A-Class","C-Class","E-Class","S-Class","GLA","GLC","GLE"],
+            "bmw":["1 Series","3 Series","5 Series","7 Series","X1","X3","X5"],
+            "vinfast":["Fadil","Lux A2.0","Lux SA2.0","VF5","VF6","VF7","VF8","VF9"]
+        };
+        const models = fb[makeId.toLowerCase()] || ["Sedan","SUV","Hatchback","Crossover","MPV"];
+        modelSelect.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
+        models.forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m; opt.textContent = m; opt.dataset.displayName = m;
+            if (savedModelId && savedModelId === m) opt.selected = true;
+            modelSelect.appendChild(opt);
+        });
+        modelSelect.disabled = false;
+    }
+
+    /* ===== LOAD PROVINCES FROM EXTERNAL API ===== */
+    function loadProvinces() {
+        const citySelect = document.getElementById("city");
+        citySelect.innerHTML = '<option value="">-- Đang tải tỉnh/thành phố... --</option>';
+        fetch(PROVINCES_API)
+            .then(r => r.json())
+            .then(provinces => {
+                citySelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+                provinces.forEach(p => {
+                    const opt = document.createElement("option");
+                    opt.value = p.name; opt.textContent = p.name;
+                    if (savedCity && savedCity === p.name) opt.selected = true;
+                    citySelect.appendChild(opt);
+                });
+            })
+            .catch(() => {
+                citySelect.innerHTML = '<option value="">-- Không thể tải dữ liệu --</option>';
+            });
+    }
+
+    /* ===== EVENT LISTENERS: Cascading dropdown behavior ===== */
+    document.getElementById("brandId").addEventListener("change", function() {
+        const opt = this.options[this.selectedIndex];
+        // Sync hidden brandName field
+        document.getElementById("brandNameHidden").value = (opt && opt.dataset.displayName) ? opt.dataset.displayName : '';
+
+        const modelSelect = document.getElementById("modelId");
+        modelSelect.innerHTML = '<option value="">-- Chọn hãng xe trước --</option>';
+        modelSelect.disabled = true;
+        document.getElementById("modelNameHidden").value = '';
+
+        if (this.value) loadCarModels(this.value);
+    });
+
+    document.getElementById("modelId").addEventListener("change", function() {
+        const opt = this.options[this.selectedIndex];
+        // Sync hidden modelName field
+        document.getElementById("modelNameHidden").value = (opt && opt.dataset.displayName) ? opt.dataset.displayName : '';
+    });
+
+    /* ===== INIT ON PAGE LOAD ===== */
+    document.addEventListener("DOMContentLoaded", function() {
+        generateYearOptions();
+        loadCarBrands();
+        loadProvinces();
+
+        // Initialize price preview if there's a saved value
+        if (savedPricePerDay) {
+            updateMonthlyEstimate();
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -29,14 +29,24 @@
         .btn-add:hover { background-color: #0d9488; transform: translateY(-2px); }
 
         /* Tabs */
-        .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .tab { padding: 10px 20px; border: none; background: none; border-radius: 8px; cursor: pointer; color: #6b7280; font-weight: 500; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex-wrap: wrap; }
+        .tab { padding: 10px 20px; border: none; background: none; border-radius: 8px; cursor: pointer; color: #6b7280; font-weight: 500; text-decoration: none; display: inline-block; }
+        .tab:hover { background: #f3f4f6; }
         .tab.active { background: #14b8a6; color: white; }
+        .tab.deleted { color: #dc2626; }
+        .tab.deleted.active { background: #dc2626; color: white; }
+
+        /* Stats bar */
+        .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+        .stat-item { background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-item span { font-weight: 600; color: #14b8a6; }
+        .stat-item.deleted span { color: #dc2626; }
 
         /* Car Grid */
         .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
         .car-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.3s; }
         .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .car-card.deleted { opacity: 0.7; border: 2px dashed #dc2626; }
         .car-image { width: 100%; height: 200px; object-fit: cover; background: #eee; }
         .car-content { padding: 20px; }
 
@@ -44,11 +54,19 @@
         .car-name { font-size: 1.2rem; font-weight: 700; color: #111827; }
         .car-license { color: #6b7280; font-size: 0.9rem; }
 
-        /* Badges */
+        /* Badges for CarStatus enum */
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .status-draft { background: #e5e7eb; color: #374151; }
         .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dbeafe; color: #1e40af; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
         .status-available { background: #d1fae5; color: #065f46; }
+        .status-reserved { background: #fef3c7; color: #92400e; }
+        .status-booked { background: #dbeafe; color: #1e40af; }
         .status-rented { background: #dbeafe; color: #1e40af; }
+        .status-unavailable { background: #fef3c7; color: #92400e; }
+        .status-disabled { background: #fee2e2; color: #991b1b; }
+        .status-maintenance { background: #fef3c7; color: #92400e; }
         .status-inactive { background: #fee2e2; color: #991b1b; }
 
         .car-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; padding: 15px 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; }
@@ -69,15 +87,21 @@
         .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; }
         .modal-actions { display: flex; gap: 10px; margin-top: 25px; }
         .btn-modal { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 100px 0; }
+        .empty-state p { color: #9ca3af; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="header-container">
-        <div class="logo-section">CRMS</div>
+        <a href="/owner/dashboard" class="logo-section" style="text-decoration: none;">🚗 CRMS</a>
         <div class="user-info" th:if="${#authentication != null}">
+            <a href="/owner/dashboard" style="color: #14b8a6; text-decoration: none; margin-right: 16px;">Dashboard</a>
             Chào, <span th:text="${#authentication.name}">Chủ xe</span>
+            <a href="/logout" style="margin-left: 16px; padding: 8px 16px; background-color: #fee2e2; color: #dc2626; border-radius: 6px; text-decoration: none;">Đăng xuất</a>
         </div>
     </div>
 </header>
@@ -85,29 +109,109 @@
 <div class="container">
     <div class="page-header">
         <h1 class="page-title">Xe của tôi</h1>
-        <a href="/owner/income-estimator" class="btn-add">+ Đăng ký xe mới</a>
+        <a href="/owner/income-estimate" class="btn-add">+ Đăng ký xe mới</a>
     </div>
 
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            Tổng xe đang hoạt động: <span th:text="${totalCars != null ? totalCars : 0}">0</span>
+        </div>
+        <div class="stat-item deleted" th:if="${deletedCount != null and deletedCount > 0}">
+            Xe đã xóa: <span th:text="${deletedCount}">0</span>
+        </div>
+    </div>
+
+    <!-- Filter Tabs - Using links for SSR -->
     <div class="tabs">
-        <button class="tab active" onclick="filterCars('all', this)">Tất cả</button>
-        <button class="tab" onclick="filterCars('PENDING', this)">Chờ duyệt</button>
-        <button class="tab" onclick="filterCars('AVAILABLE', this)">Hoạt động</button>
-        <button class="tab" onclick="filterCars('RENTED', this)">Đang thuê</button>
+        <a th:href="@{/owner/owner-car-list(filter='all')}"
+           th:classappend="${currentFilter == 'all' or currentFilter == null} ? 'active'"
+           class="tab">Tất cả</a>
+        <a th:href="@{/owner/owner-car-list(filter='pending')}"
+           th:classappend="${currentFilter == 'pending'} ? 'active'"
+           class="tab">Chờ duyệt</a>
+        <a th:href="@{/owner/owner-car-list(filter='available')}"
+           th:classappend="${currentFilter == 'available'} ? 'active'"
+           class="tab">Hoạt động</a>
+        <a th:href="@{/owner/owner-car-list(filter='rented')}"
+           th:classappend="${currentFilter == 'rented'} ? 'active'"
+           class="tab">Đang thuê</a>
+        <a th:href="@{/owner/owner-car-list(filter='deleted')}"
+           th:classappend="${currentFilter == 'deleted'} ? 'active'"
+           class="tab deleted">🗑️ Đã xóa</a>
     </div>
 
-    <div class="car-grid" id="carGrid">
+    <!-- Car Grid - Server-Side Rendered -->
+    <div class="car-grid" th:if="${cars != null and !cars.isEmpty()}">
+        <div th:each="car : ${cars}"
+             th:classappend="${car.status.name() == 'INACTIVE'} ? 'deleted'"
+             class="car-card">
+            <img th:src="${car.coverImage != null ? car.coverImage : 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=500'}"
+                 class="car-image" alt="Car">
+            <div class="car-content">
+                <div class="car-header">
+                    <div>
+                        <div class="car-name" th:text="${(car.brand != null ? car.brand : '') + ' ' + (car.model != null ? car.model : '')}">Brand Model</div>
+                        <div class="car-license" th:text="${car.licensePlate ?: 'N/A'}">30A-12345</div>
+                    </div>
+                    <span th:class="'status-badge status-' + ${car.status.name().toLowerCase()}"
+                          th:text="${car.status.displayName}">Status</span>
+                </div>
+
+                <div class="car-details">
+                    <div>
+                        <p class="detail-label">Số chỗ</p>
+                        <p class="detail-value" th:text="${car.seats != null ? car.seats + ' chỗ' : '5 chỗ'}">5 chỗ</p>
+                    </div>
+                    <div>
+                        <p class="detail-label">Giá thuê</p>
+                        <p class="detail-value text-primary"
+                           th:text="${car.pricePerDay != null ? #numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT') + 'đ' : 'N/A'}">1,000,000đ</p>
+                    </div>
+                    <div>
+                        <p class="detail-label">Nhiên liệu</p>
+                        <p class="detail-value" th:text="${car.fuelType != null ? car.fuelType.displayName : 'Xăng'}">Xăng</p>
+                    </div>
+                    <div>
+                        <p class="detail-label">Truyền động</p>
+                        <p class="detail-value" th:text="${car.transmissionType ?: 'Tự động'}">Tự động</p>
+                    </div>
+                </div>
+
+                <!-- Deleted cars: View Detail only -->
+                <div class="car-actions" th:if="${car.status.name() == 'INACTIVE'}">
+                    <a th:href="@{'/owner/cars/' + ${car.id}}" class="btn-icon btn-view" style="background: #e0e7ff; color: #4338ca; text-decoration: none;">
+                        👁️ Xem chi tiết
+                    </a>
+                </div>
+
+                <!-- Actions for ACTIVE cars (View + Edit + Delete) -->
+                <div class="car-actions" th:if="${car.status.name() != 'INACTIVE'}">
+                    <a th:href="@{'/owner/cars/' + ${car.id}}" class="btn-icon btn-view" style="background: #e0e7ff; color: #4338ca; text-decoration: none;">
+                        👁️ Chi tiết
+                    </a>
+                    <a th:href="@{'/owner/cars/' + ${car.id} + '/edit'}" class="btn-icon btn-edit" style="text-decoration: none;">
+                        ✏️ Sửa
+                    </a>
+                    <button class="btn-icon btn-delete" th:onclick="'openDeleteModal(' + ${car.id} + ')'">🗑️ Xóa</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="emptyState" style="display: none; text-align: center; padding: 100px 0;">
-        <p style="color: #9ca3af; margin-bottom: 20px;">Bạn chưa có chiếc xe nào trong danh sách này.</p>
-        <a href="/owner/income-estimator" class="btn-add">Đăng ký ngay</a>
+    <!-- Empty state -->
+    <div th:if="${cars == null or cars.isEmpty()}" class="empty-state">
+        <p th:if="${currentFilter == 'deleted'}">Không có xe nào đã bị xóa.</p>
+        <p th:unless="${currentFilter == 'deleted'}">Bạn chưa có chiếc xe nào trong danh sách này.</p>
+        <a th:unless="${currentFilter == 'deleted'}" href="/owner/income-estimate" class="btn-add">Đăng ký ngay</a>
     </div>
 </div>
 
+<!-- Delete Modal -->
 <div class="modal" id="deleteModal">
     <div class="modal-content">
         <h3 style="margin-bottom: 10px;">Xác nhận xóa?</h3>
-        <p style="color: #6b7280;">Hành động này sẽ tạm dừng hoạt động của xe trên hệ thống.</p>
+        <p style="color: #6b7280;">Hành động này sẽ xóa xe khỏi danh sách của bạn. Xe đã xóa sẽ không thể khôi phục.</p>
         <div class="modal-actions">
             <button class="btn-modal" onclick="closeModal()" style="background: #f3f4f6;">Hủy</button>
             <button class="btn-modal" onclick="confirmDelete()" style="background: #dc2626; color: white;">Đồng ý xóa</button>
@@ -115,84 +219,11 @@
     </div>
 </div>
 
-<script>
-    let allCars = [];
+<script th:inline="javascript">
     let carIdToDelete = null;
 
-    // 1. Tự động load khi mở trang
-    document.addEventListener('DOMContentLoaded', loadCars);
 
-    async function loadCars() {
-        const grid = document.getElementById('carGrid');
-        try {
-            // Gọi API từ Controller bạn đã viết
-            const response = await fetch('/api/owner/cars');
-            const result = await response.json();
-
-            if (result.success) {
-                allCars = result.data;
-                renderGrid(allCars);
-            }
-        } catch (error) {
-            console.error("Lỗi tải dữ liệu:", error);
-            grid.innerHTML = "<p>Không thể tải dữ liệu xe lúc này.</p>";
-        }
-    }
-
-    // 2. Hàm vẽ giao diện Card
-    function renderGrid(cars) {
-        const grid = document.getElementById('carGrid');
-        const emptyState = document.getElementById('emptyState');
-
-        if (cars.length === 0) {
-            grid.innerHTML = '';
-            emptyState.style.display = 'block';
-            return;
-        }
-
-        emptyState.style.display = 'none';
-        grid.innerHTML = cars.map(car => `
-            <div class="car-card">
-                <img src="${car.coverImage || 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=500'}" class="car-image" alt="Car">
-                <div class="car-content">
-                    <div class="car-header">
-                        <div>
-                            <div class="car-name">${car.brand} ${car.model || ''}</div>
-                            <div class="car-license">${car.licensePlate}</div>
-                        </div>
-                        <span class="status-badge status-${car.status.toLowerCase()}">${translateStatus(car.status)}</span>
-                    </div>
-
-                    <div class="car-details">
-                        <div><p class="detail-label">Số chỗ</p><p class="detail-value">${car.seats || 5} chỗ</p></div>
-                        <div><p class="detail-label">Giá thuê</p><p class="detail-value text-primary">${formatMoney(car.pricePerDay)}đ</p></div>
-                        <div><p class="detail-label">Nhiên liệu</p><p class="detail-value">${car.fuelType || 'Xăng'}</p></div>
-                        <div><p class="detail-label">Truyền động</p><p class="detail-value">${car.transmission || 'Tự động'}</p></div>
-                    </div>
-
-                    <div class="car-actions">
-                        <button class="btn-icon btn-edit" onclick="editCar(${car.id})">✏️ Sửa</button>
-                        <button class="btn-icon btn-delete" onclick="openDeleteModal(${car.id})">🗑️ Xóa</button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // 3. Logic Bộ lọc
-    function filterCars(status, btn) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-
-        if (status === 'all') {
-            renderGrid(allCars);
-        } else {
-            const filtered = allCars.filter(c => c.status === status);
-            renderGrid(filtered);
-        }
-    }
-
-    // 4. Xử lý Xóa
+    // Xử lý Xóa
     function openDeleteModal(id) {
         carIdToDelete = id;
         document.getElementById('deleteModal').classList.add('active');
@@ -200,37 +231,30 @@
 
     function closeModal() {
         document.getElementById('deleteModal').classList.remove('active');
+        carIdToDelete = null;
     }
 
     async function confirmDelete() {
         if (!carIdToDelete) return;
         try {
             const response = await fetch(`/api/owner/cars/${carIdToDelete}`, { method: 'DELETE' });
-            if (response.ok) {
-                allCars = allCars.filter(c => c.id !== carIdToDelete);
-                renderGrid(allCars);
+            const result = await response.json();
+            if (result.success) {
                 closeModal();
                 alert("Đã xóa xe thành công!");
+                window.location.reload();
+            } else {
+                alert(result.message || "Lỗi khi xóa xe!");
             }
         } catch (e) {
             alert("Lỗi khi xóa xe!");
+            console.error(e);
         }
     }
 
-    // 5. Điều hướng sửa xe
-    function editCar(id) {
-    // Chuyển hướng theo đúng cấu trúc @GetMapping("/owner/edit-car/{id}")
-    window.location.href = `/owner/edit-car/${id}`;
-}
-
-    // Helper: Định dạng tiền & Dịch trạng thái
+    // Helper: Định dạng tiền
     function formatMoney(amount) {
         return new Intl.NumberFormat('vi-VN').format(amount);
-    }
-
-    function translateStatus(status) {
-        const map = { 'PENDING': 'Chờ duyệt', 'AVAILABLE': 'Sẵn sàng', 'RENTED': 'Đang thuê', 'INACTIVE': 'Đã xóa' };
-        return map[status] || status;
     }
 </script>
 </body>

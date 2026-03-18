@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -520,28 +520,47 @@
         </div>
     </div>
 
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error" style="background-color: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
     <!-- Summary -->
     <div class="info-card">
         <h2>✓ Thông tin đã nhập (Bước 1 & 2)</h2>
         <div class="info-summary">
             <div class="info-tag">
-                <strong>Xe:</strong> <span id="summaryBrand">--</span> <span id="summaryModel">--</span>
+                <strong>Xe:</strong>
+                <span th:text="${carSession != null and carSession.brandName != null ? carSession.brandName : '--'}">--</span>
+                <span th:text="${carSession != null and carSession.modelName != null ? carSession.modelName : ''}"></span>
             </div>
             <div class="info-tag">
-                <strong>Biển số:</strong> <span id="summaryLicensePlate">--</span>
+                <strong>Biển số:</strong>
+                <span th:text="${carSession != null and carSession.licensePlate != null ? carSession.licensePlate : '--'}">--</span>
             </div>
             <div class="info-tag">
-                <strong>Địa chỉ:</strong> <span id="summaryLocation">--</span>
+                <strong>Địa chỉ:</strong>
+                <span th:text="${carSession != null ?
+                    ((carSession.address != null ? carSession.address : '') +
+                    (carSession.ward != null ? ', ' + carSession.ward : '') +
+                    (carSession.district != null ? ', ' + carSession.district : '') +
+                    (carSession.province != null ? ', ' + carSession.province : (carSession.city != null ? ', ' + carSession.city : ''))) : '--'}">--</span>
             </div>
             <div class="info-tag">
-                <strong>Giá:</strong> <span id="summaryPrice">--</span> VNĐ/ngày
+                <strong>Giá:</strong>
+                <span th:text="${carSession != null and carSession.pricePerDay != null ? #numbers.formatDecimal(carSession.pricePerDay, 0, 'COMMA', 0, 'POINT') : '--'}">--</span> VNĐ/ngày
             </div>
         </div>
     </div>
 
     <!-- Alert -->
     <div class="alert alert-warning" id="alertWarning">
-        ⚠️ Vui lòng upload đầy đủ <strong>4 giấy tờ bắt buộc</strong> để hoàn tất đăng ký xe.
+        ⚠️ Vui lòng upload đầy đủ <strong>3 giấy tờ bắt buộc</strong> để hoàn tất đăng ký xe.
     </div>
 
     <div class="alert alert-success" id="alertSuccess">
@@ -653,53 +672,6 @@
                 </div>
             </div>
 
-            <!-- OWNER_LICENSE -->
-            <div class="upload-section" data-type="OWNER_LICENSE">
-                <div class="document-type-header">
-                    <div>
-                        <span class="document-type-name">🪪 Bằng lái chủ xe</span>
-                        <span class="required-badge">BẮT BUỘC</span>
-                    </div>
-                    <span class="status-badge status-pending" id="status-OWNER_LICENSE">Chưa upload</span>
-                </div>
-
-                <div class="upload-area" id="upload-area-OWNER_LICENSE">
-                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
-                    <p class="upload-text">Kéo thả file vào đây hoặc</p>
-                    <button type="button" class="btn-upload" onclick="triggerFileInput('OWNER_LICENSE')">
-                        Chọn file
-                    </button>
-                    <p class="upload-hint">PDF, JPG, PNG (tối đa 10MB)</p>
-                </div>
-
-                <input type="file" id="file-OWNER_LICENSE" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event, 'OWNER_LICENSE')">
-
-                <div class="upload-progress" id="progress-OWNER_LICENSE">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill-OWNER_LICENSE" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <div class="file-preview" id="preview-OWNER_LICENSE">
-                    <div class="file-info">
-                        <div class="file-icon">🪪</div>
-                        <div class="file-details">
-                            <div class="file-name" id="filename-OWNER_LICENSE">--</div>
-                            <div class="file-size" id="filesize-OWNER_LICENSE">--</div>
-                        </div>
-                    </div>
-                    <div class="file-actions">
-                        <button class="btn-icon btn-delete" onclick="deleteDocument('OWNER_LICENSE')" title="Xóa">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <!-- OWNER_ID -->
             <div class="upload-section" data-type="OWNER_ID">
@@ -722,7 +694,7 @@
                     <p class="upload-hint">PDF, JPG, PNG (tối đa 10MB)</p>
                 </div>
 
-                <input type="file" id="file-OWNER_ID" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event, 'OWNER_ID')">
+                <input type="file" id="file-OWNER_ID" accept=".pdf,.jpg,.jpeg,.png,.jpn" onchange="handleFileSelect(event, 'OWNER_ID')">
 
                 <div class="upload-progress" id="progress-OWNER_ID">
                     <div class="progress-bar">
@@ -762,52 +734,36 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
     /**
  * QUẢN LÝ ĐĂNG KÝ XE - BƯỚC 3: GIẤY TỜ
+ * Đã chuyển sang sử dụng backend HttpSession thay vì browser sessionStorage
  */
 
 const API_BASE_URL = '/api';
-const STEP1_STORAGE_KEY = "carStep1";
-const STEP2_STORAGE_KEY = "carStep2";
-const REQUIRED_DOCS = ['REGISTRATION', 'INSURANCE', 'OWNER_LICENSE', 'OWNER_ID'];
+const REQUIRED_DOCS = ['REGISTRATION', 'INSURANCE', 'OWNER_ID'];
+
+// Dữ liệu từ backend session (Thymeleaf inline)
+const carSessionData = /*[[${carSession}]]*/ null;
 
 // Lưu trữ ID trả về từ Server sau khi upload thành công
 let uploadedDocumentIds = {
     'REGISTRATION': null,
     'INSURANCE': null,
-    'OWNER_LICENSE': null,
     'OWNER_ID': null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Kiểm tra dữ liệu từ các bước trước
-    const s1Raw = sessionStorage.getItem(STEP1_STORAGE_KEY);
-    const s2Raw = sessionStorage.getItem(STEP2_STORAGE_KEY);
-
-    if (!s1Raw || !s2Raw) {
+    // Kiểm tra dữ liệu từ backend session
+    if (!carSessionData) {
         alert('Dữ liệu các bước trước không tồn tại. Vui lòng quay lại Bước 1.');
         window.location.href = '/owner/create-car-step1';
         return;
     }
 
-    const s1 = JSON.parse(s1Raw);
-    const s2 = JSON.parse(s2Raw);
-
-    // 2. Hiển thị tóm tắt thông tin cho người dùng xem lại
-    renderSummary(s1, s2);
+    // Dữ liệu summary đã được render bởi Thymeleaf ở phía server
+    console.log('Step 3 loaded with backend session data');
 });
-
-function renderSummary(s1, s2) {
-    document.getElementById('summaryBrand').innerText = s1.brandName || s1.brand || "--";
-    document.getElementById('summaryModel').innerText = s1.modelName || s1.model || "--";
-    document.getElementById('summaryLicensePlate').innerText = s1.licensePlate || "--";
-    document.getElementById('summaryPrice').innerText = Number(s1.pricePerDay || 0).toLocaleString('vi-VN');
-
-    // Ghép địa chỉ từ Step 2
-    const fullAddress = `${s2.address || ''}, ${s2.ward || ''}, ${s2.district || ''}, ${s1.city || ''}`;
-    document.getElementById('summaryLocation').innerText = fullAddress.replace(/(, )+/g, ', ').replace(/^, |, $/g, '');
-}
 
 /**
  * XỬ LÝ UPLOAD FILE
@@ -906,29 +862,61 @@ function validateCompletion() {
 
 /**
  * GỬI FORM CUỐI CÙNG (FINAL POST)
+ * Sử dụng dữ liệu từ backend session thay vì browser sessionStorage
  */
 async function submitFinalForm() {
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="loading"></span> Đang lưu hệ thống...';
 
-    // 1. Lấy dữ liệu sạch từ Session
-    const step1 = JSON.parse(sessionStorage.getItem(STEP1_STORAGE_KEY));
-    const step2 = JSON.parse(sessionStorage.getItem(STEP2_STORAGE_KEY));
+    // 1. Kiểm tra dữ liệu session từ backend
+    if (!carSessionData) {
+        alert('Dữ liệu phiên làm việc đã hết hạn. Vui lòng bắt đầu lại.');
+        window.location.href = '/owner/create-car-step1';
+        return;
+    }
 
     // 2. Chuyển Map ID thành List (Long)
     const docIdList = Object.values(uploadedDocumentIds).filter(id => id !== null);
 
-    // 3. Đóng gói Payload theo cấu trúc FinalCarSubmitDTO
+    // 3. Đóng gói Payload - sử dụng carSessionData từ backend
     const payload = {
-        step1Data: step1,
-        step2Data: step2,
+        step1Data: {
+            brandName: carSessionData.brandName,
+            modelName: carSessionData.modelName,
+            year: carSessionData.year,
+            city: carSessionData.city,
+            licensePlate: carSessionData.licensePlate,
+            color: carSessionData.color,
+            transmissionType: carSessionData.transmissionType,
+            fuelType: carSessionData.fuelType,
+            seats: carSessionData.seats,
+            pricePerDay: carSessionData.pricePerDay,
+            description: carSessionData.description,
+            estimatedMonthlyIncome: carSessionData.estimatedMonthlyIncome
+        },
+        step2Data: {
+            address: carSessionData.address,
+            province: carSessionData.province,
+            district: carSessionData.district,
+            ward: carSessionData.ward,
+            provinceCode: carSessionData.provinceCode,
+            districtCode: carSessionData.districtCode,
+            wardCode: carSessionData.wardCode,
+            mileage: carSessionData.mileage,
+            fuelConsumption: carSessionData.fuelConsumption,
+            hasAirConditioner: carSessionData.hasAirConditioner,
+            hasGPS: carSessionData.hasGPS,
+            hasBluetooth: carSessionData.hasBluetooth,
+            hasDashCam: carSessionData.hasDashCam,
+            specialNotes: carSessionData.specialNotes
+        },
         documentIds: docIdList,
-        ownerId: 1 // Gợi ý: Backend nên lấy ID từ Session User đăng nhập
+        ownerId: null // Backend sẽ lấy từ authenticated user
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/owner/cars/create-complete`, {
+        const response = await fetch(`${API_BASE_URL}/owner/complete-car-registration`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -938,7 +926,7 @@ async function submitFinalForm() {
 
         if (response.ok && result.success) {
             alert('🎉 Chúc mừng! Xe của bạn đã được đăng ký thành công.');
-            sessionStorage.clear();
+            // Backend session sẽ được clear bởi server sau khi tạo xe thành công
             window.location.href = '/owner/owner-car-list';
         } else {
             alert('Lỗi lưu xe: ' + (result.message || 'Unknown Error'));

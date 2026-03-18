@@ -123,6 +123,7 @@ package fpt.swp391.carrentalsystem.service;
 import fpt.swp391.carrentalsystem.dto.request.FinalCarSubmitDTO;
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
 import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -164,8 +165,13 @@ public class FinalCarCreationServiceImpl implements FinalCarCreationService {
         // ================= MAP DATA STEP 1 (Thông tin cơ bản) =================
         car.setOwnerId(submitDTO.getOwnerId());
 
-        String brand = getString(step1, "brand");
-        String model = getString(step1, "model");
+        // Hỗ trợ cả 2 key: brand/brandName và model/modelName
+        String brand = getString(step1, "brandName");
+        if (brand == null) brand = getString(step1, "brand");
+
+        String model = getString(step1, "modelName");
+        if (model == null) model = getString(step1, "model");
+
         car.setBrand(brand);
         car.setModel(model);
         car.setYear(getInteger(step1, "year"));
@@ -186,16 +192,20 @@ public class FinalCarCreationServiceImpl implements FinalCarCreationService {
         // ================= MAP DATA STEP 2 (Giá & Tiện nghi) =================
         car.setPricePerDay(getBigDecimal(step1, "pricePerDay")); // Theo ảnh bạn gửi, giá nhập ở bước 1 hoặc 2
         car.setAddress(getString(step2, "address"));
+        car.setProvince(getString(step2, "province"));
         car.setDistrict(getString(step2, "district"));
         car.setWard(getString(step2, "ward"));
 
-        // Xử lý Location mượt mà (Address, Ward, District, City)
-        String fullLocation = Stream.of(car.getAddress(), car.getWard(), car.getDistrict(), car.getCity())
+        // Xử lý Location mượt mà (Address, Ward, District, Province/City)
+        String fullLocation = Stream.of(car.getAddress(), car.getWard(), car.getDistrict(), car.getProvince())
                 .filter(s -> s != null && !s.isEmpty())
                 .collect(Collectors.joining(", "));
         car.setLocation(fullLocation);
 
-        car.setDescription(getString(step2, "description"));
+        // Description có thể ở step1 hoặc step2
+        String description = getString(step1, "description");
+        if (description == null) description = getString(step2, "description");
+        car.setDescription(description);
 
         // Map các tiện nghi (Checkbox từ Step 2)
         car.setHasAirConditioner(getBoolean(step2, "hasAirConditioner"));
@@ -205,7 +215,7 @@ public class FinalCarCreationServiceImpl implements FinalCarCreationService {
 
         // ================= MAP DATA STEP 3 (Trạng thái & Ngày tạo) =================
         // Vì đây là bước cuối, ta thiết lập trạng thái mặc định
-        car.setStatus(Car.CarStatus.PENDING);
+        car.setStatus(CarStatus.PENDING);
         car.setRegistrationDate(LocalDate.now());
 
         // 3. LƯU XE VÀO DATABASE

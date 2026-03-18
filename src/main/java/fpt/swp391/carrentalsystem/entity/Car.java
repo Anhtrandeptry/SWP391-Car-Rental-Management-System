@@ -1,7 +1,6 @@
 package fpt.swp391.carrentalsystem.entity;
 
-
-
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -83,6 +82,9 @@ public class Car {
 
     @Column(name = "address", length = 200)
     private String address;
+
+    @Column(name = "province", length = 100)
+    private String province;
 
     @Column(name = "district", length = 100)
     private String district;
@@ -180,6 +182,10 @@ public class Car {
     private String cleaningPolicy;
 
     // ========== Common Fields ==========
+    /**
+     * Trạng thái của xe - sử dụng enum CarStatus từ package enums
+     * @see fpt.swp391.carrentalsystem.enums.CarStatus
+     */
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private CarStatus status = CarStatus.DRAFT;
@@ -196,6 +202,9 @@ public class Car {
     private LocalDateTime updatedAt;
 
     // ========== ENUMS ==========
+    /**
+     * Loại nhiên liệu - giữ lại trong entity vì chỉ liên quan đến Car
+     */
     public enum FuelType {
         PETROL("Petrol"),
         ELECTRIC("Electric"),
@@ -205,29 +214,6 @@ public class Car {
         private final String displayName;
 
         FuelType(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-    }
-
-    public enum CarStatus {
-        DRAFT("Draft"),
-        PENDING("Pending"),
-        APPROVED("Approved"),
-        REJECTED("Rejected"),
-        AVAILABLE("Available"),
-        BOOKED("Booked"),
-        RENTED("Rented"),
-        DISABLED("Disabled"),
-        MAINTENANCE("Maintenance"),
-        INACTIVE("Inactive");
-
-        private final String displayName;
-
-        CarStatus(String displayName) {
             this.displayName = displayName;
         }
 

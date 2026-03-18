@@ -25,12 +25,21 @@ public class OwnerCarSetupController {
     public ResponseEntity<ApiResponse<Boolean>> checkLicensePlate(
             @RequestParam String licensePlate
     ) {
-        boolean exists = carValidationService.isLicensePlateExists(licensePlate);
+        // Normalize: trim, uppercase, remove all whitespace
+        String normalizedPlate = licensePlate.trim().toUpperCase().replaceAll("\\s+", "");
+
+        if (normalizedPlate.isEmpty()) {
+            return ResponseEntity.ok(
+                    new ApiResponse<>(false, "Biển số xe không được để trống", false)
+            );
+        }
+
+        boolean exists = carValidationService.isLicensePlateExists(normalizedPlate);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         !exists,
-                        exists ? "Biển số đã tồn tại" : "Biển số hợp lệ",
+                        exists ? "Biển số xe đã tồn tại, vui lòng nhập biển số khác" : "Biển số hợp lệ",
                         exists
                 )
         );

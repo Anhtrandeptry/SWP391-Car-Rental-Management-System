@@ -1,8 +1,7 @@
 package fpt.swp391.carrentalsystem.repository;
 
-
-
 import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -34,12 +33,42 @@ public interface CarRepository extends JpaRepository<Car, Long> {
      */
     List<Car> findByOwnerId(Long ownerId);
 
+    /**
+     * Tìm xe theo chủ xe và trạng thái
+     */
+    List<Car> findByOwnerIdAndStatus(Long ownerId, CarStatus status);
+
+    /**
+     * Tìm xe theo chủ xe và loại trừ một trạng thái (dùng để lấy xe chưa bị xóa)
+     */
+    List<Car> findByOwnerIdAndStatusNot(Long ownerId, CarStatus status);
+
+    /**
+     * Tìm xe đã bị xóa mềm (INACTIVE) của một owner
+     */
+    @Query("SELECT c FROM Car c WHERE c.ownerId = :ownerId AND c.status = 'INACTIVE'")
+    List<Car> findDeletedCarsByOwnerId(@Param("ownerId") Long ownerId);
+
+    /**
+     * Tìm xe chưa bị xóa mềm của một owner (status != INACTIVE)
+     */
+    @Query("SELECT c FROM Car c WHERE c.ownerId = :ownerId AND c.status != 'INACTIVE'")
+    List<Car> findActiveCarsByOwnerId(@Param("ownerId") Long ownerId);
 
     // 2. Định nghĩa câu lệnh xóa mềm
     @Modifying // Đánh dấu đây là truy vấn thay đổi dữ liệu (Update/Delete)
     @Transactional // Đảm bảo việc update diễn ra trong một giao dịch an toàn
     @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.id = :carId AND c.ownerId = :ownerId")
     int softDeleteCar(@Param("carId") Long carId, @Param("ownerId") Long ownerId);
+
+    // NOTE: Restore feature has been removed - soft deleted cars are permanent
+    // /**
+    //  * Khôi phục xe đã xóa mềm (chuyển từ INACTIVE về AVAILABLE)
+    //  */
+    // @Modifying
+    // @Transactional
+    // @Query("UPDATE Car c SET c.status = 'AVAILABLE' WHERE c.id = :carId AND c.ownerId = :ownerId AND c.status = 'INACTIVE'")
+    // int restoreCar(@Param("carId") Long carId, @Param("ownerId") Long ownerId);
 
 
     /**
@@ -96,7 +125,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     /**
      * Tìm xe theo trạng thái
      */
-    List<Car> findByStatus(Car.CarStatus status);
+    List<Car> findByStatus(CarStatus status);
 
     /**
      * Tìm xe có sẵn (AVAILABLE)
@@ -110,10 +139,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     @Query("SELECT c FROM Car c WHERE c.status = 'RENTED'")
     List<Car> findAllRentedCars();
 
-    /**
-     * Tìm xe có sẵn của một owner
-     */
-    List<Car> findByOwnerIdAndStatus(Long ownerId, Car.CarStatus status);
 
     // ================== SEARCH BY PRICE RANGE ==================
 
@@ -156,7 +181,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             @Param("maxSeats") Integer maxSeats,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
-            @Param("status") Car.CarStatus status
+            @Param("status") CarStatus status
     );
 
     /**
@@ -192,7 +217,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     /**
      * Đếm xe theo trạng thái
      */
-    long countByStatus(Car.CarStatus status);
+    long countByStatus(CarStatus status);
 
     /**
      * Đếm xe theo thành phố
@@ -238,7 +263,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     /**
      * Lấy xe có sẵn sắp xếp theo giá
      */
-    List<Car> findByStatusOrderByPricePerDayAsc(Car.CarStatus status);
+    List<Car> findByStatusOrderByPricePerDayAsc(CarStatus status);
 
     /**
      * Lấy xe mới nhất (theo ngày tạo)

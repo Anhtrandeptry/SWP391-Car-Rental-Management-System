@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -125,6 +125,28 @@
             margin: 0 16px;
         }
 
+        /* Alert Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #059669;
+        }
+
         /* Info Card */
         .info-card {
             background: white;
@@ -237,43 +259,6 @@
             color: #ef4444;
             font-size: 0.875rem;
             margin-top: 4px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .success-message {
-            color: #10b981;
-            font-size: 0.875rem;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        .validation-icon {
-            position: absolute;
-            right: 12px;
-            top: 38px;
-            width: 20px;
-            height: 20px;
-            display: none;
-        }
-
-        .validation-icon.show {
-            display: block;
-        }
-
-        .validation-icon.success {
-            color: #10b981;
-        }
-
-        .validation-icon.error {
-            color: #ef4444;
         }
 
         .btn {
@@ -301,29 +286,6 @@
         .btn-primary:disabled {
             background-color: #9ca3af;
             cursor: not-allowed;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
         /* Tooltip */
@@ -355,6 +317,15 @@
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -394,29 +365,51 @@
         </div>
     </div>
 
-    <!-- Thông tin đã chọn -->
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
+    <!-- Thông tin đã chọn từ bước ước tính thu nhập -->
     <div class="info-card">
         <h2>Thông tin xe của bạn</h2>
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Hãng xe</div>
-                <div class="info-value" id="displayBrand">--</div>
+                <div class="info-value" th:text="${carSession != null and carSession.brandName != null ? carSession.brandName : '--'}">--</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Mẫu xe</div>
-                <div class="info-value" id="displayModel">--</div>
+                <div class="info-value" th:text="${carSession != null and carSession.modelName != null ? carSession.modelName : '--'}">--</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Năm sản xuất</div>
-                <div class="info-value" id="displayYear">--</div>
+                <div class="info-value" th:text="${carSession != null and carSession.year != null ? carSession.year : '--'}">--</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Thành phố</div>
-                <div class="info-value" id="displayCity">--</div>
+                <div class="info-value" th:text="${carSession != null and carSession.city != null ? carSession.city : '--'}">--</div>
             </div>
             <div class="info-item" style="grid-column: 1 / -1;">
-                <div class="info-label">Thu nhập ước tính/tháng</div>
-                <div class="info-value" style="color: #14b8a6;" id="displayIncome">--</div>
+                <div class="info-label">Giá thuê / ngày (VNĐ) <span style="color: #ef4444;">*</span></div>
+                <div style="position: relative; margin-top: 8px;">
+                    <input type="text"
+                           id="pricePerDayDisplay"
+                           th:value="${carSession != null and carSession.pricePerDay != null ? #numbers.formatDecimal(carSession.pricePerDay, 0, 'COMMA', 0, 'POINT') : ''}"
+                           placeholder="VD: 1,000,000"
+                           required
+                           oninput="formatCurrency(this)"
+                           style="padding-right: 60px; font-size: 1.125rem; font-weight: 600; color: #14b8a6;"/>
+                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: 500;">VNĐ</span>
+                </div>
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">
+                    Nhập giá thuê xe mỗi ngày (tối thiểu 100,000 VNĐ)
+                </div>
             </div>
         </div>
     </div>
@@ -424,54 +417,68 @@
     <!-- Form thiết lập -->
     <div class="setup-form">
         <h2 class="form-title">Bước 1: Thiết Lập Xe</h2>
-        <form id="setupForm">
+
+        <!-- Form sử dụng Thymeleaf binding -->
+        <form th:action="@{/owner/create-car-step1}" th:object="${carSession}" method="post" id="step1Form">
+
+            <!-- Hidden fields để giữ dữ liệu từ income estimate -->
+            <input type="hidden" th:field="*{brandName}"/>
+            <input type="hidden" th:field="*{modelName}"/>
+            <input type="hidden" th:field="*{year}"/>
+            <input type="hidden" th:field="*{city}"/>
+            <!-- Hidden field for pricePerDay (synced from display input) -->
+            <input type="hidden" th:field="*{pricePerDay}" id="pricePerDayHidden"/>
+
             <!-- Biển số xe -->
             <div class="form-group">
                 <label class="required">
                     Biển số xe
                     <span class="tooltip">ℹ️
-                            <span class="tooltiptext">Định dạng: 30A-12345 (Số tỉnh + chữ cái - số)</span>
-                        </span>
+                        <span class="tooltiptext">Định dạng: 30A-12345 (Số tỉnh + chữ cái - số)</span>
+                    </span>
                 </label>
-                <input
-                        type="text"
-                        name="licensePlate"
-                        id="licensePlate"
-                        placeholder="VD: 30A-12345"
-                        required
-                >
-                <span class="validation-icon" id="licensePlateIcon">✓</span>
-                <div class="error-message" id="licensePlateError"></div>
-                <div class="success-message" id="licensePlateSuccess"></div>
+                <div style="position: relative;">
+                    <input type="text"
+                           th:field="*{licensePlate}"
+                           id="licensePlateInput"
+                           placeholder="VD: 30A-12345"
+                           maxlength="10"
+                           style="text-transform: uppercase;"
+                           required/>
+                    <!-- Real-time check indicator -->
+                    <span id="licensePlateStatus" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; display: none;"></span>
+                </div>
+                <!-- Backend validation error (shown after form submit) -->
+                <div th:if="${#fields.hasErrors('licensePlate')}" class="error-message">
+                    <span th:errors="*{licensePlate}">License plate error</span>
+                </div>
+                <!-- Real-time AJAX validation message -->
+                <div id="licensePlateMessage" style="font-size: 0.875rem; margin-top: 4px; display: none;"></div>
             </div>
 
             <div class="form-row">
                 <!-- Màu sắc -->
                 <div class="form-group">
                     <label class="required">Màu sắc</label>
-                    <select name="color" id="color" required>
+                    <select th:field="*{color}" required>
                         <option value="">-- Chọn màu sắc --</option>
-                        <option value="Trắng">Trắng</option>
-                        <option value="Đen">Đen</option>
-                        <option value="Xám">Xám</option>
-                        <option value="Bạc">Bạc</option>
-                        <option value="Đỏ">Đỏ</option>
-                        <option value="Xanh">Xanh</option>
-                        <option value="Vàng">Vàng</option>
-                        <option value="Nâu">Nâu</option>
+                        <option th:each="c : ${colors}" th:value="${c}" th:text="${c}"></option>
                     </select>
-                    <div class="error-message" id="colorError"></div>
+                    <div th:if="${#fields.hasErrors('color')}" class="error-message">
+                        <span th:errors="*{color}">Color error</span>
+                    </div>
                 </div>
 
                 <!-- Loại hộp số -->
                 <div class="form-group">
                     <label class="required">Loại hộp số</label>
-                    <select name="transmissionType" id="transmissionType" required>
+                    <select th:field="*{transmissionType}" required>
                         <option value="">-- Chọn loại hộp số --</option>
-                        <option value="Số tự động">Số tự động</option>
-                        <option value="Số sàn">Số sàn</option>
+                        <option th:each="t : ${transmissionTypes}" th:value="${t}" th:text="${t}"></option>
                     </select>
-                    <div class="error-message" id="transmissionTypeError"></div>
+                    <div th:if="${#fields.hasErrors('transmissionType')}" class="error-message">
+                        <span th:errors="*{transmissionType}">Transmission type error</span>
+                    </div>
                 </div>
             </div>
 
@@ -479,226 +486,220 @@
                 <!-- Loại nhiên liệu -->
                 <div class="form-group">
                     <label class="required">Loại nhiên liệu</label>
-                    <select name="fuelType" id="fuelType" required>
+                    <select th:field="*{fuelType}" required>
                         <option value="">-- Chọn loại nhiên liệu --</option>
-                        <option value="Xăng">Xăng</option>
-                        <option value="Dầu">Dầu</option>
-                        <option value="Điện">Điện</option>
-                        <option value="Hybrid">Hybrid</option>
+                        <option th:each="f : ${fuelTypes}" th:value="${f}" th:text="${f}"></option>
                     </select>
-                    <div class="error-message" id="fuelTypeError"></div>
+                    <div th:if="${#fields.hasErrors('fuelType')}" class="error-message">
+                        <span th:errors="*{fuelType}">Fuel type error</span>
+                    </div>
                 </div>
 
                 <!-- Số chỗ ngồi -->
                 <div class="form-group">
                     <label class="required">Số chỗ ngồi</label>
-                    <select name="seats" id="seats" required>
+                    <select th:field="*{seats}" required>
                         <option value="">-- Chọn số chỗ --</option>
-                        <option value="4">4 chỗ</option>
-                        <option value="5">5 chỗ</option>
-                        <option value="7">7 chỗ</option>
-                        <option value="16">16 chỗ</option>
+                        <option th:each="s : ${seatOptions}" th:value="${s}" th:text="${s + ' chỗ'}"></option>
                     </select>
-                    <div class="error-message" id="seatsError"></div>
+                    <div th:if="${#fields.hasErrors('seats')}" class="error-message">
+                        <span th:errors="*{seats}">Seats error</span>
+                    </div>
                 </div>
             </div>
-
-            <!-- Giá thuê -->
-<!--            <div class="form-group">-->
-<!--                <label class="required">-->
-<!--                    Giá thuê mỗi ngày (VNĐ)-->
-<!--                    <span class="tooltip">ℹ️-->
-<!--                            <span class="tooltiptext">Tối thiểu 100,000 VNĐ/ngày</span>-->
-<!--                        </span>-->
-<!--                </label>-->
-                <input
-                        type="hidden"
-                        name="pricePerDay"
-                        id="pricePerDay"
-
-                >
-<!--                <div class="error-message" id="pricePerDayError"></div>-->
-<!--                <small style="color: #6b7280;">Giá đề xuất dựa trên ước tính: <strong id="suggestedPrice">&#45;&#45;</strong></small>-->
-<!--            </div>-->
 
             <!-- Mô tả -->
             <div class="form-group">
                 <label>Mô tả xe (tùy chọn)</label>
-                <textarea
-                        name="description"
-                        id="description"
-                        rows="4"
-                        placeholder="Nhập mô tả về xe của bạn... (VD: Xe mới, nội thất đẹp, tiết kiệm nhiên liệu)"
-                        maxlength="1000"
-                ></textarea>
+                <textarea th:field="*{description}"
+                          rows="4"
+                          placeholder="Nhập mô tả về xe của bạn... (VD: Xe mới, nội thất đẹp, tiết kiệm nhiên liệu)"
+                          maxlength="1000"
+                          id="description"></textarea>
                 <small style="color: #6b7280;">
                     <span id="charCount">0</span>/1000 ký tự
                 </small>
             </div>
 
             <!-- Submit Button -->
-            <button type="submit" class="btn btn-primary" id="submitBtn">
+            <button type="submit" class="btn btn-primary">
                 Tiếp theo: Thông tin chi tiết
             </button>
         </form>
     </div>
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const res = await fetch("/api/income-estimate/session");
-            const json = await res.json();
-
-            if (!json.success) {
-                alert(json.message);
-                window.location.href = "/income-estimate";
-                return;
-            }
-
-            const e = json.data;
-
-            document.getElementById("displayBrand").innerText = e.brandName;
-            document.getElementById("displayModel").innerText = e.modelName;
-            document.getElementById("displayYear").innerText = e.year;
-            document.getElementById("displayCity").innerText = e.city;
-
-            document.getElementById("displayIncome").innerText =
-                Number(e.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
-
-            document.getElementById("pricePerDay").value =
-                Number(e.suggestedPricePerDay);
-
-        } catch (err) {
-            alert("Không lấy được dữ liệu ước tính");
-            window.location.href = "/income-estimate";
-        }
-    });
-</script>
-<!--<script>-->
-<!--    const STEP1_KEY = "carStep1";-->
-
-<!--    document.getElementById("setupForm").addEventListener("submit", function (e) {-->
-<!--        e.preventDefault(); // ❗ CỰC KỲ QUAN TRỌNG-->
-
-<!--        const step1Data = {-->
-<!--            brandName: document.getElementById("displayBrand").innerText,-->
-<!--            modelName: document.getElementById("displayModel").innerText,-->
-<!--            year: document.getElementById("displayYear").innerText,-->
-<!--            city: document.getElementById("displayCity").innerText,-->
-<!--            estimatedMonthlyIncome: Number(-->
-<!--                document.getElementById("displayIncome").innerText.replace(/[^\d]/g, "")-->
-<!--            ),-->
-
-<!--            licensePlate: document.getElementById("licensePlate").value,-->
-<!--            color: document.getElementById("color").value,-->
-<!--            transmissionType: document.getElementById("transmissionType").value,-->
-<!--            fuelType: document.getElementById("fuelType").value,-->
-<!--            seats: document.getElementById("seats").value,-->
-<!--            pricePerDay: Number(document.getElementById("pricePerDay").value),-->
-<!--            description: document.getElementById("description").value-->
-<!--        };-->
-<!--        // ===== validate nhanh =====-->
-<!--        if (!step1Data.licensePlate || !step1Data.pricePerDay) {-->
-<!--            alert("Vui lòng nhập đầy đủ thông tin bắt buộc");-->
-<!--            return;-->
-<!--        }-->
-
-<!--        // ===== SAVE SESSION =====-->
-<!--        sessionStorage.setItem(STEP1_KEY, JSON.stringify(step1Data));-->
-
-<!--        console.log("✅ STEP 1 SAVED:", step1Data);-->
-
-<!--        // ===== REDIRECT =====-->
-<!--        window.location.href = "/owner/create-car-step2";-->
-<!--    });-->
-<!--</script>-->
-
 
 <script>
-    const STEP1_KEY = "carStep1";
-    let apiData = {}; // Biến toàn cục để giữ dữ liệu gốc từ API
+    // ===== FORMAT CURRENCY FUNCTION =====
+    function formatCurrency(input) {
+        // Remove all non-digit characters
+        let rawValue = input.value.replace(/\D/g, '');
 
-    // 1. Load dữ liệu từ Session API khi vào trang
-    document.addEventListener("DOMContentLoaded", async () => {
-        try {
-            const res = await fetch("/api/income-estimate/session");
-            const json = await res.json();
-
-            if (!json.success) {
-                alert("Phiên làm việc hết hạn, vui lòng ước tính lại thu nhập.");
-                window.location.href = "/income-estimate";
-                return;
-            }
-
-            apiData = json.data; // Lưu lại dữ liệu gốc
-
-            // Hiển thị lên UI
-            document.getElementById("displayBrand").innerText = apiData.brandName;
-            document.getElementById("displayModel").innerText = apiData.modelName;
-            document.getElementById("displayYear").innerText = apiData.year;
-            document.getElementById("displayCity").innerText = apiData.city;
-            document.getElementById("displayIncome").innerText =
-                Number(apiData.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
-
-            // Gán giá thuê vào hidden input
-            document.getElementById("pricePerDay").value = apiData.suggestedPricePerDay;
-
-        } catch (err) {
-            console.error("Lỗi:", err);
-            window.location.href = "/income-estimate";
-        }
-    });
-
-    // 2. Xử lý sự kiện Submit Form
-    document.getElementById("setupForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const licensePlateInput = document.getElementById("licensePlate").value.trim().toUpperCase();
-
-        // Đóng gói dữ liệu Step 1
-        const step1Data = {
-            // Lấy từ dữ liệu gốc API (An toàn hơn lấy từ innerText)
-            brand: apiData.brandName,
-            model: apiData.modelName,
-            year: parseInt(apiData.year),
-            city: apiData.city,
-
-            // Lấy từ Form nhập liệu
-            licensePlate: licensePlateInput,
-            color: document.getElementById("color").value,
-            transmissionType: document.getElementById("transmissionType").value,
-            fuelType: document.getElementById("fuelType").value,
-            seats: parseInt(document.getElementById("seats").value),
-            pricePerDay: Number(document.getElementById("pricePerDay").value),
-            description: document.getElementById("description").value.trim()
-        };
-
-        // Validate cơ bản tại Client
-        if (!step1Data.licensePlate || step1Data.licensePlate.length < 5) {
-            alert("Vui lòng nhập biển số xe hợp lệ");
+        if (rawValue === '') {
+            input.value = '';
+            syncPriceToHiddenField('');
             return;
         }
 
-        // LƯU VÀO SESSION STORAGE
-        sessionStorage.setItem(STEP1_KEY, JSON.stringify(step1Data));
+        // Format with thousands separator
+        let formatted = Number(rawValue).toLocaleString('vi-VN');
+        input.value = formatted;
 
-        console.log("🚀 Step 1 Data ready:", step1Data);
+        // Sync raw value to hidden field
+        syncPriceToHiddenField(rawValue);
+    }
 
-        // Chuyển hướng sang Step 2
-        window.location.href = "/owner/create-car-step2";
-    });
+    // ===== SYNC PRICE TO HIDDEN FIELD =====
+    function syncPriceToHiddenField(rawValue) {
+        const hiddenField = document.getElementById('pricePerDayHidden');
+        if (hiddenField) {
+            hiddenField.value = rawValue;
+        }
+    }
 
-    // Bonus: Đếm ký tự cho phần mô tả
+    // ===== LICENSE PLATE REAL-TIME CHECK =====
+    let licensePlateTimer = null;
+    let licensePlateExists = false;
+
+    function checkLicensePlate(plate) {
+        const statusIcon = document.getElementById('licensePlateStatus');
+        const messageDiv = document.getElementById('licensePlateMessage');
+        const input = document.getElementById('licensePlateInput');
+
+        // Normalize
+        plate = plate.trim().toUpperCase().replace(/\s+/g, '');
+
+        // If empty, reset
+        if (!plate) {
+            statusIcon.style.display = 'none';
+            messageDiv.style.display = 'none';
+            input.style.borderColor = '#d1d5db';
+            licensePlateExists = false;
+            return;
+        }
+
+        // Show loading
+        statusIcon.textContent = '⏳';
+        statusIcon.style.display = 'inline';
+        messageDiv.style.display = 'none';
+
+        fetch('/api/owner/create-car-step1/check-license-plate?licensePlate=' + encodeURIComponent(plate))
+            .then(response => response.json())
+            .then(data => {
+                if (data.data === true) {
+                    // License plate EXISTS → show error
+                    licensePlateExists = true;
+                    statusIcon.textContent = '❌';
+                    statusIcon.style.display = 'inline';
+                    messageDiv.textContent = 'Biển số xe đã tồn tại, vui lòng nhập biển số khác';
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.style.display = 'block';
+                    input.style.borderColor = '#ef4444';
+                    input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                } else {
+                    // License plate NOT exists → show success
+                    licensePlateExists = false;
+                    statusIcon.textContent = '✅';
+                    statusIcon.style.display = 'inline';
+                    messageDiv.textContent = 'Biển số hợp lệ';
+                    messageDiv.style.color = '#059669';
+                    messageDiv.style.display = 'block';
+                    input.style.borderColor = '#10b981';
+                    input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking license plate:', error);
+                statusIcon.style.display = 'none';
+                messageDiv.style.display = 'none';
+                input.style.borderColor = '#d1d5db';
+                licensePlateExists = false;
+            });
+    }
+
+    // ===== CHARACTER COUNTER FOR DESCRIPTION =====
     document.getElementById("description").addEventListener("input", function() {
         document.getElementById("charCount").innerText = this.value.length;
     });
+
+    // ===== INITIALIZE ON PAGE LOAD =====
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize character count
+        const desc = document.getElementById("description");
+        if (desc && desc.value) {
+            document.getElementById("charCount").innerText = desc.value.length;
+        }
+
+        // Initialize price display from hidden field if exists
+        const hiddenPrice = document.getElementById('pricePerDayHidden');
+        const displayInput = document.getElementById('pricePerDayDisplay');
+
+        if (hiddenPrice && hiddenPrice.value && displayInput) {
+            let rawValue = hiddenPrice.value.replace(/\D/g, '');
+            if (rawValue) {
+                displayInput.value = Number(rawValue).toLocaleString('vi-VN');
+            }
+        }
+
+        // License plate real-time check with debounce (500ms)
+        const licensePlateInput = document.getElementById('licensePlateInput');
+        if (licensePlateInput) {
+            licensePlateInput.addEventListener('input', function() {
+                clearTimeout(licensePlateTimer);
+                const value = this.value.trim();
+
+                // Only check if at least 5 characters (reasonable plate length)
+                if (value.length >= 5) {
+                    licensePlateTimer = setTimeout(function() {
+                        checkLicensePlate(value);
+                    }, 500);
+                } else {
+                    // Reset indicators for short input
+                    document.getElementById('licensePlateStatus').style.display = 'none';
+                    document.getElementById('licensePlateMessage').style.display = 'none';
+                    licensePlateInput.style.borderColor = '#d1d5db';
+                    licensePlateInput.style.boxShadow = '';
+                    licensePlateExists = false;
+                }
+            });
+
+            // Reset border color on focus
+            licensePlateInput.addEventListener('focus', function() {
+                if (!licensePlateExists) {
+                    this.style.borderColor = '#14b8a6';
+                    this.style.boxShadow = '0 0 0 3px rgba(20, 184, 166, 0.1)';
+                }
+            });
+        }
+    });
+
+    // ===== FORM VALIDATION BEFORE SUBMIT =====
+    document.getElementById('step1Form').addEventListener('submit', function(e) {
+        const priceDisplay = document.getElementById('pricePerDayDisplay');
+        const priceHidden = document.getElementById('pricePerDayHidden');
+
+        // Get raw value
+        const rawValue = priceDisplay.value.replace(/\D/g, '');
+
+        // Validate minimum price
+        if (!rawValue || parseInt(rawValue) < 100000) {
+            e.preventDefault();
+            alert('Vui lòng nhập giá thuê hợp lệ (tối thiểu 100,000 VNĐ)');
+            priceDisplay.focus();
+            return false;
+        }
+
+        // Ensure hidden field has the raw value
+        priceHidden.value = rawValue;
+
+        // Block submit if license plate already exists (caught by real-time check)
+        if (licensePlateExists) {
+            e.preventDefault();
+            alert('Biển số xe đã tồn tại, vui lòng nhập biển số khác');
+            document.getElementById('licensePlateInput').focus();
+            return false;
+        }
+    });
 </script>
-
-
-
-
-
-
-
 </body>
 </html>

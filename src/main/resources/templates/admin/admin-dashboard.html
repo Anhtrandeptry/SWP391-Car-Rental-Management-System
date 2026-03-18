@@ -1,11 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Car Rental System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .feature-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card.pending .icon {
+            color: #ffc107;
+        }
+        .feature-card.users .icon {
+            color: #17a2b8;
+        }
+        .feature-card.reports .icon {
+            color: #28a745;
+        }
+    </style>
 </head>
 <body>
-<p>Hello Admin!</p>
-<button>Logout</button>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-car-front-fill"></i> Car Rental Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/cars">Quản lý xe</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container text-center">
+            <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+            <p class="lead mb-0">Chào mừng đến trang quản trị hệ thống cho thuê xe</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row g-4">
+            <!-- Car Approval Card -->
+            <div class="col-md-4">
+                <div class="feature-card pending">
+                    <div class="icon">
+                        <i class="bi bi-clipboard-check"></i>
+                    </div>
+                    <h4>Duyệt xe</h4>
+                    <p class="text-muted">Xem và phê duyệt các xe đang chờ duyệt từ chủ xe</p>
+                    <a href="/admin/cars" class="btn btn-warning">
+                        <i class="bi bi-arrow-right"></i> Xem danh sách
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Management Card -->
+            <div class="col-md-4">
+                <div class="feature-card users">
+                    <div class="icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <h4>Quản lý người dùng</h4>
+                    <p class="text-muted">Quản lý tài khoản chủ xe và khách hàng</p>
+                    <a href="#" class="btn btn-info disabled">
+                        <i class="bi bi-arrow-right"></i> Sắp ra mắt
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reports Card -->
+            <div class="col-md-4">
+                <div class="feature-card reports">
+                    <div class="icon">
+                        <i class="bi bi-bar-chart"></i>
+                    </div>
+                    <h4>Báo cáo</h4>
+                    <p class="text-muted">Xem báo cáo và thống kê hệ thống</p>
+                    <a href="#" class="btn btn-success disabled">
+                        <i class="bi bi-arrow-right"></i> Sắp ra mắt
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Car Rental System - Admin Panel</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

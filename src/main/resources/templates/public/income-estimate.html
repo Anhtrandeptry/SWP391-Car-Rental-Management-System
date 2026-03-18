@@ -171,6 +171,12 @@
             padding-right: 40px;
         }
 
+        select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            color: #9ca3af;
+        }
+
         .income-box {
             background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
             border-radius: 12px;
@@ -329,7 +335,7 @@
                 <div class="form-group">
                     <label for="brand">Hãng xe</label>
                     <select id="brand" name="brand" required>
-                        <option value="">-- Chọn hãng xe --</option>
+                        <option value="">-- Đang tải hãng xe --</option>
                     </select>
                     <div class="error-message" id="brandError"></div>
                 </div>
@@ -347,30 +353,18 @@
                 <div class="form-group">
                     <label for="year">Năm sản xuất</label>
                     <select id="year" name="year" required>
-                        <option value="2025">2025</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
-                        <option value="2020">2020</option>
-                        <option value="2019">2019</option>
-                        <option value="2018">2018</option>
-                        <option value="2017">2017</option>
-                        <option value="2016">2016</option>
-                        <option value="2015">2015</option>
+                        <option value="">-- Chọn năm sản xuất --</option>
                     </select>
+                    <div class="error-message" id="yearError"></div>
                 </div>
 
                 <!-- Thành phố -->
                 <div class="form-group">
                     <label for="city">Thành phố</label>
                     <select id="city" name="city" required>
-                        <option value="Hà Nội">Hà Nội</option>
-                        <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                        <option value="Cần Thơ">Cần Thơ</option>
-                        <option value="Hải Phòng">Hải Phòng</option>
+                        <option value="">-- Đang tải tỉnh/thành phố --</option>
                     </select>
+                    <div class="error-message" id="cityError"></div>
                 </div>
 
                 <!-- Income Estimation Box -->
@@ -402,79 +396,420 @@
 </div>
 <script>
     const API = "/api";
+    const PROVINCES_API = "https://provinces.open-api.vn/api/p/";
 
-    /* ===== LOAD BRANDS ===== */
-    fetch(API + "/brands")
-        .then(r => r.json())
-        .then(j => {
-            if (!j.success) return;
-            const brand = document.getElementById("brand");
-            j.data.forEach(b =>
-                brand.innerHTML += `<option value="${b.id}">${b.name}</option>`
-            );
+    // Backend proxy API cho CarQuery (ưu tiên sử dụng)
+    const CARQUERY_PROXY_API = "/api/carquery";
+
+    // CarQuery API trực tiếp - fallback nếu proxy không hoạt động
+    const CARQUERY_DIRECT_API = "https://www.carqueryapi.com/api/0.3/";
+
+    // Lưu trữ dữ liệu brand và model đã chọn
+    let selectedBrandName = "";
+    let selectedModelName = "";
+
+    /* ===== HELPER: Fetch JSONP cho CarQuery API (fallback) ===== */
+    function fetchJSONP(url, callbackParam) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            const callbackName = 'carquery_cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            const timeout = setTimeout(() => {
+                cleanup();
+                reject(new Error('JSONP request timeout'));
+            }, 8000);
+
+            function cleanup() {
+                clearTimeout(timeout);
+                if (script.parentNode) {
+                    document.body.removeChild(script);
+                }
+                delete window[callbackName];
+            }
+
+            window[callbackName] = function(data) {
+                cleanup();
+                resolve(data);
+            };
+
+            const separator = url.includes('?') ? '&' : '?';
+            script.src = url + separator + 'callback=' + callbackName;
+
+            script.onerror = () => {
+                cleanup();
+                reject(new Error('JSONP script load failed'));
+            };
+
+            document.body.appendChild(script);
+        });
+    }
+
+    /* ===== GENERATE YEAR OPTIONS (Current Year down to 1990) ===== */
+    function generateYearOptions() {
+        const yearSelect = document.getElementById("year");
+        const currentYear = new Date().getFullYear();
+        const startYear = 1990;
+
+        yearSelect.innerHTML = '<option value="">-- Chọn năm sản xuất --</option>';
+
+        for (let year = currentYear; year >= startYear; year--) {
+            yearSelect.innerHTML += `<option value="${year}">${year}</option>`;
+        }
+    }
+
+    /* ===== LOAD CAR BRANDS ===== */
+    async function loadCarBrands() {
+        const brandSelect = document.getElementById("brand");
+        brandSelect.innerHTML = '<option value="">-- Đang tải hãng xe... --</option>';
+
+        try {
+            // Thử gọi proxy API từ backend trước
+            console.log("Trying backend proxy API...");
+            const proxyResponse = await fetch(CARQUERY_PROXY_API + "/makes");
+
+            if (proxyResponse.ok) {
+                const text = await proxyResponse.text();
+                const data = JSON.parse(text);
+
+                if (data && data.Makes && data.Makes.length > 0) {
+                    populateBrands(data.Makes);
+                    console.log("Loaded " + data.Makes.length + " brands from proxy API");
+                    return;
+                }
+            }
+        } catch (proxyError) {
+            console.warn("Proxy API failed:", proxyError.message);
+        }
+
+        // Fallback 1: Thử JSONP trực tiếp
+        try {
+            console.log("Trying direct CarQuery API with JSONP...");
+            const data = await fetchJSONP(CARQUERY_DIRECT_API + "?cmd=getMakes", "makes");
+
+            if (data && data.Makes && data.Makes.length > 0) {
+                populateBrands(data.Makes);
+                console.log("Loaded " + data.Makes.length + " brands from JSONP");
+                return;
+            }
+        } catch (jsonpError) {
+            console.warn("JSONP failed:", jsonpError.message);
+        }
+
+        // Fallback 2: Sử dụng danh sách brands local
+        console.log("Using local fallback brands...");
+        loadFallbackBrands();
+    }
+
+    /* ===== Populate brands vào dropdown ===== */
+    function populateBrands(makes) {
+        const brandSelect = document.getElementById("brand");
+        brandSelect.innerHTML = '<option value="">-- Chọn hãng xe --</option>';
+
+        // Sắp xếp theo tên hiển thị
+        makes.sort((a, b) => a.make_display.localeCompare(b.make_display));
+
+        makes.forEach(make => {
+            const option = document.createElement("option");
+            option.value = make.make_id;
+            option.textContent = make.make_display;
+            option.dataset.displayName = make.make_display;
+            brandSelect.appendChild(option);
+        });
+    }
+
+    /* ===== FALLBACK: Load danh sách brands phổ biến ===== */
+    function loadFallbackBrands() {
+        const brandSelect = document.getElementById("brand");
+        const fallbackBrands = [
+            { id: "audi", name: "Audi" },
+            { id: "bmw", name: "BMW" },
+            { id: "chevrolet", name: "Chevrolet" },
+            { id: "ford", name: "Ford" },
+            { id: "honda", name: "Honda" },
+            { id: "hyundai", name: "Hyundai" },
+            { id: "kia", name: "Kia" },
+            { id: "lexus", name: "Lexus" },
+            { id: "mazda", name: "Mazda" },
+            { id: "mercedes-benz", name: "Mercedes-Benz" },
+            { id: "mitsubishi", name: "Mitsubishi" },
+            { id: "nissan", name: "Nissan" },
+            { id: "peugeot", name: "Peugeot" },
+            { id: "subaru", name: "Subaru" },
+            { id: "suzuki", name: "Suzuki" },
+            { id: "toyota", name: "Toyota" },
+            { id: "vinfast", name: "VinFast" },
+            { id: "volkswagen", name: "Volkswagen" }
+        ];
+
+        brandSelect.innerHTML = '<option value="">-- Chọn hãng xe --</option>';
+        fallbackBrands.forEach(brand => {
+            const option = document.createElement("option");
+            option.value = brand.id;
+            option.textContent = brand.name;
+            option.dataset.displayName = brand.name;
+            brandSelect.appendChild(option);
+        });
+    }
+
+    /* ===== LOAD CAR MODELS BY BRAND ===== */
+    async function loadCarModels(makeId) {
+        const modelSelect = document.getElementById("model");
+        modelSelect.innerHTML = '<option value="">-- Đang tải mẫu xe... --</option>';
+        modelSelect.disabled = true;
+        document.getElementById("modelError").textContent = "";
+
+        if (!makeId) {
+            modelSelect.innerHTML = '<option value="">-- Chọn hãng xe trước --</option>';
+            return;
+        }
+
+        try {
+            // Thử gọi proxy API từ backend trước
+            console.log("Loading models for:", makeId);
+            const proxyResponse = await fetch(CARQUERY_PROXY_API + "/models?make=" + encodeURIComponent(makeId));
+
+            if (proxyResponse.ok) {
+                const text = await proxyResponse.text();
+                const data = JSON.parse(text);
+
+                if (data && data.Models && data.Models.length > 0) {
+                    populateModels(data.Models);
+                    console.log("Loaded " + data.Models.length + " models from proxy API");
+                    return;
+                }
+            }
+        } catch (proxyError) {
+            console.warn("Proxy API for models failed:", proxyError.message);
+        }
+
+        // Fallback 1: Thử JSONP trực tiếp
+        try {
+            console.log("Trying JSONP for models...");
+            const data = await fetchJSONP(CARQUERY_DIRECT_API + "?cmd=getModels&make=" + encodeURIComponent(makeId), "models");
+
+            if (data && data.Models && data.Models.length > 0) {
+                populateModels(data.Models);
+                console.log("Loaded models from JSONP");
+                return;
+            }
+        } catch (jsonpError) {
+            console.warn("JSONP for models failed:", jsonpError.message);
+        }
+
+        // Fallback 2: Sử dụng danh sách models local
+        console.log("Using local fallback models...");
+        loadFallbackModels(makeId);
+    }
+
+    /* ===== Populate models vào dropdown ===== */
+    function populateModels(models) {
+        const modelSelect = document.getElementById("model");
+        modelSelect.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
+
+        // Lọc và loại bỏ các model trùng lặp
+        const uniqueModels = [];
+        const modelNames = new Set();
+
+        models.forEach(model => {
+            if (!modelNames.has(model.model_name)) {
+                modelNames.add(model.model_name);
+                uniqueModels.push(model);
+            }
         });
 
-    /* ===== LOAD MODELS ===== */
-    document.getElementById("brand").addEventListener("change", e => {
-        const brandId = e.target.value;
-        const model = document.getElementById("model");
-        model.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
-        model.disabled = true;
+        // Sắp xếp theo tên
+        uniqueModels.sort((a, b) => a.model_name.localeCompare(b.model_name));
 
-        if (!brandId) return;
+        uniqueModels.forEach(model => {
+            const option = document.createElement("option");
+            option.value = model.model_name;
+            option.textContent = model.model_name;
+            option.dataset.displayName = model.model_name;
+            modelSelect.appendChild(option);
+        });
 
-        fetch(`${API}/brands/${brandId}/models`)
+        modelSelect.disabled = false;
+    }
+
+    /* ===== FALLBACK: Load danh sách models phổ biến ===== */
+    function loadFallbackModels(makeId) {
+        const modelSelect = document.getElementById("model");
+
+        const fallbackModels = {
+            "toyota": ["Camry", "Corolla", "Fortuner", "Innova", "Land Cruiser", "RAV4", "Vios", "Yaris", "Hilux", "Alphard"],
+            "honda": ["Accord", "City", "Civic", "CR-V", "HR-V", "Jazz", "Brio", "BR-V"],
+            "mazda": ["CX-3", "CX-5", "CX-8", "CX-30", "Mazda2", "Mazda3", "Mazda6", "BT-50"],
+            "hyundai": ["Accent", "Creta", "Elantra", "Grand i10", "Kona", "Santa Fe", "Tucson", "Stargazer"],
+            "kia": ["Carnival", "Cerato", "K3", "Morning", "Seltos", "Sorento", "Sportage", "Sonet"],
+            "ford": ["EcoSport", "Everest", "Explorer", "Ranger", "Territory", "Transit"],
+            "mercedes-benz": ["A-Class", "C-Class", "E-Class", "S-Class", "GLA", "GLC", "GLE", "GLS"],
+            "bmw": ["1 Series", "3 Series", "5 Series", "7 Series", "X1", "X3", "X5", "X7"],
+            "vinfast": ["Fadil", "Lux A2.0", "Lux SA2.0", "VF5", "VF6", "VF7", "VF8", "VF9"],
+            "audi": ["A3", "A4", "A6", "A8", "Q2", "Q3", "Q5", "Q7"],
+            "lexus": ["ES", "GS", "IS", "LS", "NX", "RX", "UX", "LX"],
+            "nissan": ["Almera", "Navara", "Terra", "X-Trail", "Kicks"],
+            "mitsubishi": ["Attrage", "Outlander", "Pajero Sport", "Triton", "Xpander"],
+            "suzuki": ["Ciaz", "Ertiga", "Swift", "Vitara", "XL7"],
+            "volkswagen": ["Passat", "Polo", "Teramont", "Tiguan", "Touareg"],
+            "peugeot": ["2008", "3008", "5008", "Traveller"],
+            "subaru": ["Forester", "Outback", "XV"]
+        };
+
+        const models = fallbackModels[makeId.toLowerCase()] || ["Sedan", "SUV", "Hatchback", "Crossover", "MPV", "Pickup"];
+
+        modelSelect.innerHTML = '<option value="">-- Chọn mẫu xe --</option>';
+        models.forEach(model => {
+            const option = document.createElement("option");
+            option.value = model;
+            option.textContent = model;
+            option.dataset.displayName = model;
+            modelSelect.appendChild(option);
+        });
+
+        modelSelect.disabled = false;
+    }
+
+    /* ===== LOAD PROVINCES/CITIES FROM API ===== */
+    function loadProvinces() {
+        const citySelect = document.getElementById("city");
+        citySelect.innerHTML = '<option value="">-- Đang tải tỉnh/thành phố... --</option>';
+
+        fetch(PROVINCES_API)
             .then(r => r.json())
-            .then(j => {
-                if (!j.success) return;
-                j.data.forEach(m =>
-                    model.innerHTML += `<option value="${m.id}">${m.name}</option>`
-                );
-                model.disabled = false;
+            .then(provinces => {
+                citySelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+                provinces.forEach(p => {
+                    citySelect.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+                });
+            })
+            .catch(err => {
+                console.error("Lỗi tải danh sách tỉnh/thành phố:", err);
+                citySelect.innerHTML = '<option value="">-- Không thể tải dữ liệu --</option>';
+                document.getElementById("cityError").textContent = "Không thể tải danh sách tỉnh/thành phố.";
             });
+    }
+
+    /* ===== EVENT LISTENERS ===== */
+
+    // Khi chọn brand -> load models
+    document.getElementById("brand").addEventListener("change", function() {
+        const selectedOption = this.options[this.selectedIndex];
+        selectedBrandName = selectedOption.dataset.displayName || selectedOption.textContent;
+
+        // Reset model selection
+        selectedModelName = "";
+
+        const modelSelect = document.getElementById("model");
+        modelSelect.innerHTML = '<option value="">-- Chọn hãng xe trước --</option>';
+        modelSelect.disabled = true;
+
+        if (this.value) {
+            loadCarModels(this.value);
+        }
     });
 
-    /* ===== SUBMIT ===== */
+    // Khi chọn model -> lưu tên
+    document.getElementById("model").addEventListener("change", function() {
+        const selectedOption = this.options[this.selectedIndex];
+        selectedModelName = selectedOption.dataset.displayName || selectedOption.textContent;
+    });
+
+    /* ===== FORM SUBMIT ===== */
     document.getElementById("incomeForm").addEventListener("submit", async e => {
         e.preventDefault();
 
+        // Clear previous errors
+        document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
+
+        const brandSelect = document.getElementById("brand");
+        const modelSelect = document.getElementById("model");
+        const yearSelect = document.getElementById("year");
+        const citySelect = document.getElementById("city");
+
+        // Validation
+        let hasError = false;
+
+        if (!brandSelect.value) {
+            document.getElementById("brandError").textContent = "Vui lòng chọn hãng xe";
+            hasError = true;
+        }
+
+        if (!modelSelect.value) {
+            document.getElementById("modelError").textContent = "Vui lòng chọn mẫu xe";
+            hasError = true;
+        }
+
+        if (!yearSelect.value) {
+            document.getElementById("yearError").textContent = "Vui lòng chọn năm sản xuất";
+            hasError = true;
+        }
+
+        if (!citySelect.value) {
+            document.getElementById("cityError").textContent = "Vui lòng chọn tỉnh/thành phố";
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Lấy tên hiển thị
+        const brandName = brandSelect.options[brandSelect.selectedIndex].dataset.displayName ||
+                          brandSelect.options[brandSelect.selectedIndex].textContent;
+        const modelName = modelSelect.options[modelSelect.selectedIndex].dataset.displayName ||
+                          modelSelect.options[modelSelect.selectedIndex].textContent;
+
         const payload = {
-            brandId: Number(brand.value),
-            modelId: Number(model.value),
-            year: Number(year.value),
-            city: city.value
+            brandId: brandSelect.value,
+            brandName: brandName,
+            modelId: modelSelect.value,
+            modelName: modelName,
+            year: Number(yearSelect.value),
+            city: citySelect.value
         };
 
-        const res = await fetch(API + "/income-estimate", {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(payload)
-        });
+        console.log("Submitting:", payload);
 
-        if (!res.ok) {
-            alert("Bạn cần đăng nhập để tiếp tục");
-            window.location.href = "/auth/login";
-            return;
+        try {
+            const res = await fetch(API + "/income-estimate", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                alert("Bạn cần đăng nhập để tiếp tục");
+                window.location.href = "/auth/login";
+                return;
+            }
+
+            const json = await res.json();
+            if (!json.success) {
+                alert(json.message);
+                return;
+            }
+
+            const data = json.data;
+
+            document.getElementById("incomeBox").classList.add("show");
+            document.getElementById("incomeAmount").innerText =
+                Number(data.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
+            document.getElementById("incomeRecommendation").innerText =
+                data.recommendation;
+
+            setTimeout(() => {
+                window.location.href = "/auth/login";
+            }, 4000);
+        } catch (error) {
+            console.error("Lỗi submit form:", error);
+            alert("Có lỗi xảy ra, vui lòng thử lại.");
         }
+    });
 
-        const json = await res.json();
-        if (!json.success) {
-            alert(json.message);
-            return;
-        }
-
-        const data = json.data;
-
-        document.getElementById("incomeBox").classList.add("show");
-        document.getElementById("incomeAmount").innerText =
-            Number(data.estimatedMonthlyIncome).toLocaleString("vi-VN") + " VNĐ";
-        document.getElementById("incomeRecommendation").innerText =
-            data.recommendation;
-
-        // 👉 chuyển sang step 1
-        setTimeout(() => {
-            window.location.href = "/auth/login";
-        }, 4000);
+    /* ===== INIT ON PAGE LOAD ===== */
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Initializing income estimate page...");
+        generateYearOptions();
+        loadCarBrands();
+        loadProvinces();
     });
 </script>
 

@@ -17,7 +17,7 @@ public class CarInfoServiceImpl implements CarInfoService {
         // Kiểm tra số km hợp lý theo năm xe
         if (carInfoDTO.getMileage() != null && carInfoDTO.getYear() != null) {
             int carAge = 2025 - carInfoDTO.getYear();
-            int maxMileage = carAge * 20000; // Giả sử trung bình 20,000 km/năm
+            int maxMileage = carAge * 10000; // Giả sử trung bình 20,000 km/năm
 
             if (carInfoDTO.getMileage() > maxMileage) {
                 throw new IllegalArgumentException(
@@ -36,28 +36,6 @@ public class CarInfoServiceImpl implements CarInfoService {
             throw new IllegalArgumentException("Phụ phí vượt km tối thiểu 1,000 VNĐ/km");
         }
 
-//        // Kiểm tra tọa độ GPS nếu có
-//        if (carInfoDTO.getLatitude() != null && !carInfoDTO.getLatitude().isEmpty()) {
-//            try {
-//                double lat = Double.parseDouble(carInfoDTO.getLatitude());
-//                if (lat < -90 || lat > 90) {
-//                    throw new IllegalArgumentException("Vĩ độ phải trong khoảng -90 đến 90");
-//                }
-//            } catch (NumberFormatException e) {
-//                throw new IllegalArgumentException("Vĩ độ không hợp lệ");
-//            }
-//        }
-
-//        if (carInfoDTO.getLongitude() != null && !carInfoDTO.getLongitude().isEmpty()) {
-//            try {
-//                double lng = Double.parseDouble(carInfoDTO.getLongitude());
-//                if (lng < -180 || lng > 180) {
-//                    throw new IllegalArgumentException("Kinh độ phải trong khoảng -180 đến 180");
-//                }
-//            } catch (NumberFormatException e) {
-//                throw new IllegalArgumentException("Kinh độ không hợp lệ");
-//            }
-//        }
     }
 
     @Override

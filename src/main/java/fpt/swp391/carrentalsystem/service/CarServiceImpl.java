@@ -1,9 +1,8 @@
 package fpt.swp391.carrentalsystem.service;
 
-
-
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
 import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.exception.ResourceNotFoundException;
 import fpt.swp391.carrentalsystem.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +34,12 @@ public class CarServiceImpl implements CarService {
         }
 
         // Kiểm tra xe có đang được thuê không
-        if (car.getStatus() == Car.CarStatus.RENTED || car.getStatus() == Car.CarStatus.BOOKED) {
+        if (car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED) {
             throw new IllegalArgumentException("Không thể xóa xe đang được thuê hoặc đã đặt");
         }
 
         // Soft delete - chuyển status sang INACTIVE
-        car.setStatus(Car.CarStatus.INACTIVE);
+        car.setStatus(CarStatus.INACTIVE);
         carRepository.save(car);
     }
 
@@ -55,7 +54,7 @@ public class CarServiceImpl implements CarService {
         }
 
         // Kiểm tra xe có đang được thuê không
-        if (car.getStatus() == Car.CarStatus.RENTED || car.getStatus() == Car.CarStatus.BOOKED) {
+        if (car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED) {
             throw new IllegalArgumentException("Không thể xóa xe đang được thuê hoặc đã đặt");
         }
 
@@ -77,12 +76,12 @@ public class CarServiceImpl implements CarService {
         }
 
         // Kiểm tra xe có ở trạng thái INACTIVE không
-        if (car.getStatus() != Car.CarStatus.INACTIVE) {
+        if (car.getStatus() != CarStatus.INACTIVE) {
             throw new IllegalArgumentException("Chỉ có thể khôi phục xe đã bị vô hiệu hóa");
         }
 
         // Restore - chuyển về PENDING để admin duyệt lại
-        car.setStatus(Car.CarStatus.PENDING);
+        car.setStatus(CarStatus.PENDING);
         Car restoredCar = carRepository.save(car);
 
         return new CarResponseDTO(restoredCar);
@@ -94,6 +93,6 @@ public class CarServiceImpl implements CarService {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + carId));
 
-        return car.getStatus() == Car.CarStatus.RENTED || car.getStatus() == Car.CarStatus.BOOKED;
+        return car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED;
     }
 }

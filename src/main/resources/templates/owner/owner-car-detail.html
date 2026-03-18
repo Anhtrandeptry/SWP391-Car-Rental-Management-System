@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết xe - CRMS</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb; color: #333; line-height: 1.6;
+        }
+        header {
+            background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px; position: sticky; top: 0; z-index: 100;
+        }
+        .header-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #14b8a6; font-size: 1.5rem; text-decoration: none; }
+
+        .container { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+        }
+        .page-title { font-size: 1.8rem; font-weight: 700; color: #111827; }
+
+        .btn-back {
+            padding: 10px 20px; background-color: #f3f4f6; color: #374151;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-back:hover { background-color: #e5e7eb; }
+
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: white; border-radius: 12px; padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 1.2rem; font-weight: 700; color: #111827;
+            margin-bottom: 20px; display: flex; align-items: center; gap: 10px;
+            border-bottom: 2px solid #14b8a6; padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex; justify-content: space-between; padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { font-weight: 600; color: #111827; text-align: right; }
+
+        /* Status badges */
+        .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .status-draft { background: #e5e7eb; color: #374151; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dbeafe; color: #1e40af; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .status-available { background: #d1fae5; color: #065f46; }
+        .status-rented { background: #dbeafe; color: #1e40af; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+
+        /* Documents section */
+        .documents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+        .document-card {
+            border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .document-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .document-header {
+            background: #f9fafb; padding: 12px 16px; font-weight: 600;
+            border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;
+        }
+        .document-image {
+            width: 100%; height: 180px; object-fit: cover; cursor: pointer;
+            background: #f3f4f6;
+        }
+        .document-footer { padding: 10px 16px; font-size: 0.85rem; color: #6b7280; }
+
+        .doc-status { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .doc-status-pending { background: #fef3c7; color: #92400e; }
+        .doc-status-approved { background: #d1fae5; color: #065f46; }
+        .doc-status-rejected { background: #fee2e2; color: #991b1b; }
+
+        .empty-docs {
+            text-align: center; padding: 40px; color: #9ca3af;
+        }
+        .empty-docs i { font-size: 3rem; margin-bottom: 10px; }
+
+        /* Cover image */
+        .cover-image-container { margin-bottom: 24px; }
+        .cover-image {
+            width: 100%; height: 300px; object-fit: cover; border-radius: 12px;
+            background: #e5e7eb;
+        }
+
+        /* Utilities grid */
+        .utilities-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .utility-tag {
+            padding: 6px 12px; background: #e0f2fe; color: #0369a1;
+            border-radius: 20px; font-size: 0.85rem; font-weight: 500;
+        }
+
+        /* Price highlight */
+        .price-highlight {
+            font-size: 1.5rem; font-weight: 700; color: #14b8a6;
+        }
+
+        /* Modal for image preview */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+        .modal-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 2rem; cursor: pointer; }
+
+        /* Edit button */
+        .btn-edit {
+            padding: 10px 20px; background-color: #14b8a6; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-edit:hover { background-color: #0d9488; }
+
+        /* Action buttons container */
+        .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        /* Alert messages */
+        .alert {
+            padding: 14px 18px; border-radius: 8px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-container">
+        <a href="/owner/dashboard" class="logo-section">🚗 CRMS</a>
+        <div class="user-info" th:if="${#authentication != null}">
+            <a href="/owner/owner-car-list" style="color: #14b8a6; text-decoration: none; margin-right: 16px;">← Danh sách xe</a>
+            <span>Chào, <span th:text="${#authentication.name}">Chủ xe</span></span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Alert messages -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        ✅ <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        ❌ <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div class="page-header">
+        <h1 class="page-title">
+            Chi tiết xe #<span th:text="${car.id}">1</span>
+        </h1>
+        <div class="header-actions">
+            <!-- Edit button (only show if car is not deleted) -->
+            <a th:if="${car.status.name() != 'INACTIVE'}"
+               th:href="@{'/owner/cars/' + ${car.id} + '/edit'}"
+               class="btn-edit">
+                ✏️ Chỉnh sửa
+            </a>
+            <a href="/owner/owner-car-list" class="btn-back">
+                ← Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- Cover Image -->
+    <div class="cover-image-container" th:if="${car.coverImage != null}">
+        <img th:src="${car.coverImage}" class="cover-image" alt="Cover Image"
+             onerror="this.style.display='none'">
+    </div>
+
+    <div class="detail-grid">
+        <!-- Car Basic Info -->
+        <div class="card">
+            <h3 class="card-title">🚗 Thông tin xe</h3>
+            <div class="info-row">
+                <span class="info-label">Tên xe</span>
+                <span class="info-value" th:text="${car.name ?: 'N/A'}">Toyota Camry</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Hãng xe</span>
+                <span class="info-value" th:text="${car.brand ?: 'N/A'}">Toyota</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mẫu xe</span>
+                <span class="info-value" th:text="${car.model ?: 'N/A'}">Camry</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Năm sản xuất</span>
+                <span class="info-value" th:text="${car.year ?: 'N/A'}">2023</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Biển số xe</span>
+                <span class="info-value" th:text="${car.licensePlate ?: 'N/A'}">30A-12345</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Màu sắc</span>
+                <span class="info-value" th:text="${car.color ?: 'N/A'}">Đen</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Trạng thái</span>
+                <span class="info-value">
+                    <span th:class="'status-badge status-' + ${car.status.name().toLowerCase()}"
+                          th:text="${car.status.displayName}">Chờ duyệt</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Technical Info -->
+        <div class="card">
+            <h3 class="card-title">⚙️ Thông tin kỹ thuật</h3>
+            <div class="info-row">
+                <span class="info-label">Số chỗ ngồi</span>
+                <span class="info-value" th:text="${car.seats != null ? car.seats + ' chỗ' : 'N/A'}">5 chỗ</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Loại xe</span>
+                <span class="info-value" th:text="${car.carType ?: 'N/A'}">Sedan</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Nhiên liệu</span>
+                <span class="info-value" th:text="${car.fuelType != null ? car.fuelType.displayName : 'N/A'}">Xăng</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Hộp số</span>
+                <span class="info-value" th:text="${car.transmissionType ?: 'N/A'}">Tự động</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tiêu hao nhiên liệu</span>
+                <span class="info-value" th:text="${car.fuelConsumption ?: 'N/A'}">8L/100km</span>
+            </div>
+        </div>
+
+        <!-- Price & Location -->
+        <div class="card">
+            <h3 class="card-title">💰 Giá & Vị trí</h3>
+            <div class="info-row">
+                <span class="info-label">Giá thuê/ngày</span>
+                <span class="info-value price-highlight"
+                      th:text="${car.pricePerDay != null ? #numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT') + 'đ' : 'N/A'}">1,000,000đ</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tỉnh/Thành phố</span>
+                <span class="info-value" th:text="${car.city ?: car.province ?: 'N/A'}">Hà Nội</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Quận/Huyện</span>
+                <span class="info-value" th:text="${car.district ?: 'N/A'}">Cầu Giấy</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Phường/Xã</span>
+                <span class="info-value" th:text="${car.ward ?: 'N/A'}">Dịch Vọng</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Địa chỉ cụ thể</span>
+                <span class="info-value" th:text="${car.address ?: 'N/A'}">123 ABC</span>
+            </div>
+        </div>
+
+        <!-- Utilities -->
+        <div class="card">
+            <h3 class="card-title">✨ Tiện nghi</h3>
+            <div class="utilities-grid">
+                <span class="utility-tag" th:if="${car.hasAirConditioner}">❄️ Điều hòa</span>
+                <span class="utility-tag" th:if="${car.hasGPS}">📍 GPS</span>
+                <span class="utility-tag" th:if="${car.hasBluetooth}">🔵 Bluetooth</span>
+                <span class="utility-tag" th:if="${car.hasDashCam}">📹 Camera hành trình</span>
+                <span class="utility-tag" th:if="${car.hasReverseCamera}">🔙 Camera lùi</span>
+                <span class="utility-tag" th:if="${car.hasUSB}">🔌 USB</span>
+                <span class="utility-tag" th:if="${car.hasMaps}">🗺️ Bản đồ</span>
+                <span class="utility-tag" th:if="${car.has360Camera}">🎥 Camera 360</span>
+                <span class="utility-tag" th:if="${car.hasSpareWheel}">🛞 Bánh dự phòng</span>
+                <span class="utility-tag" th:if="${car.hasDVDPlayer}">📀 DVD</span>
+                <span class="utility-tag" th:if="${car.hasETC}">🏷️ ETC</span>
+                <span class="utility-tag" th:if="${car.hasSunroof}">☀️ Cửa sổ trời</span>
+            </div>
+            <p th:if="${!car.hasAirConditioner and !car.hasGPS and !car.hasBluetooth and !car.hasDashCam}"
+               class="text-muted" style="color: #9ca3af; margin-top: 10px;">
+                Chưa cập nhật tiện nghi
+            </p>
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="card" th:if="${car.description != null and !car.description.isEmpty()}">
+        <h3 class="card-title">📝 Mô tả</h3>
+        <p th:text="${car.description}" style="color: #4b5563; white-space: pre-line;">Mô tả xe...</p>
+    </div>
+
+    <!-- Car Documents Section -->
+    <div class="card">
+        <h3 class="card-title">📄 Giấy tờ xe</h3>
+
+        <div th:if="${documents == null or documents.isEmpty()}" class="empty-docs">
+            <div style="font-size: 3rem;">📂</div>
+            <p>Chưa có giấy tờ nào được tải lên</p>
+        </div>
+
+        <div th:if="${documents != null and !documents.isEmpty()}" class="documents-grid">
+            <div th:each="doc : ${documents}" class="document-card">
+                <div class="document-header">
+                    <span th:text="${doc.documentType.displayName}">Loại giấy tờ</span>
+                    <span th:class="'doc-status doc-status-' + ${doc.status.name().toLowerCase()}"
+                          th:text="${doc.status.displayName}">Status</span>
+                </div>
+                <img th:src="@{${doc.filePath}}"
+                     class="document-image"
+                     onclick="openModal(this.src)"
+                     alt="Document"
+                     onerror="this.src='https://via.placeholder.com/300x180?text=No+Image'">
+                <div class="document-footer">
+                    📅 Tải lên: <span th:text="${#temporals.format(doc.uploadedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal" id="imageModal" onclick="closeModal()">
+    <span class="modal-close">&times;</span>
+    <img id="modalImage" src="" alt="Preview">
+</div>
+
+<script>
+    function openModal(src) {
+        document.getElementById('modalImage').src = src;
+        document.getElementById('imageModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').classList.remove('active');
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -134,8 +134,20 @@
             margin: 0 16px;
         }
 
-        .step.completed + .step-line {
-            background-color: #10b981;
+        /* Alert Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
         }
 
         /* Info Card */
@@ -226,10 +238,6 @@
             box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
         }
 
-        input.error, select.error {
-            border-color: #ef4444;
-        }
-
         select {
             cursor: pointer;
             appearance: none;
@@ -237,6 +245,12 @@
             background-repeat: no-repeat;
             background-position: right 12px center;
             padding-right: 40px;
+        }
+
+        select:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+            color: #9ca3af;
         }
 
         .form-row {
@@ -255,11 +269,6 @@
             color: #ef4444;
             font-size: 0.875rem;
             margin-top: 4px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
         }
 
         /* Amenities Checkboxes */
@@ -321,6 +330,8 @@
             color: white;
             flex: 1;
             max-width: 200px;
+            text-decoration: none;
+            text-align: center;
         }
 
         .btn-secondary:hover {
@@ -337,32 +348,6 @@
             background-color: #0d9488;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
-        }
-
-        .btn-primary:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Helper text */
-        .helper-text {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 4px;
         }
 
         /* Input with unit */
@@ -382,6 +367,12 @@
             color: #6b7280;
             font-size: 0.875rem;
             pointer-events: none;
+        }
+
+        .helper-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
         }
 
         @media (max-width: 768px) {
@@ -431,28 +422,38 @@
         </div>
     </div>
 
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
     <!-- Thông tin từ Step 1 -->
     <div class="info-card">
         <h2>✓ Thông tin đã nhập (Bước 1)</h2>
         <div class="info-summary">
             <div class="info-tag">
-                <strong>Xe:</strong> <span id="summaryBrand">--</span> <span id="summaryModel">--</span>
+                <strong>Xe:</strong> <span th:text="${carSession.brandName + ' ' + carSession.modelName}">--</span>
             </div>
             <div class="info-tag">
-                <strong>Năm:</strong> <span id="summaryYear">--</span>
+                <strong>Năm:</strong> <span th:text="${carSession.year}">--</span>
             </div>
             <div class="info-tag">
-                <strong>Biển số:</strong> <span id="summaryLicensePlate">--</span>
+                <strong>Biển số:</strong> <span th:text="${carSession.licensePlate}">--</span>
             </div>
             <div class="info-tag">
-                <strong>Giá:</strong> <span id="summaryPrice">--</span> VNĐ/ngày
+                <strong>Giá:</strong> <span th:text="${#numbers.formatDecimal(carSession.pricePerDay, 0, 'COMMA', 0, 'POINT') + ' VNĐ/ngày'}">--</span>
             </div>
         </div>
     </div>
 
     <!-- Form thông tin -->
     <div class="info-form">
-        <form id="infoForm">
+        <form th:action="@{/owner/create-car-step2}" th:object="${carSession}" method="post" id="infoForm">
 
             <!-- SECTION 1: Thông tin vị trí -->
             <h3 class="section-title">
@@ -465,26 +466,69 @@
 
             <div class="form-group">
                 <label class="required">Địa chỉ chi tiết</label>
-                <input type="text" name="address" id="address" placeholder="Số nhà, tên đường" required>
-                <div class="error-message" id="addressError"></div>
+                <input type="text" th:field="*{address}" placeholder="Số nhà, tên đường" required/>
             </div>
 
             <div class="form-row-3">
+                <div class="form-group">
+                    <label class="required">Tỉnh/Thành phố</label>
+                    <select th:field="*{provinceCode}" id="province" required>
+                        <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                        <option th:each="p : ${provinces}"
+                                th:value="${p.code}"
+                                th:text="${p.name}"
+                                th:selected="${carSession.provinceCode != null and carSession.provinceCode == p.code}"
+                                th:data-name="${p.name}"></option>
+                    </select>
+                    <!-- Hidden field để lưu tên tỉnh -->
+                    <input type="hidden" th:field="*{province}" id="provinceName"/>
+                    <div th:if="${#fields.hasErrors('provinceCode')}" class="error-message" style="color: #ef4444; font-size: 0.875rem; margin-top: 4px;">
+                        <span th:errors="*{provinceCode}">Province error</span>
+                    </div>
+                </div>
 
+                <div class="form-group">
+                    <label class="required">Quận/Huyện</label>
+                    <select th:field="*{districtCode}" id="district" required
+                            th:disabled="${districts == null or #lists.isEmpty(districts)}">
+                        <option value="" th:if="${districts == null or #lists.isEmpty(districts)}">-- Chọn Tỉnh/Thành phố trước --</option>
+                        <option value="" th:if="${districts != null and not #lists.isEmpty(districts)}">-- Chọn Quận/Huyện --</option>
+                        <option th:each="d : ${districts}"
+                                th:value="${d.code}"
+                                th:text="${d.name}"
+                                th:selected="${carSession.districtCode != null and carSession.districtCode == d.code}"
+                                th:data-name="${d.name}"></option>
+                    </select>
+                    <input type="hidden" th:field="*{district}" id="districtName"/>
+                    <div th:if="${#fields.hasErrors('districtCode')}" class="error-message" style="color: #ef4444; font-size: 0.875rem; margin-top: 4px;">
+                        <span th:errors="*{districtCode}">District error</span>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <label class="required">Phường/Xã</label>
-                    <input type="text" name="ward" id="ward" placeholder="VD: Phường Bến Nghé" required>
-                    <div class="error-message" id="wardError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Thành phố</label>
-                    <input type="text" id="cityReadonly" readonly style="background-color: #f9fafb;">
+                    <select th:field="*{wardCode}" id="ward" required
+                            th:disabled="${wards == null or #lists.isEmpty(wards)}">
+                        <option value="" th:if="${wards == null or #lists.isEmpty(wards)}">-- Chọn Quận/Huyện trước --</option>
+                        <option value="" th:if="${wards != null and not #lists.isEmpty(wards)}">-- Chọn Phường/Xã --</option>
+                        <option th:each="w : ${wards}"
+                                th:value="${w.code}"
+                                th:text="${w.name}"
+                                th:selected="${carSession.wardCode != null and carSession.wardCode == w.code}"
+                                th:data-name="${w.name}"></option>
+                    </select>
+                    <input type="hidden" th:field="*{ward}" id="wardName"/>
+                    <div th:if="${#fields.hasErrors('wardCode')}" class="error-message" style="color: #ef4444; font-size: 0.875rem; margin-top: 4px;">
+                        <span th:errors="*{wardCode}">Ward error</span>
+                    </div>
                 </div>
             </div>
 
-
+            <div class="form-group">
+                <label>Thành phố (từ bước 1)</label>
+                <input type="text" th:value="${carSession.city}" readonly style="background-color: #f9fafb;"/>
+                <div class="helper-text">Đây là thành phố bạn đã chọn ở bước ước tính thu nhập</div>
+            </div>
 
             <!-- SECTION 2: Thông tin kỹ thuật -->
             <h3 class="section-title" style="margin-top: 40px;">
@@ -499,43 +543,21 @@
                 <div class="form-group">
                     <label class="required">Số km đã đi</label>
                     <div class="input-with-unit">
-                        <input type="number" name="mileage" id="mileage" placeholder="VD: 50000" min="0" required>
+                        <input type="number" th:field="*{mileage}" placeholder="VD: 50000" min="0" required/>
                         <span class="input-unit">km</span>
                     </div>
-                    <div class="error-message" id="mileageError"></div>
+                    <div th:if="${#fields.hasErrors('mileage')}" class="error-message" style="color: #ef4444; font-size: 0.875rem; margin-top: 4px;">
+                        <span th:errors="*{mileage}">Mileage error</span>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="required">Tình trạng xe</label>
-                    <select name="condition" id="condition" required>
-                        <option value="">-- Chọn tình trạng --</option>
-                        <option value="Mới">Mới (0-2 năm)</option>
-                        <option value="Rất tốt">Rất tốt (2-5 năm)</option>
-                        <option value="Tốt">Tốt (5-8 năm)</option>
-                        <option value="Trung bình">Trung bình (8-12 năm)</option>
-                        <option value="Cũ">Cũ (>12 năm)</option>
-                    </select>
-                    <div class="error-message" id="conditionError"></div>
-                </div>
-            </div>
-
-            <div class="form-row">
                 <div class="form-group">
                     <label>Năng lượng tiêu hao</label>
                     <div class="input-with-unit">
-                        <input type="number" name="fuelConsumption" id="fuelConsumption" placeholder="VD: 7.5" min="0" step="0.1">
+                        <input type="number" th:field="*{fuelConsumption}" placeholder="VD: 7.5" min="0" step="0.1"/>
                         <span class="input-unit">lít/100km</span>
                     </div>
                     <div class="helper-text">Tùy chọn - giúp khách ước tính chi phí</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Dung tích động cơ</label>
-                    <div class="input-with-unit">
-                        <input type="number" name="engineCapacity" id="engineCapacity" placeholder="VD: 1500" min="500">
-                        <span class="input-unit">cc</span>
-                    </div>
-                    <div class="helper-text">Tùy chọn</div>
                 </div>
             </div>
 
@@ -549,163 +571,86 @@
 
             <div class="amenities-grid">
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasAirConditioner" id="hasAirConditioner">
+                    <input type="checkbox" th:field="*{hasAirConditioner}" id="hasAirConditioner"/>
                     <label for="hasAirConditioner">❄️ Điều hòa</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasDashCam" id="hasDashCam">
+                    <input type="checkbox" th:field="*{hasDashCam}" id="hasDashCam"/>
                     <label for="hasDashCam">📹 Camera hành trình</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasReverseCamera" id="hasReverseCamera">
+                    <input type="checkbox" th:field="*{hasReverseCamera}" id="hasReverseCamera"/>
                     <label for="hasReverseCamera">📷 Camera lùi</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasGPS" id="hasGPS">
+                    <input type="checkbox" th:field="*{hasGPS}" id="hasGPS"/>
                     <label for="hasGPS">🛰️ Định vị GPS</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasUSB" id="hasUSB">
+                    <input type="checkbox" th:field="*{hasUSB}" id="hasUSB"/>
                     <label for="hasUSB">🔌 Khe cắm USB</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasBluetooth" id="hasBluetooth">
+                    <input type="checkbox" th:field="*{hasBluetooth}" id="hasBluetooth"/>
                     <label for="hasBluetooth">📡 Bluetooth</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasMaps" id="hasMaps">
+                    <input type="checkbox" th:field="*{hasMaps}" id="hasMaps"/>
                     <label for="hasMaps">🗺️ Bản đồ</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="has360Camera" id="has360Camera">
+                    <input type="checkbox" th:field="*{has360Camera}" id="has360Camera"/>
                     <label for="has360Camera">📸 Camera 360</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasSpareWheel" id="hasSpareWheel">
+                    <input type="checkbox" th:field="*{hasSpareWheel}" id="hasSpareWheel"/>
                     <label for="hasSpareWheel">🛞 Lốp dự phòng</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasDVDPlayer" id="hasDVDPlayer">
+                    <input type="checkbox" th:field="*{hasDVDPlayer}" id="hasDVDPlayer"/>
                     <label for="hasDVDPlayer">💿 Đầu DVD</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasETC" id="hasETC">
+                    <input type="checkbox" th:field="*{hasETC}" id="hasETC"/>
                     <label for="hasETC">🎫 Thu phí ETC</label>
                 </div>
 
                 <div class="checkbox-item">
-                    <input type="checkbox" name="hasSunroof" id="hasSunroof">
+                    <input type="checkbox" th:field="*{hasSunroof}" id="hasSunroof"/>
                     <label for="hasSunroof">🌤️ Cửa sổ trời</label>
                 </div>
             </div>
 
-            <!-- SECTION 4: Quy định thuê xe -->
-            <h3 class="section-title" style="margin-top: 40px;">
-                <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                4. Quy định thuê xe
-            </h3>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="required">Giới hạn km/ngày</label>
-                    <div class="input-with-unit">
-                        <input type="number" name="dailyKmLimit" id="dailyKmLimit" placeholder="VD: 300" min="50" required>
-                        <span class="input-unit">km</span>
-                    </div>
-                    <div class="error-message" id="dailyKmLimitError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="required">Phụ phí vượt km</label>
-                    <div class="input-with-unit">
-                        <input type="number" name="overLimitFee" id="overLimitFee" placeholder="VD: 5000" min="1000" required>
-                        <span class="input-unit">VNĐ/km</span>
-                    </div>
-                    <div class="error-message" id="overLimitFeeError"></div>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="required">Chính sách nhiên liệu</label>
-                    <select name="fuelPolicy" id="fuelPolicy" required>
-                        <option value="">-- Chọn chính sách --</option>
-                        <option value="Đầy đủ">Đầy đủ (đầy -> đầy)</option>
-                        <option value="Tự đổ">Tự đổ (khách tự chi trả)</option>
-                        <option value="Trả theo km">Trả theo km thực tế</option>
-                    </select>
-                    <div class="error-message" id="fuelPolicyError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Chính sách hủy</label>
-                    <select name="cancellationPolicy" id="cancellationPolicy">
-                        <option value="">-- Chọn chính sách --</option>
-                        <option value="Miễn phí hủy trong 24h">Miễn phí hủy trong 24h</option>
-                        <option value="Miễn phí hủy trong 48h">Miễn phí hủy trong 48h</option>
-                        <option value="Phạt 50% nếu hủy">Phạt 50% nếu hủy</option>
-                        <option value="Không hoàn tiền">Không hoàn tiền</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="required">Thời gian giao xe</label>
-                    <input type="text" name="deliveryTime" id="deliveryTime" placeholder="VD: 8:00 - 20:00" required>
-                    <div class="error-message" id="deliveryTimeError"></div>
-                </div>
-
-                <div class="form-group">
-                    <label class="required">Địa điểm giao xe</label>
-                    <input type="text" name="deliveryLocation" id="deliveryLocation" placeholder="VD: Tại nhà, Sân bay, ..." required>
-                    <div class="error-message" id="deliveryLocationError"></div>
-                </div>
-            </div>
-
-            <!-- SECTION 5: Thông tin bổ sung -->
+            <!-- SECTION 4: Thông tin bổ sung -->
             <h3 class="section-title" style="margin-top: 40px;">
                 <svg class="section-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                 </svg>
-                5. Thông tin bổ sung
+                4. Thông tin bổ sung
             </h3>
 
             <div class="form-group">
                 <label>Ghi chú đặc biệt</label>
-                <textarea name="specialNotes" id="specialNotes" rows="3" placeholder="VD: Xe phù hợp cho gia đình, có ghế trẻ em, ..."></textarea>
+                <textarea th:field="*{specialNotes}" rows="3" placeholder="VD: Xe phù hợp cho gia đình, có ghế trẻ em, ..."></textarea>
                 <div class="helper-text"><span id="specialNotesCount">0</span>/1000 ký tự</div>
-            </div>
-
-<!--            <div class="form-group">-->
-<!--                <label>Yêu cầu với người thuê</label>-->
-<!--                <textarea name="renterRequirements" id="renterRequirements" rows="2" placeholder="VD: Có bằng lái từ 2 năm, không hút thuốc, ..."></textarea>-->
-<!--                <div class="helper-text"><span id="renterRequirementsCount">0</span>/500 ký tự</div>-->
-<!--            </div>-->
-
-            <div class="form-group">
-                <label>Chính sách vệ sinh</label>
-                <input type="text" name="cleaningPolicy" id="cleaningPolicy" placeholder="VD: Phụ phí vệ sinh 200,000 VNĐ nếu quá bẩn">
             </div>
 
             <!-- Navigation Buttons -->
             <div class="form-navigation">
-                <button type="button" class="btn btn-secondary" id="prevBtn">
+                <a th:href="@{/owner/create-car-step1}" class="btn btn-secondary">
                     ← Quay lại
-                </button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">
+                </a>
+                <button type="submit" class="btn btn-primary">
                     Tiếp theo: Giấy tờ →
                 </button>
             </div>
@@ -713,232 +658,205 @@
     </div>
 </div>
 
-<!--<script>-->
-<!--    /* ================= CONFIG ================= */-->
-<!--    const STEP1_KEY = "carStep1";-->
-<!--    const DRAFT_KEY = "createCarDraft";-->
+<script th:inline="javascript">
+    // Lấy base URL từ Thymeleaf
+    const API_BASE = /*[[@{/owner/api}]]*/ '/owner/api';
 
-<!--    /* ================= LOAD STEP 1 ================= */-->
-<!--    document.addEventListener("DOMContentLoaded", () => {-->
-<!--        const raw = sessionStorage.getItem(STEP1_KEY);-->
+    // Lấy giá trị đã chọn trước đó từ backend (nếu có)
+    const savedProvinceCode = /*[[${carSession.provinceCode}]]*/ null;
+    const savedDistrictCode = /*[[${carSession.districtCode}]]*/ null;
+    const savedWardCode = /*[[${carSession.wardCode}]]*/ null;
+    const savedProvinceName = /*[[${carSession.province}]]*/ null;
+    const savedDistrictName = /*[[${carSession.district}]]*/ null;
+    const savedWardName = /*[[${carSession.ward}]]*/ null;
+    // City from income estimate (step1) — used for auto-matching province
+    const savedCity = /*[[${carSession.city}]]*/ null;
 
-<!--        if (!raw) {-->
-<!--            alert("Vui lòng hoàn thành Bước 1 trước");-->
-<!--            window.location.href = "/owner/create-car-step1";-->
-<!--            return;-->
-<!--        }-->
+    // ========== HELPER: Load districts by provinceCode ==========
+    async function loadDistricts(provinceCode, preSelectDistrictCode, preSelectDistrictName) {
+        const districtSelect = document.getElementById("district");
+        const wardSelect = document.getElementById("ward");
+        const districtNameInput = document.getElementById("districtName");
+        const wardNameInput = document.getElementById("wardName");
 
-<!--        const step1 = JSON.parse(raw);-->
+        districtSelect.innerHTML = '<option value="">-- Đang tải Quận/Huyện --</option>';
+        districtSelect.disabled = true;
+        wardSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện trước --</option>';
+        wardSelect.disabled = true;
 
-<!--        /* ===== SUMMARY ===== */-->
-<!--        document.getElementById("summaryBrand").innerText = step1.brandId;-->
-<!--        document.getElementById("summaryModel").innerText = step1.modelId;-->
-<!--        document.getElementById("summaryYear").innerText = step1.year;-->
-<!--        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate;-->
-<!--        document.getElementById("summaryPrice").innerText =-->
-<!--            Number(step1.pricePerDay).toLocaleString("vi-VN") + " VNĐ";-->
-
-<!--        /* ===== CITY READONLY ===== */-->
-<!--        document.getElementById("cityReadonly").value = step1.city;-->
-
-<!--        /* ===== COUNTERS ===== */-->
-<!--        bindCounter("specialNotes", "specialNotesCount");-->
-<!--        bindCounter("renterRequirements", "renterRequirementsCount");-->
-
-<!--        /* ===== BACK ===== */-->
-<!--        document.getElementById("prevBtn").addEventListener("click", () => {-->
-<!--            window.location.href = "/owner/create-car-step1";-->
-<!--        });-->
-
-<!--        /* ===== SUBMIT ===== */-->
-<!--        document-->
-<!--            .getElementById("infoForm")-->
-<!--            .addEventListener("submit", e => handleSubmit(e, step1));-->
-<!--    });-->
-
-<!--    /* ================= HELPERS ================= */-->
-<!--    function bindCounter(inputId, counterId) {-->
-<!--        const input = document.getElementById(inputId);-->
-<!--        const counter = document.getElementById(counterId);-->
-
-<!--        if (!input || !counter) return;-->
-
-<!--        counter.innerText = input.value.length;-->
-<!--        input.addEventListener("input", () => {-->
-<!--            counter.innerText = input.value.length;-->
-<!--        });-->
-<!--    }-->
-
-<!--    /* ================= SUBMIT STEP 2 ================= */-->
-<!--    function handleSubmit(e, step1) {-->
-<!--        e.preventDefault();-->
-
-<!--        const form = e.target;-->
-<!--        const formData = new FormData(form);-->
-<!--        const step2 = {};-->
-
-<!--        /* ===== TEXT / SELECT ===== */-->
-<!--        for (const [key, value] of formData.entries()) {-->
-<!--            step2[key] = value.trim();-->
-<!--        }-->
-
-<!--        /* ===== CHECKBOXES (only in form) ===== */-->
-<!--        form.querySelectorAll("input[type='checkbox']").forEach(cb => {-->
-<!--            step2[cb.name] = cb.checked;-->
-<!--        });-->
-
-<!--        /* ===== NORMALIZE NUMBERS ===== */-->
-<!--        step2.mileage = parseInt(step2.mileage || "0", 10);-->
-<!--        step2.dailyKmLimit = parseInt(step2.dailyKmLimit || "0", 10);-->
-<!--        step2.overLimitFee = parseInt(step2.overLimitFee || "0", 10);-->
-
-<!--        step2.fuelConsumption =-->
-<!--            step2.fuelConsumption !== ""-->
-<!--                ? Number(step2.fuelConsumption)-->
-<!--                : null;-->
-
-<!--        step2.engineCapacity =-->
-<!--            step2.engineCapacity !== ""-->
-<!--                ? Number(step2.engineCapacity)-->
-<!--                : null;-->
-
-<!--        /* ===== MERGE ALL DATA ===== */-->
-<!--        const draft = {-->
-<!--            ...step1,-->
-<!--            ...step2,-->
-<!--            step: 2,-->
-<!--            updatedAt: new Date().toISOString()-->
-<!--        };-->
-
-<!--        console.log("🚗 CREATE CAR DRAFT:", draft);-->
-
-<!--        /* ===== SAVE DRAFT ===== */-->
-<!--        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));-->
-
-<!--        /* ===== NEXT ===== */-->
-<!--        window.location.href = "/owner/create-car-step3";-->
-<!--    }-->
-
-<!--</script>-->
-
-
-<!--<script>-->
-<!--    const STEP1_KEY = "carStep1";-->
-<!--    const DRAFT_KEY = "createCarDraft";-->
-
-<!--    document.addEventListener("DOMContentLoaded", () => {-->
-<!--        const raw = sessionStorage.getItem(STEP1_KEY);-->
-<!--        if (!raw) {-->
-<!--            alert("Vui lòng hoàn thành Step 1 trước");-->
-<!--            window.location.href = "/owner/create-car-step1";-->
-<!--            return;-->
-<!--        }-->
-
-<!--        const step1= JSON.parse(raw);-->
-
-<!--        // Hiển thị summary-->
-<!--        document.getElementById("summaryBrand").innerText = step1.brandName;-->
-<!--        document.getElementById("summaryModel").innerText = step1.modelName;-->
-<!--        document.getElementById("summaryYear").innerText = step1.year;-->
-<!--        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate;-->
-<!--        document.getElementById("summaryPrice").innerText = Number(step1.pricePerDay).toLocaleString("vi-VN") + " VNĐ";-->
-
-<!--        // BACK button-->
-<!--        document.getElementById("prevBtn").addEventListener("click", () => window.location.href = "/owner/create-car-step1");-->
-
-<!--        document.getElementById("infoForm").addEventListener("submit", e => handleSubmit(e, step1));-->
-<!--    });-->
-
-<!--    function handleSubmit(e, step1) {-->
-<!--        e.preventDefault();-->
-<!--        const formData = new FormData(e.target);-->
-<!--        const step2 = {};-->
-
-<!--        for (const [key, value] of formData.entries()) step2[key] = value.trim();-->
-
-<!--        e.target.querySelectorAll("input[type='checkbox']").forEach(cb => step2[cb.name] = cb.checked);-->
-
-<!--        step2.mileage = parseInt(step2.mileage || "0", 10);-->
-<!--        step2.dailyKmLimit = parseInt(step2.dailyKmLimit || "0", 10);-->
-<!--        step2.overLimitFee = parseInt(step2.overLimitFee || "0", 10);-->
-<!--        step2.fuelConsumption = step2.fuelConsumption !== "" ? Number(step2.fuelConsumption) : null;-->
-<!--        step2.engineCapacity = step2.engineCapacity !== "" ? Number(step2.engineCapacity) : null;-->
-
-<!--        const draft = {-->
-<!--            ...step1,-->
-<!--            ...step2,-->
-<!--            step: 2,-->
-<!--            updatedAt: new Date().toISOString()-->
-<!--        };-->
-
-<!--        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));-->
-<!--        window.location.href = "/owner/create-car-step3";-->
-<!--    }-->
-<!--</script>-->
-
-<script>
-    const STEP1_KEY = "carStep1";
-    const STEP2_KEY = "carStep2"; // Lưu riêng step 2
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const raw = sessionStorage.getItem(STEP1_KEY);
-        if (!raw) {
-            alert("Vui lòng hoàn thành Step 1 trước");
-            window.location.href = "/owner/create-car-step1";
+        if (!provinceCode) {
+            districtSelect.innerHTML = '<option value="">-- Chọn Tỉnh/Thành phố trước --</option>';
             return;
         }
 
-        const step1 = JSON.parse(raw);
+        try {
+            const response = await fetch(`${API_BASE}/districts?provinceCode=${provinceCode}`);
+            const districts = await response.json();
 
-        // Hiển thị summary từ Step 1 lên giao diện Step 2
-        document.getElementById("summaryBrand").innerText = step1.brandName || step1.brand || "--";
-        document.getElementById("summaryModel").innerText = step1.modelName || step1.model || "--";
-        document.getElementById("summaryYear").innerText = step1.year || "--";
-        document.getElementById("summaryLicensePlate").innerText = step1.licensePlate || "--";
-        document.getElementById("summaryPrice").innerText =
-            (step1.pricePerDay ? Number(step1.pricePerDay).toLocaleString("vi-VN") : "0") + " VNĐ";
+            districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+            let foundDistrict = false;
 
-        // Đổ city vào ô readonly
-        if(step1.city) document.getElementById("cityReadonly").value = step1.city;
+            districts.forEach(d => {
+                const option = document.createElement("option");
+                option.value = d.code;
+                option.textContent = d.name;
+                option.dataset.name = d.name;
 
-        // Nút quay lại
-        document.getElementById("prevBtn").addEventListener("click", () => {
-            window.location.href = "/owner/create-car-step1";
-        });
+                // Pre-select by code first, then by name
+                if ((preSelectDistrictCode && d.code === preSelectDistrictCode) ||
+                    (!preSelectDistrictCode && preSelectDistrictName && d.name === preSelectDistrictName)) {
+                    option.selected = true;
+                    foundDistrict = true;
+                    districtNameInput.value = d.name;
+                }
 
-        document.getElementById("infoForm").addEventListener("submit", e => handleSubmit(e));
-    });
+                districtSelect.appendChild(option);
+            });
+            districtSelect.disabled = false;
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        const form = e.target;
-        const formData = new FormData(form);
-        const step2Data = {};
-
-        // 1. Lấy tất cả các trường text, select, number
-        formData.forEach((value, key) => {
-            step2Data[key] = value.trim();
-        });
-
-        // 2. Lấy các giá trị checkbox (Tiện nghi)
-        form.querySelectorAll("input[type='checkbox']").forEach(cb => {
-            step2Data[cb.name] = cb.checked;
-        });
-
-        // 3. Chuẩn hóa kiểu dữ liệu số để khớp với Backend
-        step2Data.mileage = parseInt(step2Data.mileage || "0", 10);
-        step2Data.dailyKmLimit = parseInt(step2Data.dailyKmLimit || "0", 10);
-        step2Data.overLimitFee = parseInt(step2Data.overLimitFee || "0", 10);
-        step2Data.fuelConsumption = step2Data.fuelConsumption ? Number(step2Data.fuelConsumption) : null;
-        step2Data.engineCapacity = step2Data.engineCapacity ? Number(step2Data.engineCapacity) : null;
-
-        // 4. LƯU RIÊNG BIỆT VÀO SESSION STORAGE
-        // Việc lưu riêng giúp Step 3 dễ dàng đóng gói vào DTO (step1Data, step2Data)
-        sessionStorage.setItem(STEP2_KEY, JSON.stringify(step2Data));
-
-        // 5. Chuyển sang Step 3
-        window.location.href = "/owner/create-car-step3";
+            // If a district was pre-selected, chain-load wards
+            if (foundDistrict && districtSelect.value) {
+                await loadWards(districtSelect.value, savedWardCode, savedWardName);
+            }
+        } catch (error) {
+            console.error("Error loading districts:", error);
+            districtSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+        }
     }
+
+    // ========== HELPER: Load wards by districtCode ==========
+    async function loadWards(districtCode, preSelectWardCode, preSelectWardName) {
+        const wardSelect = document.getElementById("ward");
+        const wardNameInput = document.getElementById("wardName");
+
+        wardSelect.innerHTML = '<option value="">-- Đang tải Phường/Xã --</option>';
+        wardSelect.disabled = true;
+
+        if (!districtCode) {
+            wardSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện trước --</option>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/wards?districtCode=${districtCode}`);
+            const wards = await response.json();
+
+            wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+
+            wards.forEach(w => {
+                const option = document.createElement("option");
+                option.value = w.code;
+                option.textContent = w.name;
+                option.dataset.name = w.name;
+
+                // Pre-select by code first, then by name
+                if ((preSelectWardCode && w.code === preSelectWardCode) ||
+                    (!preSelectWardCode && preSelectWardName && w.name === preSelectWardName)) {
+                    option.selected = true;
+                    wardNameInput.value = w.name;
+                }
+
+                wardSelect.appendChild(option);
+            });
+            wardSelect.disabled = false;
+        } catch (error) {
+            console.error("Error loading wards:", error);
+            wardSelect.innerHTML = '<option value="">-- Lỗi tải dữ liệu --</option>';
+        }
+    }
+
+    // ========== DEPENDENT DROPDOWN LOGIC ==========
+
+    document.addEventListener("DOMContentLoaded", async function() {
+        const provinceSelect = document.getElementById("province");
+        const districtSelect = document.getElementById("district");
+        const wardSelect = document.getElementById("ward");
+
+        const provinceNameInput = document.getElementById("provinceName");
+        const districtNameInput = document.getElementById("districtName");
+        const wardNameInput = document.getElementById("wardName");
+
+        // Khởi tạo giá trị tên từ session nếu có
+        if (savedProvinceName) {
+            provinceNameInput.value = savedProvinceName;
+        }
+        if (savedDistrictName) {
+            districtNameInput.value = savedDistrictName;
+        }
+        if (savedWardName) {
+            wardNameInput.value = savedWardName;
+        }
+
+        // ===== AUTO-MATCH: If provinceCode not set but city (from income estimate) exists =====
+        // Try to find matching province by city name and auto-select it
+        if (!savedProvinceCode && savedCity) {
+            for (let option of provinceSelect.options) {
+                const optName = option.dataset.name || option.text || '';
+                // Match city name (e.g. "Hà Nội" from income estimate → province "Thành phố Hà Nội")
+                if (optName === savedCity || optName.includes(savedCity) || savedCity.includes(optName)) {
+                    provinceSelect.value = option.value;
+                    provinceNameInput.value = optName;
+                    // Chain-load districts (no pre-selection since this is first time)
+                    await loadDistricts(option.value, null, null);
+                    break;
+                }
+            }
+        }
+
+        // ===== PRE-FILL: If provinceCode IS already set (returning to step2) =====
+        // Backend already populated districts/wards via populateStep2Model
+        // But if user navigated back, we need to chain-load via JS for any missing data
+        if (savedProvinceCode && provinceSelect.value) {
+            // Districts/wards are already rendered by Thymeleaf th:each
+            // Only need JS chain-load if the district select is empty (no backend data)
+            if (districtSelect.options.length <= 1 && districtSelect.disabled) {
+                await loadDistricts(savedProvinceCode, savedDistrictCode, savedDistrictName);
+            }
+        }
+
+        // Khi chọn tỉnh/thành phố
+        provinceSelect.addEventListener("change", async function() {
+            const provinceCode = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+
+            // Lưu tên tỉnh
+            provinceNameInput.value = selectedOption.dataset.name || selectedOption.text || '';
+
+            // Reset hidden names
+            districtNameInput.value = "";
+            wardNameInput.value = "";
+
+            await loadDistricts(provinceCode, null, null);
+        });
+
+        // Khi chọn quận/huyện
+        districtSelect.addEventListener("change", async function() {
+            const districtCode = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+
+            // Lưu tên quận/huyện
+            districtNameInput.value = selectedOption.dataset.name || selectedOption.text || '';
+            wardNameInput.value = "";
+
+            await loadWards(districtCode, null, null);
+        });
+
+        // Khi chọn phường/xã
+        wardSelect.addEventListener("change", function() {
+            const selectedOption = this.options[this.selectedIndex];
+            wardNameInput.value = selectedOption.dataset.name || selectedOption.text || '';
+        });
+
+        // Character counter for special notes
+        const specialNotesTextarea = document.querySelector('textarea[name="specialNotes"]');
+        if (specialNotesTextarea) {
+            specialNotesTextarea.addEventListener("input", function() {
+                document.getElementById("specialNotesCount").innerText = this.value.length;
+            });
+            // Initialize count
+            document.getElementById("specialNotesCount").innerText = specialNotesTextarea.value.length;
+        }
+    });
 </script>
 </body>
 </html>

@@ -36,7 +36,7 @@ public class CarValidationServiceImpl implements CarValidationService {
         }
 
         // Kiểm tra số chỗ hợp lệ
-        Integer[] validSeats = {2, 4, 5, 7, 9, 16};
+        Integer[] validSeats = { 4,5,7,16};
         boolean isValidSeats = false;
         for (Integer seat : validSeats) {
             if (seat.equals(carSetupDTO.getSeats())) {
@@ -46,7 +46,7 @@ public class CarValidationServiceImpl implements CarValidationService {
         }
 
         if (!isValidSeats) {
-            throw new IllegalArgumentException("Số chỗ ngồi không hợp lệ. Chỉ chấp nhận: 2, 4, 5, 7, 9, 16 chỗ");
+            throw new IllegalArgumentException("Số chỗ ngồi không hợp lệ. Chỉ chấp nhận:4, 5, 7,16 chỗ");
         }
     }
 }

@@ -27,7 +27,9 @@
         </div>
         <div class="form-group">
             <label>Thành phố</label>
-            <input type="text" id="city" required>
+            <select id="city" required>
+                <option value="">-- Đang tải tỉnh/thành phố --</option>
+            </select>
         </div>
         <div class="form-group">
             <label>Mô tả chi tiết</label>
@@ -43,6 +45,26 @@
 
 <script th:inline="javascript">
     const carId = [[${carId}]]; // Lấy ID từ Controller truyền sang
+    const PROVINCES_API = "https://provinces.open-api.vn/api/p/";
+    let currentCarCity = ""; // Lưu city hiện tại của xe
+
+    // Hàm tải danh sách tỉnh/thành phố từ API
+    async function loadProvinces() {
+        try {
+            const response = await fetch(PROVINCES_API);
+            const provinces = await response.json();
+            const citySelect = document.getElementById("city");
+            citySelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+            provinces.forEach(p => {
+                const selected = p.name === currentCarCity ? 'selected' : '';
+                citySelect.innerHTML += `<option value="${p.name}" ${selected}>${p.name}</option>`;
+            });
+        } catch (error) {
+            console.error("Lỗi tải danh sách tỉnh/thành phố:", error);
+            const citySelect = document.getElementById("city");
+            citySelect.innerHTML = '<option value="">-- Không thể tải dữ liệu --</option>';
+        }
+    }
 
     // 1. Khi trang web load xong, lấy dữ liệu xe từ API để hiển thị lên Form
     document.addEventListener('DOMContentLoaded', async () => {
@@ -53,8 +75,11 @@
                 const car = result.data;
                 document.getElementById('carName').value = car.brand + " " + (car.model || "");
                 document.getElementById('pricePerDay').value = car.pricePerDay;
-                document.getElementById('city').value = car.city;
                 document.getElementById('description').value = car.description;
+
+                // Lưu city hiện tại và tải danh sách provinces
+                currentCarCity = car.city || "";
+                await loadProvinces();
             }
         } catch (error) {
             alert("Không thể tải dữ liệu xe!");

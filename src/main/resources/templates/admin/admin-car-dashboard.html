@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý xe - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .btn-approve {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .btn-approve:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+        }
+        .btn-reject {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-reject:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+        .action-buttons form {
+            display: inline-block;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-car-front-fill"></i> Car Rental Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/cars">Quản lý xe</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <h1><i class="bi bi-clipboard-check"></i> Duyệt xe đăng ký</h1>
+            <p class="mb-0">Xem và phê duyệt các xe đang chờ duyệt từ chủ xe</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Alert Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="stat-number" th:text="${pendingCount}">0</div>
+                            <div class="text-muted">Xe chờ duyệt</div>
+                        </div>
+                        <i class="bi bi-hourglass-split text-warning" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="stat-number text-danger" th:text="${rejectedCount}">0</div>
+                            <div class="text-muted">Xe bị từ chối</div>
+                        </div>
+                        <i class="bi bi-x-circle text-danger" style="font-size: 2.5rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PENDING CARS TABLE ==================== -->
+        <div class="table-container mb-4">
+            <h4 class="mb-4"><i class="bi bi-hourglass-split text-warning"></i> Danh sách xe chờ duyệt</h4>
+
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(pendingCars)}" class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h5>Không có xe nào cần duyệt</h5>
+                <p>Tất cả các xe đã được xử lý hoặc chưa có xe mới đăng ký.</p>
+            </div>
+
+            <!-- Table with data -->
+            <div th:if="${!#lists.isEmpty(pendingCars)}" class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên xe</th>
+                            <th>Hãng</th>
+                            <th>Mẫu</th>
+                            <th>Năm SX</th>
+                            <th>Chủ xe</th>
+                            <th>Thành phố</th>
+                            <th>Giá/ngày</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="car : ${pendingCars}">
+                            <td th:text="${car.id}">1</td>
+                            <td>
+                                <strong th:text="${car.name ?: 'N/A'}">Toyota Camry</strong>
+                            </td>
+                            <td th:text="${car.brand ?: 'N/A'}">Toyota</td>
+                            <td th:text="${car.model ?: 'N/A'}">Camry</td>
+                            <td th:text="${car.year ?: 'N/A'}">2023</td>
+                            <td>
+                                <span th:if="${car.ownerId != null and ownerMap.containsKey(car.ownerId)}">
+                                    <span th:text="${ownerMap.get(car.ownerId).firstName + ' ' + ownerMap.get(car.ownerId).lastName}">Owner Name</span>
+                                    <br>
+                                    <small class="text-muted" th:text="${ownerMap.get(car.ownerId).email}">email@example.com</small>
+                                </span>
+                                <span th:unless="${car.ownerId != null and ownerMap.containsKey(car.ownerId)}" class="text-muted">N/A</span>
+                            </td>
+                            <td th:text="${car.city ?: 'N/A'}">Hà Nội</td>
+                            <td>
+                                <span th:if="${car.pricePerDay != null}" th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">1,000,000 VNĐ</span>
+                                <span th:if="${car.pricePerDay == null}" class="text-muted">N/A</span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-clock"></i> Chờ duyệt
+                                </span>
+                            </td>
+                            <td class="text-center action-buttons">
+                                <!-- Approve Button -->
+                                <form th:action="@{/admin/cars/{id}/approve(id=${car.id})}" method="post"
+                                      onsubmit="return confirm('Bạn có chắc muốn DUYỆT xe này? Xe sẽ được chuyển sang trạng thái SẴN SÀNG cho thuê.');">
+                                    <button type="submit" class="btn btn-approve btn-sm" title="Duyệt xe">
+                                        <i class="bi bi-check-lg"></i> Duyệt
+                                    </button>
+                                </form>
+
+                                <!-- Reject Button -->
+                                <form th:action="@{/admin/cars/{id}/reject(id=${car.id})}" method="post"
+                                      onsubmit="return confirm('Bạn có chắc muốn TỪ CHỐI xe này?');">
+                                    <button type="submit" class="btn btn-reject btn-sm" title="Từ chối xe">
+                                        <i class="bi bi-x-lg"></i> Từ chối
+                                    </button>
+                                </form>
+
+                                <!-- View Detail Button -->
+                                <a th:href="@{/admin/cars/{id}(id=${car.id})}" class="btn btn-outline-secondary btn-sm" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== REJECTED CARS TABLE ==================== -->
+        <div class="table-container">
+            <h4 class="mb-4"><i class="bi bi-x-circle text-danger"></i> Danh sách xe bị từ chối</h4>
+
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(rejectedCars)}" class="empty-state">
+                <i class="bi bi-shield-x"></i>
+                <h5>Chưa có xe nào bị từ chối</h5>
+                <p>Các xe bị từ chối sẽ hiển thị ở đây.</p>
+            </div>
+
+            <!-- Table with data -->
+            <div th:if="${!#lists.isEmpty(rejectedCars)}" class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên xe</th>
+                            <th>Hãng</th>
+                            <th>Mẫu</th>
+                            <th>Năm SX</th>
+                            <th>Chủ xe</th>
+                            <th>Thành phố</th>
+                            <th>Giá/ngày</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="car : ${rejectedCars}">
+                            <td th:text="${car.id}">1</td>
+                            <td>
+                                <strong th:text="${car.name ?: 'N/A'}">Toyota Camry</strong>
+                            </td>
+                            <td th:text="${car.brand ?: 'N/A'}">Toyota</td>
+                            <td th:text="${car.model ?: 'N/A'}">Camry</td>
+                            <td th:text="${car.year ?: 'N/A'}">2023</td>
+                            <td>
+                                <span th:if="${car.ownerId != null and ownerMap.containsKey(car.ownerId)}">
+                                    <span th:text="${ownerMap.get(car.ownerId).firstName + ' ' + ownerMap.get(car.ownerId).lastName}">Owner Name</span>
+                                    <br>
+                                    <small class="text-muted" th:text="${ownerMap.get(car.ownerId).email}">email@example.com</small>
+                                </span>
+                                <span th:unless="${car.ownerId != null and ownerMap.containsKey(car.ownerId)}" class="text-muted">N/A</span>
+                            </td>
+                            <td th:text="${car.city ?: 'N/A'}">Hà Nội</td>
+                            <td>
+                                <span th:if="${car.pricePerDay != null}" th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">1,000,000 VNĐ</span>
+                                <span th:if="${car.pricePerDay == null}" class="text-muted">N/A</span>
+                            </td>
+                            <td>
+                                <span class="status-badge status-rejected">
+                                    <i class="bi bi-x-circle"></i> Từ chối
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a th:href="@{/admin/cars/{id}(id=${car.id})}" class="btn btn-outline-secondary btn-sm" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i> Xem
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 Car Rental System - Admin Panel</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

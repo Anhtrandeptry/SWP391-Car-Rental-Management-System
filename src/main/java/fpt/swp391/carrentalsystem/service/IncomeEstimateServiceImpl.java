@@ -2,9 +2,6 @@ package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.dto.request.IncomeEstimateRequestDTO;
 import fpt.swp391.carrentalsystem.dto.response.IncomeEstimateResponseDTO;
-import fpt.swp391.carrentalsystem.entity.Brand;
-import fpt.swp391.carrentalsystem.entity.CarModel;
-import fpt.swp391.carrentalsystem.exception.ResourceNotFoundException;
 import fpt.swp391.carrentalsystem.repository.BrandRepository;
 import fpt.swp391.carrentalsystem.repository.CarModelRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,18 +29,25 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
             throw new IllegalArgumentException("Năm sản xuất không hợp lệ");
         }
 
-        // ===== 2. Load Brand & Model =====
-        Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Không tìm thấy hãng xe"));
+        if (request.getYear() < 1990) {
+            throw new IllegalArgumentException("Năm sản xuất phải từ 1990 trở lên");
+        }
 
-        CarModel model = carModelRepository.findById(request.getModelId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Không tìm thấy mẫu xe"));
+        // ===== 2. Lấy brandName và modelName trực tiếp từ request (CarQuery API) =====
+        String brandName = request.getBrandName();
+        String modelName = request.getModelName();
+
+        if (brandName == null || brandName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên hãng xe không được để trống");
+        }
+
+        if (modelName == null || modelName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tên mẫu xe không được để trống");
+        }
 
         // ===== 3. Tính giá thuê/ngày =====
         BigDecimal pricePerDay = calculateBasePrice(
-                brand.getName(),
+                brandName,
                 request.getYear(),
                 request.getCity()
         );
@@ -53,15 +57,15 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
 
         // ===== 5. Gợi ý =====
         String recommendation = generateRecommendation(
-                brand.getName(),
+                brandName,
                 request.getYear(),
                 request.getCity()
         );
 
         // ===== 6. Response =====
         return new IncomeEstimateResponseDTO(
-                brand.getName(),
-                model.getName(),
+                brandName,
+                modelName,
                 request.getYear(),
                 request.getCity(),
                 pricePerDay,               // suggestedPricePerDay
@@ -88,6 +92,7 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
                 "FORD", BigDecimal.valueOf(1.3),
                 "MERCEDES-BENZ", BigDecimal.valueOf(2.0),
                 "BMW", BigDecimal.valueOf(2.2)
+              //  "VINFAST", BigDecimal.valueOf(2.1)
         );
 
         BigDecimal brandMultiplier = brandFactor
@@ -100,7 +105,7 @@ public class IncomeEstimateServiceImpl implements IncomeEstimateService {
         int age = currentYear - year;
 
         if (age <= 2) {
-            basePrice = basePrice.multiply(BigDecimal.valueOf(1.3));
+            basePrice = basePrice.multiply(BigDecimal.valueOf(1.2));
         } else if (age <= 5) {
             basePrice = basePrice.multiply(BigDecimal.valueOf(1.1));
         } else if (age >= 10) {
