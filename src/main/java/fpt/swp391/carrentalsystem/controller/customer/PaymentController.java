@@ -34,14 +34,17 @@ public class PaymentController {
             @RequestParam(required = false) Long orderCode,
             Model model) {
         try {
-            log.info("PayOS return received - code: {}, id: {}, cancel: {}, status: {}, orderCode: {}",
+            log.info("========================================");
+            log.info("=== PAYOS RETURN RECEIVED ===");
+            log.info("code: {}, id: {}, cancel: {}, status: {}, orderCode: {}",
                     code, id, cancel, status, orderCode);
+            log.info("========================================");
 
-            // Extract bookingId from orderCode (orderCode = bookingId * 10000 + suffix)
+            // IMPORTANT: orderCode IS the bookingId directly (not divided by anything)
             Integer bookingId = null;
             if (orderCode != null) {
-                bookingId = (int) (orderCode / 10000);
-                log.info("Extracted bookingId {} from orderCode {}", bookingId, orderCode);
+                bookingId = orderCode.intValue();
+                log.info("BookingId from orderCode: {}", bookingId);
             }
 
             // Check if payment was cancelled
@@ -97,8 +100,8 @@ public class PaymentController {
         log.info("PayOS payment cancelled for orderCode: {}", orderCode);
         model.addAttribute("error", "Bạn đã hủy thanh toán.");
         if (orderCode != null) {
-            // Extract bookingId from orderCode (orderCode = bookingId * 10000 + suffix)
-            Integer bookingId = (int) (orderCode / 10000);
+            // IMPORTANT: orderCode IS the bookingId directly
+            Integer bookingId = orderCode.intValue();
             model.addAttribute("bookingId", bookingId);
         }
         return "customer/payment-error";
@@ -111,21 +114,25 @@ public class PaymentController {
     @PostMapping("/payos-webhook")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> payosWebhook(@RequestBody Map<String, Object> webhookData) {
-        try {
-            log.info("PayOS webhook received: {}", webhookData);
+        log.info("========================================");
+        log.info("=== PAYOS WEBHOOK ENDPOINT HIT ===");
+        log.info("========================================");
+        log.info("Received webhook data: {}", webhookData);
 
+        try {
             boolean processed = paymentService.processPayOSWebhook(webhookData);
 
             if (processed) {
-                log.info("PayOS webhook processed successfully");
+                log.info("=== PAYOS WEBHOOK PROCESSED SUCCESSFULLY ===");
                 return ResponseEntity.ok(Map.of("success", true));
             } else {
-                log.warn("PayOS webhook processing failed");
+                log.warn("=== PAYOS WEBHOOK PROCESSING RETURNED FALSE ===");
                 return ResponseEntity.ok(Map.of("success", false, "message", "Processing failed"));
             }
 
         } catch (Exception e) {
-            log.error("Error processing PayOS webhook: {}", e.getMessage(), e);
+            log.error("=== PAYOS WEBHOOK EXCEPTION ===");
+            log.error("Error: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of("success", false, "message", e.getMessage()));
         }
     }
@@ -168,3 +175,4 @@ public class PaymentController {
         }
     }
 }
+

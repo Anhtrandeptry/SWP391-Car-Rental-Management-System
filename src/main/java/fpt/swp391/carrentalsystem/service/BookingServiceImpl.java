@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     private final CarMapper carMapper;
     private final PaymentService paymentService;
 
-    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
+    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(5000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
     private static final int PAYMENT_TIMEOUT_MINUTES = 5;
 

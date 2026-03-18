@@ -206,24 +206,29 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public boolean processPayOSWebhook(Map<String, Object> webhookData) {
         try {
-            log.info("Processing PayOS webhook: {}", webhookData);
+            log.info("========================================");
+            log.info("=== PROCESSING PAYOS WEBHOOK START ===");
+            log.info("========================================");
+            log.info("Full webhook data: {}", webhookData);
 
             // Extract data from webhook
             @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
             if (data == null) {
-                log.error("PayOS webhook missing data field");
+                log.error("PayOS webhook missing 'data' field");
                 return false;
             }
 
-            // Extract order code (contains booking ID)
+            log.info("Webhook data content: {}", data);
+
+            // Extract order code (this IS the booking ID directly)
             Object orderCodeObj = data.get("orderCode");
             if (orderCodeObj == null) {
-                log.error("PayOS webhook missing orderCode");
+                log.error("PayOS webhook missing orderCode in data");
                 return false;
             }
 
-            // Extract bookingId from orderCode (orderCode = bookingId * 10000 + suffix)
+            // orderCode = bookingId (they are the same in createPayOSPayment)
             long orderCode;
             if (orderCodeObj instanceof Number) {
                 orderCode = ((Number) orderCodeObj).longValue();
@@ -231,8 +236,9 @@ public class PaymentServiceImpl implements PaymentService {
                 orderCode = Long.parseLong(orderCodeObj.toString());
             }
 
-            Integer bookingId = (int) (orderCode / 10000);
-            log.info("Extracted bookingId {} from orderCode {}", bookingId, orderCode);
+            // IMPORTANT: orderCode IS the bookingId directly (see createPayOSPayment method)
+            Integer bookingId = (int) orderCode;
+            log.info(">>> OrderCode: {}, BookingId: {}", orderCode, bookingId);
 
             // Extract payment status code
             String code = webhookData.get("code") != null ?
@@ -242,58 +248,85 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("PayOS webhook - bookingId: {}, code: {}", bookingId, code);
 
             // Find booking
+            log.info("Looking up booking {} in database...", bookingId);
             Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
             if (bookingOpt.isEmpty()) {
-                log.error("Booking not found for ID: {}", bookingId);
+                log.error("!!! BOOKING NOT FOUND for ID: {} !!!", bookingId);
                 return false;
             }
 
             Booking booking = bookingOpt.get();
+            log.info("Found booking: id={}, status={}, paymentStatus={}",
+                    booking.getBookingId(), booking.getStatus(), booking.getPaymentStatus());
 
             // Check if already processed (idempotency)
             if (booking.getPaymentStatus() == PaymentStatus.PAID) {
-                log.info("Booking {} already paid, skipping duplicate webhook", bookingId);
+                log.info("Booking {} already PAID, skipping duplicate webhook", bookingId);
                 return true;
             }
 
             // Check if payment deadline has passed
             if (booking.getPaymentDeadline() != null &&
                 booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
-                log.warn("Payment received after deadline for booking {}", bookingId);
-                return false;
+                log.warn("Payment received AFTER deadline for booking {}", bookingId);
+                // Still process it since money was received
             }
 
             // Process based on status - "00" means success in PayOS
             if ("00".equals(code)) {
-                // Payment successful - update booking and car
+                log.info(">>> PayOS payment SUCCESS - Updating booking status <<<");
+                log.info("Before update: status={}, paymentStatus={}",
+                        booking.getStatus(), booking.getPaymentStatus());
+
+                // Update payment and booking status
                 booking.setPaymentStatus(PaymentStatus.PAID);
                 booking.setStatus(BookingStatus.CONFIRMED);
-                bookingRepository.save(booking);
+
+                log.info("After setting: status={}, paymentStatus={}",
+                        booking.getStatus(), booking.getPaymentStatus());
+
+                // SAVE THE BOOKING
+                Booking savedBooking = bookingRepository.save(booking);
+                log.info("Booking SAVED: id={}, status={}, paymentStatus={}",
+                        savedBooking.getBookingId(), savedBooking.getStatus(), savedBooking.getPaymentStatus());
 
                 // Update car status to BOOKED and clear reservation time
                 Car car = booking.getCar();
+                log.info("Updating car {} status from {} to BOOKED", car.getCarId(), car.getStatus());
                 car.setStatus(CarStatus.BOOKED);
                 car.setReservationExpireTime(null);
-                carRepository.save(car);
+                Car savedCar = carRepository.save(car);
+                log.info("Car SAVED: id={}, status={}", savedCar.getCarId(), savedCar.getStatus());
 
                 // Send notifications
                 try {
+                    log.info("Sending notifications...");
                     notificationService.sendPaymentSuccessEmail(booking);
                     notificationService.sendOwnerNotification(booking);
+                    log.info("Notifications sent successfully");
                 } catch (Exception e) {
                     log.error("Error sending notifications for booking {}: {}", bookingId, e.getMessage());
+                    // Don't fail the webhook due to notification failure
                 }
 
-                log.info("PayOS payment confirmed for booking {}: car {} status set to BOOKED",
-                        bookingId, car.getCarId());
+                log.info("========================================");
+                log.info("=== PAYMENT CONFIRMED SUCCESSFULLY ===");
+                log.info("BookingId: {}", bookingId);
+                log.info("Booking Status: {}", savedBooking.getStatus());
+                log.info("Payment Status: {}", savedBooking.getPaymentStatus());
+                log.info("Car Status: {}", savedCar.getStatus());
+                log.info("========================================");
                 return true;
             } else {
-                log.warn("PayOS payment not successful for booking {}: code={}", bookingId, code);
+                log.warn("PayOS payment NOT successful for booking {}: code={}", bookingId, code);
                 return true; // Acknowledge receipt even for failed payments
             }
 
         } catch (Exception e) {
-            log.error("Error processing PayOS webhook: {}", e.getMessage(), e);
+            log.error("========================================");
+            log.error("=== PAYOS WEBHOOK PROCESSING FAILED ===");
+            log.error("Error: {}", e.getMessage(), e);
+            log.error("========================================");
             return false;
         }
     }
