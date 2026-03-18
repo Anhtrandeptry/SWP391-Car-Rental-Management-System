@@ -1,31 +1,44 @@
 package fpt.swp391.carrentalsystem.config;
 
-import org.springframework.context.annotation.Configuration;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import java.security.KeyStore;
-import javax.net.ssl.SSLContext;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
+@Getter
 public class PaymentConfig {
 
-    @Bean
-    public String getVnPayHashSecret() {
-        return "${vnpay.hash-secret}";
-    }
+    @Value("${payos.client-id}")
+    private String clientId;
+
+    @Value("${payos.api-key}")
+    private String apiKey;
+
+    @Value("${payos.checksum-key}")
+    private String checksumKey;
+
+    @Value("${payos.return-url:http://localhost:8080/payment/payos-return}")
+    private String returnUrl;
+
+    @Value("${payos.cancel-url:http://localhost:8080/payment/payos-cancel}")
+    private String cancelUrl;
+
+    @Value("${payos.webhook-url:http://localhost:8080/payment/payos-webhook}")
+    private String webhookUrl;
+
+    @Value("${payos.api-url:https://api-merchant.payos.vn}")
+    private String apiUrl;
 
     @Bean
-    public String getVnPayTmnCode() {
-        return "${vnpay.tmn-code}";
-    }
-
-    @Bean
-    public String getVnPayPaymentUrl() {
-        return "${vnpay.payment-url}";
-    }
-
-    @Bean
-    public String getVnPayReturnUrl() {
-        return "${vnpay.return-url}";
+    public WebClient payosWebClient() {
+        return WebClient.builder()
+                .baseUrl(apiUrl)
+                .defaultHeader("x-client-id", clientId)
+                .defaultHeader("x-api-key", apiKey)
+                .defaultHeader("Content-Type", "application/json")
+                .build();
     }
 }
 

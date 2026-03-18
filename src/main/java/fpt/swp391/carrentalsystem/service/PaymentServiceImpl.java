@@ -1,23 +1,26 @@
 package fpt.swp391.carrentalsystem.service;
 
+import fpt.swp391.carrentalsystem.config.PaymentConfig;
 import fpt.swp391.carrentalsystem.dto.response.PaymentResponseDto;
 import fpt.swp391.carrentalsystem.entity.Booking;
+import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.BookingStatus;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
+import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 import fpt.swp391.carrentalsystem.repository.BookingRepository;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import fpt.swp391.carrentalsystem.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.io.ByteArrayOutputStream;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @Transactional
@@ -26,60 +29,273 @@ import java.util.Base64;
 public class PaymentServiceImpl implements PaymentService {
 
     private final BookingRepository bookingRepository;
-
-    // VietQR configuration - can be moved to application.properties
-    @Value("${vietqr.bank-id:970415}")
-    private String bankId; // VietinBank as default
-
-    @Value("${vietqr.account-number:1234567890}")
-    private String accountNumber;
-
-    @Value("${vietqr.account-name:CAR RENTAL SYSTEM}")
-    private String accountName;
-
-    @Value("${vietqr.template:compact2}")
-    private String template;
+    private final CarRepository carRepository;
+    private final PaymentConfig paymentConfig;
+    private final NotificationService notificationService;
+    private final WebClient payosWebClient;
 
     @Override
-    public String generateVietQRUrl(Integer bookingId, BigDecimal amount, String description) {
+    public PaymentResponseDto createPayOSPayment(Integer bookingId, BigDecimal amount, String description) {
         try {
-            String encodedAccountName = URLEncoder.encode(accountName, StandardCharsets.UTF_8.toString())
-                    .replace("+", "%20");
-            String encodedDescription = URLEncoder.encode(description, StandardCharsets.UTF_8.toString())
-                    .replace("+", "%20");
+            // Use bookingId as orderCode (must be unique and positive)
+            long orderCode = bookingId.longValue();
+            int amountInt = amount.intValue();
 
-            // VietQR format: https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-{TEMPLATE}.png
-            String url = String.format(
-                    "https://img.vietqr.io/image/%s-%s-%s.png?amount=%d&addInfo=%s&accountName=%s",
-                    bankId,
-                    accountNumber,
-                    template,
-                    amount.longValue(),
-                    encodedDescription,
-                    encodedAccountName
-            );
+            // Build request body for PayOS API
+            Map<String, Object> requestBody = new LinkedHashMap<>();
+            requestBody.put("orderCode", orderCode);
+            requestBody.put("amount", amountInt);
+            requestBody.put("description", description);
+            requestBody.put("returnUrl", paymentConfig.getReturnUrl());
+            requestBody.put("cancelUrl", paymentConfig.getCancelUrl());
 
-            log.info("Generated VietQR URL for booking {}: {}", bookingId, url);
-            return url;
+            // Create item list
+            List<Map<String, Object>> items = new ArrayList<>();
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("name", "Phi giu cho - Booking #" + bookingId);
+            item.put("quantity", 1);
+            item.put("price", amountInt);
+            items.add(item);
+            requestBody.put("items", items);
+
+            // Generate signature
+            String signature = generateSignature(orderCode, amountInt, description,
+                    paymentConfig.getCancelUrl(), paymentConfig.getReturnUrl());
+            requestBody.put("signature", signature);
+
+            log.info("Creating PayOS payment for booking {}: amount={}", bookingId, amountInt);
+
+            // Call PayOS API
+            Map<String, Object> response = payosWebClient.post()
+                    .uri("/v2/payment-requests")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response == null) {
+                throw new RuntimeException("Empty response from PayOS");
+            }
+
+            String code = String.valueOf(response.get("code"));
+            if (!"00".equals(code)) {
+                String errorMessage = (String) response.get("desc");
+                throw new RuntimeException("PayOS error: " + errorMessage);
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) response.get("data");
+            String checkoutUrl = (String) data.get("checkoutUrl");
+            String qrCode = (String) data.get("qrCode");
+
+            log.info("Created PayOS payment link for booking {}: checkoutUrl={}", bookingId, checkoutUrl);
+
+            return PaymentResponseDto.builder()
+                    .transactionId(String.valueOf(orderCode))
+                    .bookingId(bookingId)
+                    .amount(amount)
+                    .status("PENDING")
+                    .paymentUrl(checkoutUrl)
+                    .qrCode(qrCode)
+                    .message("Redirect to PayOS to complete payment")
+                    .timestamp(System.currentTimeMillis())
+                    .build();
 
         } catch (Exception e) {
-            log.error("Error generating VietQR URL: {}", e.getMessage(), e);
-            throw new RuntimeException("Error generating VietQR URL: " + e.getMessage());
+            log.error("Error creating PayOS payment for booking {}: {}", bookingId, e.getMessage(), e);
+            throw new RuntimeException("Error creating PayOS payment: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Generate PayOS signature using HMAC SHA256
+     * Signature format: amount=X&cancelUrl=X&description=X&orderCode=X&returnUrl=X
+     */
+    private String generateSignature(long orderCode, int amount, String description,
+                                     String cancelUrl, String returnUrl) {
+        try {
+            // Build data string in alphabetical order
+            String data = String.format("amount=%d&cancelUrl=%s&description=%s&orderCode=%d&returnUrl=%s",
+                    amount, cancelUrl, description, orderCode, returnUrl);
+
+            Mac hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(
+                    paymentConfig.getChecksumKey().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            hmac.init(secretKeySpec);
+            byte[] hashBytes = hmac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            log.error("Error generating PayOS signature: {}", e.getMessage(), e);
+            throw new RuntimeException("Error generating signature: " + e.getMessage());
         }
     }
 
     @Override
-    public String generateQRCode(Integer bookingId, BigDecimal amount) throws Exception {
-        String qrContent = String.format("BOOKING_%d_%.0f", bookingId, amount.doubleValue());
+    public boolean verifyPayOSWebhook(Map<String, Object> webhookData) {
+        try {
+            if (webhookData == null || webhookData.isEmpty()) {
+                log.error("PayOS webhook data is null or empty");
+                return false;
+            }
 
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 300, 300);
+            // Check for required fields
+            if (!webhookData.containsKey("data") || !webhookData.containsKey("signature")) {
+                log.error("PayOS webhook missing required fields");
+                return false;
+            }
 
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            // Verify signature
+            String receivedSignature = (String) webhookData.get("signature");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
 
-        byte[] pngData = pngOutputStream.toByteArray();
-        return Base64.getEncoder().encodeToString(pngData);
+            // Build signature data string from webhook data
+            // PayOS webhook signature is computed from the data fields
+            String computedSignature = computeWebhookSignature(data);
+
+            if (!receivedSignature.equals(computedSignature)) {
+                log.error("PayOS webhook signature mismatch");
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            log.error("Error verifying PayOS webhook: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Compute webhook signature from data
+     */
+    private String computeWebhookSignature(Map<String, Object> data) {
+        try {
+            // Sort keys alphabetically and build data string
+            TreeMap<String, Object> sortedData = new TreeMap<>(data);
+            StringBuilder dataString = new StringBuilder();
+            for (Map.Entry<String, Object> entry : sortedData.entrySet()) {
+                if (dataString.length() > 0) {
+                    dataString.append("&");
+                }
+                dataString.append(entry.getKey()).append("=").append(entry.getValue());
+            }
+
+            Mac hmac = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(
+                    paymentConfig.getChecksumKey().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            hmac.init(secretKeySpec);
+            byte[] hashBytes = hmac.doFinal(dataString.toString().getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            log.error("Error computing webhook signature: {}", e.getMessage(), e);
+            return "";
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean processPayOSWebhook(Map<String, Object> webhookData) {
+        try {
+            log.info("Processing PayOS webhook: {}", webhookData);
+
+            // Extract data from webhook
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) webhookData.get("data");
+            if (data == null) {
+                log.error("PayOS webhook missing data field");
+                return false;
+            }
+
+            // Extract order code (contains booking ID)
+            Object orderCodeObj = data.get("orderCode");
+            if (orderCodeObj == null) {
+                log.error("PayOS webhook missing orderCode");
+                return false;
+            }
+
+            // Extract bookingId from orderCode (orderCode = bookingId * 10000 + suffix)
+            long orderCode;
+            if (orderCodeObj instanceof Number) {
+                orderCode = ((Number) orderCodeObj).longValue();
+            } else {
+                orderCode = Long.parseLong(orderCodeObj.toString());
+            }
+
+            Integer bookingId = (int) (orderCode / 10000);
+            log.info("Extracted bookingId {} from orderCode {}", bookingId, orderCode);
+
+            // Extract payment status code
+            String code = webhookData.get("code") != null ?
+                    String.valueOf(webhookData.get("code")) :
+                    (data.get("code") != null ? String.valueOf(data.get("code")) : null);
+
+            log.info("PayOS webhook - bookingId: {}, code: {}", bookingId, code);
+
+            // Find booking
+            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+            if (bookingOpt.isEmpty()) {
+                log.error("Booking not found for ID: {}", bookingId);
+                return false;
+            }
+
+            Booking booking = bookingOpt.get();
+
+            // Check if already processed (idempotency)
+            if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+                log.info("Booking {} already paid, skipping duplicate webhook", bookingId);
+                return true;
+            }
+
+            // Check if payment deadline has passed
+            if (booking.getPaymentDeadline() != null &&
+                booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
+                log.warn("Payment received after deadline for booking {}", bookingId);
+                return false;
+            }
+
+            // Process based on status - "00" means success in PayOS
+            if ("00".equals(code)) {
+                // Payment successful - update booking and car
+                booking.setPaymentStatus(PaymentStatus.PAID);
+                booking.setStatus(BookingStatus.CONFIRMED);
+                bookingRepository.save(booking);
+
+                // Update car status to BOOKED and clear reservation time
+                Car car = booking.getCar();
+                car.setStatus(CarStatus.BOOKED);
+                car.setReservationExpireTime(null);
+                carRepository.save(car);
+
+                // Send notifications
+                try {
+                    notificationService.sendPaymentSuccessEmail(booking);
+                    notificationService.sendOwnerNotification(booking);
+                } catch (Exception e) {
+                    log.error("Error sending notifications for booking {}: {}", bookingId, e.getMessage());
+                }
+
+                log.info("PayOS payment confirmed for booking {}: car {} status set to BOOKED",
+                        bookingId, car.getCarId());
+                return true;
+            } else {
+                log.warn("PayOS payment not successful for booking {}: code={}", bookingId, code);
+                return true; // Acknowledge receipt even for failed payments
+            }
+
+        } catch (Exception e) {
+            log.error("Error processing PayOS webhook: {}", e.getMessage(), e);
+            return false;
+        }
     }
 
     @Override
@@ -88,16 +304,36 @@ public class PaymentServiceImpl implements PaymentService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
 
-        String description = "BOOKING" + bookingId;
-        String qrUrl = generateVietQRUrl(bookingId, booking.getHoldingFee(), description);
-
         return PaymentResponseDto.builder()
                 .bookingId(bookingId)
                 .amount(booking.getHoldingFee())
-                .status("PENDING")
-                .paymentUrl(qrUrl)
-                .message("Please scan the QR code to complete payment")
+                .status(booking.getPaymentStatus().name())
+                .message("Awaiting PayOS payment")
                 .timestamp(System.currentTimeMillis())
                 .build();
+    }
+
+    @Override
+    public boolean cancelPayOSPayment(Long orderCode) {
+        try {
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("cancellationReason", "Booking cancelled by user");
+
+            Map<String, Object> response = payosWebClient.post()
+                    .uri("/v2/payment-requests/" + orderCode + "/cancel")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+
+            if (response != null && "00".equals(String.valueOf(response.get("code")))) {
+                log.info("Cancelled PayOS payment for orderCode {}", orderCode);
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            log.error("Error cancelling PayOS payment for orderCode {}: {}", orderCode, e.getMessage(), e);
+            return false;
+        }
     }
 }

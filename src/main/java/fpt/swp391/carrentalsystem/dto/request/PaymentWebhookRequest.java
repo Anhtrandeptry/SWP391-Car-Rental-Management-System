@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PaymentWebhookRequest {
+public class   PaymentWebhookRequest {
     private String vnp_TxnRef;
     private String vnp_Amount;
     private String vnp_ResponseCode;

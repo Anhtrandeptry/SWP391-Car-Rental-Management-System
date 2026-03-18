@@ -36,4 +36,32 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
            "AND b.status IN ('CONFIRMED', 'PAYMENT_PENDING') " +
            "AND b.endDate > :now")
     boolean hasActiveBooking(@Param("carId") Integer carId, @Param("now") LocalDateTime now);
+
+    /**
+     * Find available cars for rental search with filtering conditions:
+     * 1. Car location contains the search location (case-insensitive)
+     * 2. Car status is AVAILABLE (not RESERVED, not BOOKED, not UNAVAILABLE)
+     * 3. Car does NOT have any overlapping bookings with the requested period
+     *
+     * Overlap rule: requestedStart < existingEnd AND requestedEnd > existingStart
+     */
+    @Query("SELECT DISTINCT c FROM Car c " +
+           "WHERE LOWER(c.location) LIKE LOWER(CONCAT('%', :location, '%')) " +
+           "AND c.status = 'AVAILABLE' " +
+           "AND c.carId NOT IN (" +
+           "    SELECT b.car.carId FROM Booking b " +
+           "    WHERE b.status IN ('CONFIRMED', 'PAYMENT_PENDING') " +
+           "    AND b.startDate < :endDate " +
+           "    AND b.endDate > :startDate" +
+           ")")
+    List<Car> findAvailableCarsForRental(
+            @Param("location") String location,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Get all distinct locations (provinces/cities) from cars
+     */
+    @Query("SELECT DISTINCT c.location FROM Car c WHERE c.location IS NOT NULL AND c.status = 'AVAILABLE' ORDER BY c.location")
+    List<String> findAllDistinctLocations();
 }

@@ -4,24 +4,24 @@ import fpt.swp391.carrentalsystem.dto.request.CreateBookingRequest;
 import fpt.swp391.carrentalsystem.dto.response.BookingConfirmationDto;
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.PaymentInfoDto;
+import fpt.swp391.carrentalsystem.dto.response.PaymentResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.RentalHistoryDto;
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.repository.UserRepository;
 import fpt.swp391.carrentalsystem.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -38,10 +38,40 @@ public class BookingController {
         return "customer/booking";
     }
 
+    /**
+     * Get all available cars (legacy endpoint - returns all AVAILABLE cars)
+     */
     @GetMapping("/api/cars")
     @ResponseBody
     public List<CarResponseDto> getAvailableCars() {
         return bookingService.getAvailableCars();
+    }
+
+    /**
+     * Get all distinct locations for the location dropdown
+     */
+    @GetMapping("/api/locations")
+    @ResponseBody
+    public List<String> getLocations() {
+        return bookingService.getAllLocations();
+    }
+
+    /**
+     * Search available cars by location and rental period
+     * This is the NEW search endpoint that filters cars based on:
+     * 1. Location match
+     * 2. Car status = AVAILABLE
+     * 3. No overlapping bookings
+     */
+    @GetMapping("/api/cars/search")
+    @ResponseBody
+    public List<CarResponseDto> searchAvailableCars(
+            @RequestParam String location,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
+
+        log.info("Searching cars - Location: {}, Start: {}, End: {}", location, startDate, endDate);
+        return bookingService.searchAvailableCars(location, startDate, endDate);
     }
 
     @PostMapping("/create")
@@ -71,12 +101,35 @@ public class BookingController {
     @GetMapping("/{bookingId}/payment")
     public String paymentPage(@PathVariable Integer bookingId, Model model) {
         try {
+            // Get payment info for display
             PaymentInfoDto paymentInfo = bookingService.getPaymentInfo(bookingId);
             model.addAttribute("payment", paymentInfo);
+
+            // Initiate PayOS payment and get payment URL
+            PaymentResponseDto paymentResponse = bookingService.initiatePayOSPayment(bookingId);
+            model.addAttribute("payosUrl", paymentResponse.getPaymentUrl());
+            model.addAttribute("qrCode", paymentResponse.getQrCode());
+
             return "customer/booking-payment";
         } catch (Exception e) {
+            log.error("Error loading payment page for booking {}: {}", bookingId, e.getMessage());
             model.addAttribute("error", e.getMessage());
             return "redirect:/customer/booking";
+        }
+    }
+
+    /**
+     * Direct redirect to PayOS (alternative endpoint if user wants to retry payment)
+     */
+    @PostMapping("/{bookingId}/pay-payos")
+    public String redirectToPayOS(@PathVariable Integer bookingId, Model model) {
+        try {
+            PaymentResponseDto paymentResponse = bookingService.initiatePayOSPayment(bookingId);
+            return "redirect:" + paymentResponse.getPaymentUrl();
+        } catch (Exception e) {
+            log.error("Error initiating PayOS payment for booking {}: {}", bookingId, e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            return "redirect:/customer/booking/" + bookingId + "/payment";
         }
     }
 

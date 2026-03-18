@@ -4,6 +4,7 @@ import fpt.swp391.carrentalsystem.dto.request.CreateBookingRequest;
 import fpt.swp391.carrentalsystem.dto.response.BookingConfirmationDto;
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.PaymentInfoDto;
+import fpt.swp391.carrentalsystem.dto.response.PaymentResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.RentalHistoryDto;
 import fpt.swp391.carrentalsystem.entity.Booking;
 import fpt.swp391.carrentalsystem.entity.Car;
@@ -39,6 +40,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingMapper bookingMapper;
     private final NotificationService notificationService;
     private final CarMapper carMapper;
+    private final PaymentService paymentService;
 
     private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
@@ -110,17 +112,32 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        // Generate VietQR URL
-        String qrCodeUrl = generateVietQRUrl(booking);
-
         return PaymentInfoDto.builder()
                 .bookingId(bookingId)
                 .holdingFee(booking.getHoldingFee())
                 .depositAmount(booking.getDepositAmount())
                 .rentalFee(booking.getRentalFee())
                 .totalAmount(booking.getTotalAmount())
-                .qrCodeUrl(qrCodeUrl)
                 .build();
+    }
+
+    @Override
+    public PaymentResponseDto initiatePayOSPayment(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check if booking is still pending payment
+        if (booking.getStatus() != BookingStatus.PAYMENT_PENDING) {
+            throw new RuntimeException("Booking is not in pending payment status");
+        }
+
+        // Check if payment deadline has passed
+        if (booking.getPaymentDeadline().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Payment deadline has passed. Please create a new booking.");
+        }
+
+        String description = "Phi giu cho Booking " + bookingId;
+        return paymentService.createPayOSPayment(bookingId, booking.getHoldingFee(), description);
     }
 
     @Override
@@ -299,20 +316,41 @@ public class BookingServiceImpl implements BookingService {
                 .build();
     }
 
-    /**
-     * Generate VietQR URL for payment
-     */
-    private String generateVietQRUrl(Booking booking) {
-        // VietQR format: https://img.vietqr.io/image/{BANK_ID}-{ACCOUNT_NO}-{TEMPLATE}.png?amount={AMOUNT}&addInfo={DESCRIPTION}
-        String bankId = "970415"; // VietinBank (example - can be changed)
-        String accountNo = "1234567890"; // Bank account number (should be from config)
-        String template = "compact2";
-        long amount = booking.getHoldingFee().longValue();
-        String description = "BOOKING" + booking.getBookingId();
 
-        return String.format(
-                "https://img.vietqr.io/image/%s-%s-%s.png?amount=%d&addInfo=%s&accountName=CAR%%20RENTAL%%20SYSTEM",
-                bankId, accountNo, template, amount, description
-        );
+
+
+    /**
+     * Search available cars with raw parameters
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CarResponseDto> searchAvailableCars(String location, LocalDateTime startDate, LocalDateTime endDate) {
+        // Validate dates
+        if (!endDate.isAfter(startDate)) {
+            throw new RuntimeException("Ngày kết thúc phải sau ngày bắt đầu");
+        }
+
+        if (startDate.isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Ngày bắt đầu không thể trong quá khứ");
+        }
+
+        // Find cars that match all criteria using the repository query
+        List<Car> availableCars = carRepository.findAvailableCarsForRental(location, startDate, endDate);
+
+        log.info("Found {} available cars for location: {}, period: {} to {}",
+                availableCars.size(), location, startDate, endDate);
+
+        return carMapper.toDtoList(availableCars);
+    }
+
+    /**
+     * Get all distinct locations (provinces/cities) for dropdown
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAllLocations() {
+        List<String> locations = carRepository.findAllDistinctLocations();
+        log.info("Found {} distinct locations", locations.size());
+        return locations;
     }
 }
