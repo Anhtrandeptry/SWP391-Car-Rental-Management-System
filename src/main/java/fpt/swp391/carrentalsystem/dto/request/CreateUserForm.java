@@ -14,5 +14,4 @@ public class CreateUserForm {
     private String phoneNumber;
     private String address;
     private String password;
-    private Role role;
 }
