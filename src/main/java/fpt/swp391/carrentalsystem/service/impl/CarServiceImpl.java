@@ -48,21 +48,26 @@ public class CarServiceImpl implements CarService {
         return carRepository.findByOwnerId(ownerId).stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
     }
 
-    @Override public List<CarListItemResponse> getPendingCars() {
-        return carRepository.findByStatus("Pending").stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
+    @Override
+    public List<CarListItemResponse> getPendingCars() {
+        // Thay "Pending" bằng CarStatus.PENDING (hoặc giá trị tương ứng trong Enum của bạn)
+        return carRepository.findByStatus(CarStatus.PENDING)
+                .stream()
+                .map(carMapper::toListItemResponse)
+                .collect(Collectors.toList());
     }
 
     @Override @Transactional
     public void approveCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
-        car.setStatus(CarStatus.Available);
+        car.setStatus(CarStatus.AVAILABLE);
         carRepository.save(car);
     }
 
     @Override @Transactional
     public void rejectCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
-        car.setStatus(CarStatus.Rejected);
+        car.setStatus(CarStatus.REJECTED);
         carRepository.save(car);
     }
 }

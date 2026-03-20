@@ -49,11 +49,11 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private BookingStatus status = BookingStatus.Pending;
+    private BookingStatus status = BookingStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
-    private PaymentStatus paymentStatus = PaymentStatus.Unpaid;
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

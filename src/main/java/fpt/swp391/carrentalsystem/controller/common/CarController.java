@@ -46,4 +46,17 @@ public class CarController {
 
         return "public/cars";
     }
+
+    @GetMapping("/cars/{id}")
+    public String carDetail(@PathVariable Long id, Model model) {
+        var car = carService.getCarById(id);
+
+        if (car == null) {
+            return "redirect:/public/cars";
+        }
+
+        model.addAttribute("car", car);
+
+        return "public/car-detail";
+    }
 }

@@ -1,15 +1,19 @@
 package fpt.swp391.carrentalsystem.repository;
 
 import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface CarRepository extends JpaRepository<Car, Long> {
 
-    @Query("SELECT c FROM Car c WHERE c.status = fpt.swp391.carrentalsystem.enums.CarStatus.Available " +
+    @Query("SELECT c FROM Car c WHERE c.status = fpt.swp391.carrentalsystem.enums.CarStatus.AVAILABLE " +
             "AND (:location IS NULL OR :location = '' OR c.location = :location) " +
             "AND (:brand IS NULL OR :brand = '' OR c.brand = :brand) " +
             "AND (:seats IS NULL OR c.seats = :seats) " +
@@ -18,8 +22,8 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (cast(:startDate as timestamp) IS NULL OR c.id NOT IN (" +
             "   SELECT b.car.id FROM Booking b " +
-            "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.Accepted, " +
-            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.Pending) " +
+            "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.ACCEPTED, " +
+            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.PENDING) " +
             "   AND b.startDate < :endDate " +
             "   AND b.endDate > :startDate" +
             "))")
@@ -50,5 +54,6 @@ public interface CarRepository extends JpaRepository<Car, Long> {
     List<Integer> findDistinctSeats();
 
     List<Car> findByOwnerId(Long ownerId);
-    List<Car> findByStatus(String status);
+
+    List<Car> findByStatus(CarStatus status);
 }

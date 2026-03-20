@@ -1,9 +1,11 @@
 package fpt.swp391.carrentalsystem.enums;
 
 public enum BookingStatus {
-    Pending,
-    Accepted,
-    Rejected,
-    Cancelled,
-    Completed
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+    CANCELLED,
+    COMPLETED,
+    IN_USE,
+    HANDOVER_PENDING
 }

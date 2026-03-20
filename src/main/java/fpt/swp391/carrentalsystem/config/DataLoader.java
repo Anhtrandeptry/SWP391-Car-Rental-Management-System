@@ -71,7 +71,7 @@ public class DataLoader implements CommandLineRunner {
             car.setDescription("This is a " + brand + " " + (i + 1) + " in excellent condition.");
             car.setRegistrationDate(LocalDate.now().minusYears(1 + i % 5));
             car.setLicensePlate("ABC-" + (1000 + i));
-            car.setStatus(CarStatus.Available);
+            car.setStatus(CarStatus.AVAILABLE);
             car.setAverageRating(new BigDecimal("4.5"));
 
             List<CarImage> images = new ArrayList<>();
