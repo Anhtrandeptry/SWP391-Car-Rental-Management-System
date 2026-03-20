@@ -26,6 +26,25 @@ public class HandoverService {
     @Transactional
     public void createHandoverRequest(Integer bookingId, Integer fuelLevel, Integer odometer,
                                       String description, List<MultipartFile> files) throws Exception {
+        if (files == null || files.isEmpty() || files.get(0).isEmpty()) {
+            throw new RuntimeException();
+        }
+
+        if (files.size() > 10) {
+            throw new RuntimeException();
+        }
+
+        long maxFileSize = 1024 * 1024;
+        for (MultipartFile file : files) {
+            if (file.getSize() > maxFileSize) {
+                throw new RuntimeException();
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new RuntimeException();
+            }
+        }
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng ID: " + bookingId));

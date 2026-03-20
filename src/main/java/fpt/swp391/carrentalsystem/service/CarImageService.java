@@ -31,7 +31,25 @@ public class CarImageService {
 
     public void uploadImages(Long carId, User owner, List<MultipartFile> files) throws Exception {
         Car car = getOwnedCar(carId, owner);
+        if (files == null || files.isEmpty() || files.get(0).isEmpty()) {
+            throw new RuntimeException("Vui lòng cung cấp ít nhất 1 hình ảnh minh chứng.");
+        }
 
+        if (files.size() > 10) {
+            throw new RuntimeException("Bạn chỉ được phép upload tối đa 10 hình ảnh.");
+        }
+
+        long maxFileSize = 1024 * 1024;
+        for (MultipartFile file : files) {
+            if (file.getSize() > maxFileSize) {
+                throw new RuntimeException("Mỗi ảnh không được vượt quá 1MB. File [" + file.getOriginalFilename() + "] quá lớn.");
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new RuntimeException("File [" + file.getOriginalFilename() + "] không phải là hình ảnh hợp lệ.");
+            }
+        }
         String folderName = String.format("cars/%d_%s_%s",
                 car.getId(),
                 slugify(car.getName()),
