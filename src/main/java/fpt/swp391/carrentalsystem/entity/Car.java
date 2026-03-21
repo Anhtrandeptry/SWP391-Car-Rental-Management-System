@@ -1,8 +1,9 @@
 package fpt.swp391.carrentalsystem.entity;
 
+import fpt.swp391.carrentalsystem.enums.CarStatus;
+import fpt.swp391.carrentalsystem.enums.FuelType;
 import jakarta.persistence.*;
 import lombok.*;
-import fpt.swp391.carrentalsystem.enums.CarStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,11 +18,10 @@ import java.util.List;
 @Builder
 
 public class Car {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "car_id")
-    private Long id;
+    private Integer carId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -39,8 +39,9 @@ public class Car {
     @Column(name = "car_type", length = 50)
     private String carType;
 
-    @Column(name = "fuel_type", length = 20)
-    private String fuelType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fuel_type")
+    private FuelType fuelType;
 
     @Column(name = "fuel_consumption", length = 50)
     private String fuelConsumption;
@@ -48,13 +49,13 @@ public class Car {
     @Column(name = "seats")
     private Integer seats;
 
-    @Column(name = "price_per_day", precision = 15, scale = 2, nullable = false)
+    @Column(name = "price_per_day", nullable = false, precision = 15, scale = 2)
     private BigDecimal pricePerDay;
 
     @Column(name = "location", length = 255)
     private String location;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "registration_date")
@@ -64,21 +65,20 @@ public class Car {
     private String licensePlate;
 
     @Enumerated(EnumType.STRING)
-    private CarStatus status;
+    @Column(name = "status", nullable = false)
+    private CarStatus status = CarStatus.PENDING;
 
     @Column(name = "average_rating", precision = 2, scale = 1)
     private BigDecimal averageRating = BigDecimal.ZERO;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "reservation_expire_time")
+    private LocalDateTime reservationExpireTime;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CarImage> images;
-
-    /* ================= Lifecycle ================= */
 
     @PrePersist
     protected void onCreate() {
@@ -91,3 +91,4 @@ public class Car {
         updatedAt = LocalDateTime.now();
     }
 }
+

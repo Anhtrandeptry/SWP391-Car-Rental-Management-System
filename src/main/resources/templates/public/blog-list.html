@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Blog - CRMS</title>
+    <style>
+        :root{
+          --bg:#f3fbf8; --card:#fff; --text:#0f172a; --muted:#64748b; --line:#e5e7eb;
+          --teal:#0f766e; --shadow:0 10px 30px rgba(15,23,42,.06);
+        }
+        *{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+        .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 40px}
+        .top{
+          display:flex;align-items:center;justify-content:space-between;gap:12px;
+          padding:14px 16px;border:1px solid rgba(15,118,110,.12);border-radius:16px;background:rgba(255,255,255,.75);
+          box-shadow:var(--shadow);backdrop-filter:blur(10px)
+        }
+        .brand{display:flex;align-items:center;gap:12px}
+        .logo{width:42px;height:42px;border-radius:999px;background:linear-gradient(135deg,#14b8a6,#0f766e)}
+        .title{margin:0;font-weight:900}
+        .sub{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+        .grid{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+        @media(max-width:980px){.grid{grid-template-columns:1fr}}
+        .card{
+          border:1px solid rgba(15,118,110,.12);border-radius:16px;background:var(--card);
+          box-shadow:var(--shadow);overflow:hidden
+        }
+        .thumb{width:100%;height:170px;object-fit:cover;background:#e2e8f0;display:block}
+        .content{padding:14px}
+        .h3{margin:0;font-size:15px;font-weight:900}
+        .meta{margin-top:6px;color:var(--muted);font-size:12px}
+        .sum{margin-top:8px;color:#334155;font-size:13px;line-height:1.5}
+        .link{display:inline-block;margin-top:12px;color:var(--teal);font-weight:900;text-decoration:none}
+        .link:hover{text-decoration:underline}
+        .empty{margin-top:16px;padding:16px;border:1px dashed var(--line);border-radius:16px;background:#fff;color:var(--muted);font-weight:800}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="top">
+        <div class="brand">
+            <div class="logo" aria-hidden="true"></div>
+            <div>
+                <h2 class="title">CRMS Blog</h2>
+                <div class="sub">Tin tức • Kinh nghiệm thuê xe • Mẹo lái xe an toàn</div>
+            </div>
+        </div>
+        <a th:href="@{/public/home}" class="link">← Trang chủ</a>
+    </div>
+
+    <div class="grid" th:if="${blogs != null and !#lists.isEmpty(blogs)}">
+        <div class="card" th:each="b : ${blogs}">
+            <img class="thumb" th:if="${b.thumbnailUrl != null and !#strings.isEmpty(#strings.trim(b.thumbnailUrl))}"
+                 th:src="${b.thumbnailUrl}" alt="thumbnail"/>
+            <div class="thumb" th:if="${b.thumbnailUrl == null or #strings.isEmpty(#strings.trim(b.thumbnailUrl))}"></div>
+
+            <div class="content">
+                <p class="h3" th:text="${b.title}">Title</p>
+                <div class="meta" th:text="${b.createdAt}">time</div>
+                <div class="sum" th:text="${b.summary != null ? b.summary : ''}"></div>
+                <a class="link" th:href="@{|/public/blogs/${b.id}|}">Xem chi tiết →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="empty" th:if="${blogs == null or #lists.isEmpty(blogs)}">
+        Chưa có bài viết nào được đăng.
+    </div>
+</div>
+</body>
+</html>

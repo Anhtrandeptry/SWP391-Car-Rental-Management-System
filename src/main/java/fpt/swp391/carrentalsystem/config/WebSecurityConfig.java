@@ -39,25 +39,19 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/uploads/**"
-                        ).permitAll()
-                        .requestMatchers(
-                                "/public/**",
-                                "/auth/**"
-                        ).permitAll()
+                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/payment/payos-return", "/payment/payos-cancel", "/payment/payos-webhook").permitAll()
+                        .requestMatchers("/profile", "/profile/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/owner/**").hasRole("CAR_OWNER")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(login -> login
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/auth/login")
@@ -67,7 +61,6 @@ public class WebSecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/auth/login?logout")
-                        .permitAll()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

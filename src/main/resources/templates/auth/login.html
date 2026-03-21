@@ -3,39 +3,191 @@
 <head>
     <title>Login | CRMS</title>
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            background: #f2f4f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 380px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo h2 {
+            margin: 10px 0 0;
+            color: #009688;
+        }
+
+        .logo p {
+            margin: 4px 0 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1abc9c;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .options a {
+            text-decoration: none;
+            color: #1abc9c;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #1abc9c;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #17a589;
+        }
+
+        .bottom-text {
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .bottom-text a {
+            color: #1abc9c;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: #ffe6e6;
+            color: #d8000c;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #e6fff2;
+            color: #009966;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Đăng nhập hệ thống CRMS</h2>
+<div class="container">
 
-<!-- Hiển thị lỗi -->
-<div th:if="${param.error}" style="color:red">
-    Sai tài khoản hoặc mật khẩu
-</div>
+    <div class="logo">
+        <h2>CRMS</h2>
+        <p>Thuê xe tự lái</p>
+    </div>
+    <h2>Đăng nhập</h2>
 
-<div th:if="${param.logout}" style="color:green">
-    Bạn đã đăng xuất thành công
-</div>
-
-<form th:action="@{/auth/login}" method="post">
-
-    <div>
-        <label>Email hoặc Số điện thoại</label>
-        <input type="text" name="username" required/>
+    <!-- Hiển thị lỗi -->
+    <div th:if="${param.error}" class="alert-error">
+        Sai tài khoản hoặc mật khẩu
     </div>
 
-    <div>
-        <label>Mật khẩu</label>
-        <input type="password" name="password" required/>
+    <div th:if="${param.logout}" class="alert-success">
+        Bạn đã đăng xuất thành công
     </div>
 
-    <button type="submit">Đăng nhập</button>
-</form>
+    <form th:action="@{/auth/login}" method="post">
 
-<p>
-    Chưa có tài khoản?
-    <a th:href="@{/auth/register}">Đăng ký</a>
-</p>
+        <div class="form-group">
+            <label>Email hoặc Số điện thoại</label>
+            <input type="text" name="username"  required/>
+        </div>
+
+        <div class="form-group">
+            <label>Mật khẩu</label>
+            <input type="password" name="password"  required/>
+        </div>
+
+<!--        <div class="options">-->
+<!--            <label>-->
+<!--                <input type="checkbox" name="remember-me"/>-->
+<!--                Ghi nhớ đăng nhập-->
+<!--            </label>-->
+<!--            <a href="#">Quên mật khẩu?</a>-->
+<!--        </div>-->
+
+        <button type="submit" class="btn-login">Đăng nhập</button>
+    </form>
+
+    <div class="bottom-text">
+        Chưa có tài khoản?
+        <a th:href="@{/auth/register}">Đăng ký ngay</a>
+    </div>
+
+</div>
 
 </body>
 </html>

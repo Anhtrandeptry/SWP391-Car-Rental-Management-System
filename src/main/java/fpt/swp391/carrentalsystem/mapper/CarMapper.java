@@ -1,5 +1,6 @@
 package fpt.swp391.carrentalsystem.mapper;
 
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarImage;
@@ -15,6 +16,10 @@ public interface CarMapper {
     @Mapping(target = "mainImageUrl", source = "images", qualifiedByName = "mapMainImage")
     CarListItemResponse toListItemResponse(Car car);
 
+    @Mapping(source = "owner.firstName", target = "ownerName")
+    @Mapping(source = "owner.phoneNumber", target = "ownerPhone")
+    CarResponseDto toDto(Car car);
+
     @Named("mapMainImage")
     default String mapMainImage(List<CarImage> images) {
         if (images == null || images.isEmpty()) {
@@ -26,4 +31,5 @@ public interface CarMapper {
                 .findFirst()
                 .orElse(images.get(0).getImageUrl());
     }
+    List<CarResponseDto> toDtoList(List<Car> cars);
 }

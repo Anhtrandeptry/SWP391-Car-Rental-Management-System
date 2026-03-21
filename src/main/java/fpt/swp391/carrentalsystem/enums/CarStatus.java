@@ -5,6 +5,9 @@ public enum CarStatus {
     APPROVED,
     REJECTED,
     AVAILABLE,
+    RESERVED,
     BOOKED,
-    DISABLE
+    UNAVAILABLE,
+    DISABLED
 }
+
