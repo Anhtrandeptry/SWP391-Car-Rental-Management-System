@@ -31,7 +31,7 @@ public class HandoverService {
         }
 
         if (files.size() > 10) {
-            throw new RuntimeException();
+            throw new RuntimeException("<10");
         }
 
         long maxFileSize = 1024 * 1024;
@@ -111,7 +111,7 @@ public class HandoverService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        booking.setStatus(BookingStatus.ACCEPTED);
+        booking.setStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 
         Handover handover = handoverRepository.findByBooking_BookingId(bookingId)

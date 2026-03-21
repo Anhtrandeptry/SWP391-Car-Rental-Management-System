@@ -110,6 +110,7 @@
             </div>
 
             <form th:action="@{/customer/handover/submit}" method="post" enctype="multipart/form-data">
+
                 <input type="hidden" name="bookingId" th:value="${booking.bookingId}">
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">

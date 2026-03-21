@@ -28,7 +28,7 @@ public class CustomerHandoverController {
     public String listHandoverBookings(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
         User currentUser = userDetails.getUser();
 
-        List<BookingStatus> statuses = Arrays.asList(BookingStatus.ACCEPTED, BookingStatus.HANDOVER_PENDING);
+        List<BookingStatus> statuses = Arrays.asList(BookingStatus.CONFIRMED, BookingStatus.HANDOVER_PENDING);
 
         List<Booking> bookings = bookingRepository.findByCustomerAndStatusIn(currentUser, statuses);
 
@@ -76,5 +76,7 @@ public class CustomerHandoverController {
             ra.addFlashAttribute("errorMsg", "Có lỗi xảy ra: " + e.getMessage());
             return "redirect:/customer/handover/" + bookingId;
         }
+
+
     }
 }

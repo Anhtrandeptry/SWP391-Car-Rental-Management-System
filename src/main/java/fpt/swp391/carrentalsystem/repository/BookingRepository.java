@@ -11,12 +11,8 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
-
-    List<Booking> findByStatusIn(List<BookingStatus> statuses);
-
     List<Booking> findByCar_Owner_IdAndStatus(Integer ownerId, BookingStatus status);
 
-    List<Booking> findByStatus(BookingStatus status);
 
     List<Booking> findByCustomerAndStatusIn(User customer, List<BookingStatus> statuses);
 

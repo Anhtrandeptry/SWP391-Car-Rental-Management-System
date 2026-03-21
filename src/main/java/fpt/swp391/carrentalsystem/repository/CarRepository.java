@@ -22,7 +22,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
             "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (cast(:startDate as timestamp) IS NULL OR c.id NOT IN (" +
             "   SELECT b.car.id FROM Booking b " +
-            "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.ACCEPTED, " +
+            "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.CONFIRMED, " +
             "                      fpt.swp391.carrentalsystem.enums.BookingStatus.PENDING) " +
             "   AND b.startDate < :endDate " +
             "   AND b.endDate > :startDate" +
