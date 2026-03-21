@@ -19,7 +19,7 @@ import java.util.List;
 @RequestMapping("/customer")
 @RequiredArgsConstructor
 @Slf4j
-public class CustomerController {
+public class CustomerController2 {
 
     private final BookingService bookingService;
     private final UserRepository userRepository;
