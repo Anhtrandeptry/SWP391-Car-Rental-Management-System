@@ -2,7 +2,7 @@ package fpt.swp391.carrentalsystem.controller.customer;
 
 import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse;
 import fpt.swp391.carrentalsystem.entity.Car;
-import fpt.swp391.carrentalsystem.service.CarService;
+import fpt.swp391.carrentalsystem.service.CarServiceByThanhQC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerCarController {
 
-    private final CarService carService;
+    private final CarServiceByThanhQC carService;
 
     @GetMapping("/cars")
     public String listCars(

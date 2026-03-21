@@ -1,6 +1,6 @@
 package fpt.swp391.carrentalsystem.controller.common;
 
-import fpt.swp391.carrentalsystem.service.CarService;
+import fpt.swp391.carrentalsystem.service.CarServiceByThanhQC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CarController {
 
-    private final CarService carService;
+    private final CarServiceByThanhQC carService;
 
     @GetMapping("/cars")
     public String listCars(

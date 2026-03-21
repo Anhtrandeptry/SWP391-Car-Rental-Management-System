@@ -1,6 +1,6 @@
 package fpt.swp391.carrentalsystem.controller.admin;
 
-import fpt.swp391.carrentalsystem.service.CarService;
+import fpt.swp391.carrentalsystem.service.CarServiceByThanhQC;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin")
 public class AdminCarController {
 
-    private final CarService carService;
+    private final CarServiceByThanhQC carService;
 
-    public AdminCarController(CarService carService) {
+    public AdminCarController(CarServiceByThanhQC carService) {
         this.carService = carService;
     }
 

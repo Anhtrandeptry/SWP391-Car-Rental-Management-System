@@ -4,8 +4,8 @@ import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.mapper.CarMapper;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
-import fpt.swp391.carrentalsystem.service.CarService;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThanhQC;
+import fpt.swp391.carrentalsystem.service.CarServiceByThanhQC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CarServiceImpl implements CarService {
+public class CarServiceImpl implements CarServiceByThanhQC {
 
-    private final CarRepository carRepository;
+    private final CarRepositoryByThanhQC carRepository;
     private final CarMapper carMapper;
 
     @Override

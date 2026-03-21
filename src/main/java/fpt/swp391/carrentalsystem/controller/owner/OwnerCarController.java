@@ -1,7 +1,7 @@
 package fpt.swp391.carrentalsystem.controller.owner;
 
 import fpt.swp391.carrentalsystem.security.CustomUserDetails;
-import fpt.swp391.carrentalsystem.service.CarService;
+import fpt.swp391.carrentalsystem.service.CarServiceByThanhQC;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/owner")
 public class OwnerCarController {
 
-    private final CarService carService;
+    private final CarServiceByThanhQC carService;
 
-    public OwnerCarController(CarService carService) {
+    public OwnerCarController(CarServiceByThanhQC carService) {
         this.carService = carService;
     }
 

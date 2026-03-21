@@ -4,7 +4,7 @@ import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse;
 import fpt.swp391.carrentalsystem.entity.Car;
 import java.util.List;
 
-public interface CarService {
+public interface CarServiceByThanhQC {
     List<CarListItemResponse> searchCars(String location, String startDate, String startTime,
                                          String endDate, String endTime, String name,
                                          Integer seats, String brand, String carType, String fuelType);

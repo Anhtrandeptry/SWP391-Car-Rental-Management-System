@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface CarRepository extends JpaRepository<Car, Long> {
+public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
 
     @Query("SELECT c FROM Car c WHERE c.status = fpt.swp391.carrentalsystem.enums.CarStatus.AVAILABLE " +
             "AND (:location IS NULL OR :location = '' OR c.location = :location) " +

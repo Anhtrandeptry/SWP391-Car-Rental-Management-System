@@ -6,7 +6,7 @@ import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarImage;
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.repository.CarImageRepository;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThanhQC;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class CarImageService {
 
-    private final CarRepository carRepository;
+    private final CarRepositoryByThanhQC carRepository;
     private final CarImageRepository carImageRepository;
     private final Cloudinary cloudinary;
 
