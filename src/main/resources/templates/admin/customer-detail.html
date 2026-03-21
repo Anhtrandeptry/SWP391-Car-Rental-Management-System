@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ người dùng - Car Rental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --bg-body: #f8fafc;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --green: #22c55e;
+            --red: #ef4444;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header & Breadcrumb */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .breadcrumb {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb a {
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        /* Layout Main */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        /* Left Column: Profile Card */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 30px 24px;
+        }
+
+        .user-avatar-section {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: #eff6ff;
+            color: var(--primary-blue);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 2rem;
+            margin: 0 auto 16px;
+        }
+
+        .user-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-badge.active { background: #f0fdf4; color: var(--green); }
+        .status-badge.disabled { background: #fef2f2; color: var(--red); }
+        .status-badge.pending { background: #fffbeb; color: #f59e0b; } 
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+        /* Information list */
+        .info-list { list-style: none; }
+        .info-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .info-item i {
+            color: var(--text-light);
+            width: 20px;
+            margin-top: 4px;
+        }
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .info-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Right Column: Content */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Stats in Detail */
+        .mini-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+        }
+        .stat-box .label { font-size: 0.8rem; color: var(--text-light); }
+        .stat-box .val { font-size: 1.4rem; font-weight: 700; color: var(--primary-blue); margin-top: 4px; }
+
+        /* Empty State */
+        .empty-history {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--text-light);
+        }
+        .empty-history i { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+
+        /* Buttons */
+        .btn-back {
+            padding: 10px 20px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-back:hover { background: #f1f5f9; }
+
+        .btn-action-red {
+            color: var(--red);
+            font-size: 0.85rem;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 6px 12px;
+            border: 1px solid #fee2e2;
+            border-radius: 6px;
+        }
+        .btn-action-red:hover { background: #fef2f2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/admin/customers">Khách hàng</a> / <span>Chi tiết hồ sơ</span>
+    </div>
+
+    <div class="page-header">
+        <h1>Hồ sơ khách hàng</h1>
+        <a href="/admin/customers" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="profile-grid">
+        <aside class="card">
+            <div class="user-avatar-section">
+                <div class="avatar-circle"><i class="fas fa-user"></i></div>
+                <h2 class="user-name" th:text="${customer.firstName + ' ' + customer.lastName}">Lê Minh Cường</h2>
+                <div class="status-badge" 
+                    th:classappend="${customer.status.name() == 'ACTIVE' ? 'active' : (customer.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
+                    <span class="dot"></span>
+                    <span th:text="${customer.status.name() == 'ACTIVE' ? 'Hoạt động' : (customer.status.name() == 'PENDING' ? 'Chờ duyệt' : 'Vô hiệu hóa')}">Hoạt động</span>
+                </div>
+            </div>
+
+            <ul class="info-list">
+                <li class="info-item">
+                    <i class="far fa-envelope"></i>
+                    <div>
+                        <span class="info-label">Email</span>
+                        <span class="info-value" th:text="${customer.email}">lmcuong@example.com</span>
+                    </div>
+                </li>
+                <li class="info-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>
+                        <span class="info-label">Số điện thoại</span>
+                        <span class="info-value" th:text="${customer.phoneNumber}">0923456789</span>
+                    </div>
+                </li>
+                <li class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <span class="info-label">Địa chỉ</span>
+                        <span class="info-value" th:text="${customer.address}">TP HCM</span>
+                    </div>
+                </li>
+                <li class="info-item">
+                    <i class="far fa-calendar-alt"></i>
+                    <div>
+                        <span class="info-label">Thành viên từ</span>
+                        <span class="info-value" th:text="${#temporals.format(customer.createdAt, 'dd/MM/yyyy')}">10/03/2024</span>
+                    </div>
+                </li>
+            </ul>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="#" class="btn-action-red">Vô hiệu hóa tài khoản</a>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <div class="mini-stats">
+                <div class="stat-box">
+                    <p class="label">Tổng chi tiêu</p>
+                    <p class="val">0 đ</p>
+                </div>
+                <div class="stat-box">
+                    <p class="label">Số lượt thuê</p>
+                    <p class="val">0</p>
+                </div>
+            </div>
+
+            <section class="section-card">
+                <div class="section-title">
+                    <span>Lịch sử thuê xe gần đây</span>
+                    <i class="fas fa-history" style="color: var(--text-light)"></i>
+                </div>
+                
+                <div class="empty-history">
+                    <i class="fas fa-car-side"></i>
+                    <p>Chưa có dữ liệu giao dịch cho người dùng này.</p>
+                </div>
+            </section>
+
+            <section class="section-card">
+                <div class="section-title">Thông tin hệ thống</div>
+                <div class="info-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="info-item">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <div>
+                            <span class="info-label">Đăng nhập cuối</span>
+                            <span class="info-value" th:text="${customer.lastLogin != null ? #temporals.format(customer.lastLogin, 'dd/MM/yyyy HH:mm') : 'Chưa có dữ liệu'}">Chưa có dữ liệu</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <span class="info-label">Xác thực 2 lớp</span>
+                            <span class="info-value">Đã tắt</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+</body>
+</html>

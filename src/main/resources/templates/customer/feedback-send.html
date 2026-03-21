@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Gửi Phản Hồi</title>
+    <style>
+        :root{
+            --bg:#ffffff;
+            --text:#0f172a;
+            --muted:#64748b;
+            --line:#e5e7eb;
+            --primary:#1e88e5;
+            --primary-dark:#1976d2;
+            --danger:#ef4444;
+            --card:#ffffff;
+            --hint-bg:#eef6ff;
+            --hint-line:#cfe6ff;
+        }
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color:var(--text);
+            background: #f6f7fb;
+        }
+        .page{
+            max-width: 980px;
+            margin: 36px auto;
+            padding: 0 18px;
+        }
+        .card{
+            background:var(--card);
+            border:1px solid var(--line);
+            border-radius:14px;
+            box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+            padding: 22px 22px 18px;
+        }
+        .header{
+            display:flex;
+            align-items:center;
+            gap:12px;
+            margin-bottom: 18px;
+        }
+        .icon{
+            width:44px;height:44px;
+            border-radius:50%;
+            background:#e9f2ff;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            border:1px solid #d7e8ff;
+        }
+        .header h1{
+            font-size: 20px;
+            margin:0;
+            font-weight: 800;
+        }
+
+        .field{
+            margin-top:14px;
+        }
+        .label{
+            display:block;
+            font-size: 13px;
+            font-weight: 700;
+            color:#334155;
+            margin-bottom:8px;
+        }
+        .req{ color: var(--danger); margin-left:4px; }
+        .input, .textarea{
+            width:100%;
+            border:1px solid var(--line);
+            border-radius:10px;
+            padding: 12px 12px;
+            font-size: 14px;
+            outline:none;
+            background:#fff;
+        }
+        .input:focus, .textarea:focus{
+            border-color: rgba(30,136,229,.55);
+            box-shadow: 0 0 0 4px rgba(30,136,229,.12);
+        }
+        .textarea{
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.45;
+        }
+
+        /* Error styles */
+        .error{
+            margin-top:8px;
+            color: var(--danger);
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        .alert-ok{
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #ecfdf5;
+            border: 1px solid #bbf7d0;
+            color:#065f46;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .alert-err{
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color:#991b1b;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Star rating */
+        .stars-wrap{
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .stars{
+            display:inline-flex;
+            flex-direction: row-reverse; /* để CSS fill đúng */
+            gap: 8px;
+        }
+        .stars input{ display:none; }
+
+        .stars label{
+            font-size: 28px;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: transform .05s ease, color .15s ease;
+            user-select:none;
+            line-height: 1;
+        }
+        .stars label:hover{ transform: translateY(-1px); }
+        .stars label:hover,
+        .stars label:hover ~ label{
+            color: #93c5fd;
+        }
+        .stars input:checked ~ label{
+            color: #60a5fa;
+        }
+        .stars-hint{
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Hint box */
+        .hint{
+            margin-top: 14px;
+            background: var(--hint-bg);
+            border: 1px solid var(--hint-line);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+        .hint-title{
+            font-weight: 800;
+            color:#1d4ed8;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .hint ul{
+            margin:0;
+            padding-left: 18px;
+            color:#334155;
+            font-size: 13px;
+        }
+        .hint li{ margin: 6px 0; }
+
+        /* Submit button */
+        .actions{
+            margin-top: 16px;
+        }
+        .btn{
+            width:100%;
+            border:none;
+            border-radius: 10px;
+            padding: 13px 14px;
+            background: var(--primary);
+            color:#fff;
+            font-weight: 800;
+            font-size: 14px;
+            cursor:pointer;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:10px;
+            box-shadow: 0 10px 20px rgba(30,136,229,.18);
+        }
+        .btn:hover{ background: var(--primary-dark); }
+
+        .link{
+            display:inline-block;
+            margin-top: 12px;
+            color:#1e88e5;
+            font-weight:700;
+            font-size: 13px;
+            text-decoration:none;
+        }
+        .link:hover{ text-decoration:underline; }
+
+        /* Optional bookingId hidden/compact */
+        .booking-compact{
+            display:flex;
+            gap:10px;
+            align-items:flex-end;
+        }
+        .booking-compact .input{ max-width: 260px; }
+        .booking-note{
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="card">
+
+        <div class="header">
+            <div class="icon" aria-hidden="true">
+                <!-- chat bubble icon -->
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 14c0 1.1-.9 2-2 2H9l-4 4V6c0-1.1.9-2 2-2h11c1.1 0 2 .9 2 2v8Z"
+                          stroke="#1e88e5" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h1>Gửi Phản Hồi</h1>
+        </div>
+
+        <div th:if="${ok}" class="alert-ok">Gửi phản hồi thành công!</div>
+        <div th:if="${error}" class="alert-err" th:text="${error}"></div>
+
+        <form th:action="@{/customer/feedbacks/new}" th:object="${form}" method="post">
+
+            <!-- Booking ID: để BE xử lý. UI giống ảnh thì không hiển thị lớn.
+                 Nếu bạn truyền bookingId sẵn từ link (?bookingId=xx) thì field sẽ có giá trị và input ẩn.
+                 Nếu chưa có bookingId -> hiển thị 1 input nhỏ để nhập. -->
+            <input type="hidden" th:if="*{bookingId} != null" th:field="*{bookingId}"/>
+
+            <div class="field" th:if="*{bookingId} == null">
+                <label class="label">Booking ID<span class="req">*</span></label>
+                <div class="booking-compact">
+                    <div>
+                        <div class="booking-note">Nhập mã chuyến đi để gửi phản hồi</div>
+                        <input class="input" type="number" th:field="*{bookingId}" placeholder="Ví dụ: 12"/>
+                        <div class="error" th:if="${#fields.hasErrors('bookingId')}" th:errors="*{bookingId}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="field">
+                <label class="label">Đánh giá của bạn<span class="req">*</span></label>
+
+                <div class="stars-wrap">
+                    <div class="stars" aria-label="Star rating">
+                        <!-- row-reverse: 5 -> 1 -->
+                        <input type="radio" id="rate5" th:field="*{rating}" th:value="5"/>
+                        <label for="rate5" title="5 sao">★</label>
+
+                        <input type="radio" id="rate4" th:field="*{rating}" th:value="4"/>
+                        <label for="rate4" title="4 sao">★</label>
+
+                        <input type="radio" id="rate3" th:field="*{rating}" th:value="3"/>
+                        <label for="rate3" title="3 sao">★</label>
+
+                        <input type="radio" id="rate2" th:field="*{rating}" th:value="2"/>
+                        <label for="rate2" title="2 sao">★</label>
+
+                        <input type="radio" id="rate1" th:field="*{rating}" th:value="1"/>
+                        <label for="rate1" title="1 sao">★</label>
+                    </div>
+
+                    <div class="stars-hint">Chọn từ 1 đến 5 sao</div>
+                </div>
+
+                <div class="error" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></div>
+            </div>
+
+            <!-- Title -->
+            <div class="field">
+                <label class="label">Tiêu đề<span class="req">*</span></label>
+                <input class="input" type="text" th:field="*{title}" placeholder="Nhập tiêu đề phản hồi"/>
+                <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+            </div>
+
+            <!-- Content -->
+            <div class="field">
+                <label class="label">Nội dung phản hồi<span class="req">*</span></label>
+                <textarea class="textarea" th:field="*{content}" placeholder="Hãy chia sẻ trải nghiệm của bạn..."></textarea>
+                <div class="error" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
+            </div>
+
+            <!-- Suggestions -->
+            <div class="hint">
+                <div class="hint-title">Gợi ý khi viết phản hồi:</div>
+                <ul>
+                    <li>Mô tả chi tiết trải nghiệm của bạn</li>
+                    <li>Đánh giá chất lượng dịch vụ và xe</li>
+                    <li>Chia sẻ điều bạn hài lòng hoặc cần cải thiện</li>
+                    <li>Giữ thái độ lịch sự và mang tính xây dựng</li>
+                </ul>
+            </div>
+
+            <div class="actions" style="display: flex; gap: 12px; align-items: center;">
+                <button type="button" onclick="history.back()" style="padding: 12px 20px; background: white; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text); display: inline-flex; align-items: center; gap: 8px;">
+                    ← Trở về
+                </button>
+                <button class="btn" type="submit">
+                    <!-- paper plane icon -->
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M22 2 11 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 2 15 22l-4-9-9-4 20-7Z" stroke="white" stroke-width="2"
+                              stroke-linejoin="round"/>
+                    </svg>
+                    Gửi phản hồi
+                </button>
+            </div>
+        </form>
+
+        <a class="link" th:href="@{/customer/feedbacks}">Xem danh sách phản hồi</a>
+    </div>
+</div>
+</body>
+</html>

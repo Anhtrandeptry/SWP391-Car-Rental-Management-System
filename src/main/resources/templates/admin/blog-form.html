@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${mode == 'edit' ? 'Edit Blog' : 'Create Blog'}">Blog Form</title>
+
+    <!-- Quill CSS (CDN) -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+    <style>
+        :root{--bg:#f6f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e5e7eb;--teal:#0f766e;--shadow:0 10px 30px rgba(15,23,42,.06);--danger:#ef4444}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+        .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 40px}
+        .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid rgba(15,118,110,.12);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+        h1{margin:0;font-size:18px;font-weight:950}
+        .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(15,118,110,.15);background:rgba(15,118,110,.06);color:var(--teal);font-weight:900;text-decoration:none}
+        .btn.primary{background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;border-color:transparent}
+        .card{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media(max-width:900px){.row{grid-template-columns:1fr}}
+        label{display:block;font-size:13px;font-weight:900;margin-bottom:6px;color:#334155}
+        input,textarea,select{
+            width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:14px;outline:none
+        }
+        textarea{min-height:120px;resize:vertical}
+        .err{margin-top:8px;padding:10px 12px;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:900;font-size:13px}
+        .hint{margin-top:8px;color:var(--muted);font-size:12.5px}
+        .actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+        .ql-container{border-radius:0 0 12px 12px}
+        .ql-toolbar{border-radius:12px 12px 0 0}
+        .editor-wrap{margin-top:6px}
+        .req{color:var(--danger)}
+        .fallback{display:none;margin-top:10px}
+        .warnbox{margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#b45309;font-weight:800;font-size:13px}
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <div class="top">
+        <h1 th:text="${mode == 'edit' ? 'Edit Blog' : 'Create New Blog'}">Create New Blog</h1>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn" th:href="@{/admin/blogs}">← Back</a>
+            <a class="btn" th:href="@{/public/blogs}" target="_blank">Public Blogs</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div th:if="${error}" class="err" th:text="${error}"></div>
+
+        <form th:object="${form}"
+              th:action="${mode == 'edit'} ? @{|/admin/blogs/${blogId}/edit|} : @{/admin/blogs/new}"
+              method="post"
+              onsubmit="return beforeSubmit();">
+
+            <div class="row">
+                <div>
+                    <label>Title <span class="req">*</span></label>
+                    <input type="text" th:field="*{title}" placeholder="Nhập tiêu đề bài viết"/>
+                    <div class="hint" style="color:#ef4444" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                </div>
+
+                <div>
+                    <label>Status</label>
+                    <select th:field="*{status}">
+                        <option value="DRAFT">DRAFT</option>
+                        <option value="PUBLISHED">PUBLISHED</option>
+                    </select>
+                    <div class="hint">Chỉ PUBLISHED mới hiện ở /public/blogs</div>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:12px">
+                <div>
+                    <label>Thumbnail URL</label>
+                    <input type="text" th:field="*{thumbnailUrl}" placeholder="https://..."/>
+                    <div class="hint">Dán link ảnh (demo).</div>
+                </div>
+                <div>
+                    <label>Summary</label>
+                    <textarea th:field="*{summary}" placeholder="Tóm tắt ngắn..."></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top:12px">
+                <label>Content <span class="req">*</span></label>
+
+                <!-- Hidden field to submit HTML -->
+                <input type="hidden" th:field="*{contentHtml}" id="contentHtml"/>
+
+                <div id="quillWarning" class="warnbox" style="display:none;">
+                    Quill chưa load được (có thể do mạng/CDN bị chặn). Hệ thống sẽ dùng textarea fallback để bạn vẫn lưu blog.
+                </div>
+
+                <!-- Quill editor -->
+                <div class="editor-wrap" id="quillWrap">
+                    <div id="toolbar">
+                        <span class="ql-formats">
+                            <select class="ql-header">
+                                <option selected></option>
+                                <option value="1"></option>
+                                <option value="2"></option>
+                                <option value="3"></option>
+                            </select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <button class="ql-blockquote"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link"></button>
+                            <button class="ql-image"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-clean"></button>
+                        </span>
+                    </div>
+                    <div id="editor" style="height:360px;background:#fff;"></div>
+                </div>
+
+                <!-- Fallback textarea nếu Quill lỗi -->
+                <div class="fallback" id="fallbackWrap">
+                    <textarea id="fallbackContent" placeholder="Nhập nội dung blog (HTML hoặc text)..."></textarea>
+                    <div class="hint">Fallback: dùng khi Quill không tải được.</div>
+                </div>
+
+                <div class="hint" style="color:#ef4444" th:if="${#fields.hasErrors('contentHtml')}" th:errors="*{contentHtml}"></div>
+            </div>
+
+            <div class="actions">
+                <button class="btn primary" type="submit">Save</button>
+                <a class="btn" th:href="@{/admin/blogs}">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- Quill JS (CDN) -->
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+<script th:inline="javascript">
+    // initial content from server (edit mode)
+    const initialHtml = /*[[${form.contentHtml}]]*/ '';
+
+    let quillInstance = null;
+
+    function enableFallback() {
+        document.getElementById('quillWarning').style.display = 'block';
+        document.getElementById('quillWrap').style.display = 'none';
+        document.getElementById('fallbackWrap').style.display = 'block';
+        // đổ content cũ vào fallback nếu có
+        if (initialHtml && initialHtml.trim()) {
+            document.getElementById('fallbackContent').value = initialHtml;
+        }
+    }
+
+    try {
+        if (window.Quill) {
+            quillInstance = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: {
+                        container: '#toolbar',
+                        handlers: {
+                            image: function () {
+                                const url = prompt('Nhập URL ảnh:');
+                                if (url && quillInstance) {
+                                    const range = quillInstance.getSelection(true) || { index: 0 };
+                                    quillInstance.insertEmbed(range.index, 'image', url, 'user');
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (initialHtml && initialHtml.trim().length > 0) {
+                quillInstance.clipboard.dangerouslyPasteHTML(initialHtml);
+            }
+        } else {
+            enableFallback();
+        }
+    } catch (e) {
+        enableFallback();
+    }
+
+    function beforeSubmit() {
+        const titleEl = document.querySelector('input[name="title"]');
+        const title = titleEl ? titleEl.value.trim() : '';
+
+        if (!title) {
+            alert('Title không được để trống');
+            return false;
+        }
+
+        let html = '';
+        try {
+            if (quillInstance) {
+                html = quillInstance.root.innerHTML || '';
+            } else {
+                html = document.getElementById('fallbackContent').value || '';
+            }
+        } catch (e) {
+            html = document.getElementById('fallbackContent').value || '';
+        }
+
+        html = (html || '').trim();
+
+        if (!html || html === '<p><br></p>') {
+            alert('Content không được để trống');
+            return false;
+        }
+
+        document.getElementById('contentHtml').value = html;
+        return true;
+    }
+</script>
+</body>
+</html>
