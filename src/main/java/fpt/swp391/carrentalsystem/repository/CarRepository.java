@@ -18,7 +18,6 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
     List<Car> findByStatus(CarStatus status);
 
     // Find cars by owner
-    List<Car> findByOwnerIdAndStatus(Long ownerId, CarStatus status);
 
     List<Car> findByOwnerId(Long ownerId);
 

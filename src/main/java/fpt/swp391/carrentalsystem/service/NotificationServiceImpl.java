@@ -1,17 +1,13 @@
 package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.entity.Booking;
-import fpt.swp391.carrentalsystem.entity.User;
- import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.twilio.Twilio;
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.type.PhoneNumber;
 
 import java.time.format.DateTimeFormatter;
 
@@ -26,14 +22,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Value("${spring.mail.from:noreply@carrentalsystem.com}")
     private String fromEmail;
 
-    @Value("${twilio.account-sid:YOUR_ACCOUNT_SID}")
-    private String twilioAccountSid;
-
-    @Value("${twilio.auth-token:YOUR_AUTH_TOKEN}")
-    private String twilioAuthToken;
-
-    @Value("${twilio.phone-number:+1234567890}")
-    private String twilioPhoneNumber;
 
     @Override
     public void sendBookingConfirmationEmail(Booking booking) {
@@ -178,24 +166,6 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    @Override
-    public void sendSMS(String phoneNumber, String message) {
-        try {
-            // Initialize Twilio
-            Twilio.init(twilioAccountSid, twilioAuthToken);
-
-            Message smsMessage = Message.creator(
-                    new PhoneNumber(phoneNumber),
-                    new PhoneNumber(twilioPhoneNumber),
-                    message
-            ).create();
-
-            log.info("SMS sent successfully. SID: {}", smsMessage.getSid());
-
-        } catch (Exception e) {
-            log.error("Error sending SMS to {}: {}", phoneNumber, e.getMessage(), e);
-        }
-    }
 
     @Override
     public void sendPaymentReminderEmail(Booking booking) {

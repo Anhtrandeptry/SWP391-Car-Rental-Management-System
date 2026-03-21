@@ -83,12 +83,6 @@
 
 
 
-        <!-- SMS Notifications (Twilio) -->
-        <dependency>
-            <groupId>com.twilio.sdk</groupId>
-            <artifactId>twilio</artifactId>
-            <version>9.0.1</version>
-        </dependency>
 
         <!-- QR Code Generation -->
         <dependency>
