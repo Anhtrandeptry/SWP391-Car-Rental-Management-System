@@ -1,9 +1,11 @@
 package fpt.swp391.carrentalsystem.repository;
 
 import fpt.swp391.carrentalsystem.entity.Booking;
+import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.BookingStatus;
 import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,8 +13,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
+    List<Booking> findByCar_Owner_IdAndStatus(Integer ownerId, BookingStatus status);
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.car.carId = :carId " +
            "AND b.status = :status " +
            "AND ((b.startDate < :endDate AND b.endDate > :startDate))")
@@ -28,6 +32,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query("SELECT b FROM Booking b WHERE b.car.owner.id = :ownerId ORDER BY b.createdAt DESC")
     List<Booking> findByCarOwnerIdOrderByCreatedAtDesc(@Param("ownerId") Long ownerId);
 
+    List<Booking> findByCustomerAndStatusIn(User customer, List<BookingStatus> statuses);
     // Find expired payment pending bookings
     @Query("SELECT b FROM Booking b WHERE b.status = :status " +
            "AND b.paymentStatus = :paymentStatus " +

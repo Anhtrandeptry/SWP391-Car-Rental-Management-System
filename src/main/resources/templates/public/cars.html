@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thuê xe tự lái - CRMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --dark-bg: #0f172a;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { margin: 0; background: #f4f7fa; color: var(--text-main); }
+        .container { width: 95%; max-width: 1300px; margin: 0 auto; padding-bottom: 50px; }
+
+        /* HEADER */
+        .page-header { padding: 1.5rem 0; display: flex; align-items: center; justify-content: space-between; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
+        .btn-login { background: var(--primary); color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 700; }
+
+        /* SEARCH WRAPPER */
+        .search-wrapper {
+            background: linear-gradient(135deg, #1e293b, var(--dark-bg));
+            padding: 40px; border-radius: 24px; margin-bottom: 30px; color: #fff;
+        }
+
+        /* THANH SEARCH 2 TẦNG ĐỂ ĐỦ CHỖ CHO GIỜ */
+        .main-search-form {
+            background: #fff;
+            display: grid;
+            grid-template-columns: 1.5fr 1.5fr 1.5fr 0.5fr; /* Chia cột cho Địa điểm - Bắt đầu - Kết thúc - Nút */
+            padding: 12px; border-radius: 16px; gap: 10px; align-items: center;
+        }
+
+        .search-item {
+            display: flex; flex-direction: column; padding: 5px 15px; border-right: 1px solid #e5e7eb;
+        }
+        .search-item:nth-child(3) { border-right: none; }
+
+        .search-item label {
+            font-size: 0.65rem; font-weight: 800; color: var(--text-muted);
+            margin-bottom: 5px; text-transform: uppercase;
+        }
+
+        /* Group input ngày và giờ nằm cạnh nhau */
+        .datetime-group { display: flex; gap: 8px; align-items: center; }
+
+        .search-item select, .search-item input {
+            border: none; outline: none; font-size: 0.95rem; font-weight: 600;
+            background: transparent; color: #111; width: 100%;
+        }
+
+        .btn-submit-search {
+            background: var(--primary); color: #fff; border: none; height: 100%;
+            border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 1rem;
+            min-height: 60px;
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            display: flex; gap: 12px; margin-bottom: 30px; background: #fff;
+            padding: 15px 20px; border-radius: 14px; align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .filter-bar select { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; min-width: 130px; }
+        .btn-reset { margin-left: auto; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* CAR GRID */
+        .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .car-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-decoration: none; color: inherit; transition: 0.3s; }
+        .car-card:hover { transform: translateY(-5px); }
+        .car-img { width: 100%; height: 190px; object-fit: cover; }
+        .car-info { padding: 15px 20px; }
+        .car-price { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="page-header">
+        <a th:href="@{/public/cars}" class="logo">CRMS</a>
+        <div class="auth-actions"><a th:href="@{/login}" class="btn-login">Đăng nhập</a></div>
+    </header>
+
+    <form th:action="@{/public/cars}" method="get">
+        <div class="search-wrapper">
+            <h2 style="margin-top:0">Tìm xe cho chuyến đi của bạn</h2>
+            <div class="main-search-form">
+                <div class="search-item">
+                    <label><i class="fas fa-map-marker-alt"></i> Địa điểm</label>
+                    <select name="location">
+                        <option value="">Bạn muốn đi đâu?</option>
+                        <option th:each="loc : ${locations}" th:value="${loc}" th:text="${loc}" th:selected="${loc == location}"></option>
+                    </select>
+                </div>
+
+                <div class="search-item">
+                    <label>Bắt đầu</label>
+                    <div class="datetime-group">
+                        <input type="date" name="startDate" th:value="${startDate}" required>
+                        <input type="time" name="startTime" th:value="${startTime != null ? startTime : '09:00'}">
+                    </div>
+                </div>
+
+                <div class="search-item">
+                    <label>Kết thúc</label>
+                    <div class="datetime-group">
+                        <input type="date" name="endDate" th:value="${endDate}" required>
+                        <input type="time" name="endTime" th:value="${endTime != null ? endTime : '09:00'}">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-search">TÌM XE</button>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <select name="brand" onchange="this.form.submit()">
+                <option value="">Hãng xe</option>
+                <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${b == brand}"></option>
+            </select>
+            <select name="seats" onchange="this.form.submit()">
+                <option value="">Số chỗ</option>
+                <option th:each="s : ${seatsList}" th:value="${s}" th:text="${s} + ' chỗ'" th:selected="${s == seats}"></option>
+            </select>
+            <select name="carType" onchange="this.form.submit()">
+                <option value="">Loại xe</option>
+                <option th:each="t : ${carTypes}" th:value="${t}" th:text="${t}" th:selected="${t == carType}"></option>
+            </select>
+            <a th:href="@{/public/cars}" class="btn-reset"><i class="fas fa-sync"></i> Xóa bộ lọc</a>
+        </div>
+    </form>
+
+    <div class="car-grid">
+        <a th:each="car : ${cars}" th:href="@{/public/cars/{id}(id=${car.id})}" class="car-card">
+            <img th:src="${car.mainImageUrl != null ? car.mainImageUrl : '/images/placeholder-car.png'}" class="car-img">
+            <div class="car-info">
+                <div style="font-weight:700; margin-bottom:5px" th:text="${car.name}"></div>
+                <div style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+                    <i class="fas fa-map-marker-alt"></i> <span th:text="${car.location}"></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #eee; padding-top:12px;">
+                    <div class="car-price">
+                        <th:block th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')}"></th:block>K <span style="font-size:0.7rem; color:gray">/ngày</span>
+                    </div>
+                    <div style="font-size:0.85rem; font-weight:600;">⭐ <span th:text="${car.averageRating}"></span></div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div th:if="${cars.empty}" style="text-align:center; padding:80px 0; color:var(--text-muted);">
+        <i class="fas fa-search" style="font-size:3rem; margin-bottom:15px;"></i>
+        <p>Không tìm thấy xe phù hợp với yêu cầu của bạn.</p>
+    </div>
+</div>
+
+</body>
+</html>
