@@ -24,7 +24,7 @@ public class CustomerController {
     private final BookingService bookingService;
     private final UserRepository userRepository;
 
-    @GetMapping("/dashboard")
+    @GetMapping("/dashboard2")
     public String dashboard(Authentication authentication, Model model) {
         try {
             Long userId = extractUserId(authentication);
@@ -34,7 +34,7 @@ public class CustomerController {
             log.error("Error loading customer dashboard: {}", e.getMessage(), e);
             model.addAttribute("error", "Error loading rental history");
         }
-        return "customer/customer-dashboard";
+        return "customer/customer-dashboard-anhtq";
     }
 
     private Long extractUserId(Authentication authentication) {
