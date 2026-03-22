@@ -1,16 +1,16 @@
 package fpt.swp391.carrentalsystem.entity;
 
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "car_images")
+@Getter
+@Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CarImage {
 
     @Id
@@ -18,10 +18,11 @@ public class CarImage {
     @Column(name = "image_id")
     private Long id;
 
-    @Column(name = "car_id", nullable = false)
-    private Long carId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "car_id", nullable = false)
+    private Car car;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url", length = 255, nullable = false)
     private String imageUrl;
 
     @Column(name = "is_main")

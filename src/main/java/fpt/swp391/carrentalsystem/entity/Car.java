@@ -1,34 +1,38 @@
 package fpt.swp391.carrentalsystem.entity;
 
 import fpt.swp391.carrentalsystem.enums.CarStatus;
+import fpt.swp391.carrentalsystem.enums.FuelType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "cars")
+@Getter
+@Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+
 public class Car {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "car_id")
-    private Long id;
+    private Integer carId;
 
-    @Column(name = "owner_id", nullable = false)
-    private Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
-    // ========== STEP 1: Thiết Lập ==========
-    @Column(name = "name", length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     @Column(name = "brand", length = 50)
@@ -65,7 +69,7 @@ public class Car {
     @Column(name = "seats")
     private Integer seats;
 
-    @Column(name = "price_per_day", precision = 15, scale = 2, nullable = false)
+    @Column(name = "price_per_day", nullable = false, precision = 15, scale = 2)
     private BigDecimal pricePerDay;
 
     @Column(name = "estimated_income", precision = 15, scale = 2)
@@ -80,6 +84,8 @@ public class Car {
     @Column(name = "location", length = 255)
     private String location;
 
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
     @Column(name = "address", length = 200)
     private String address;
 
@@ -102,6 +108,8 @@ public class Car {
     @Column(name = "registration_date")
     private LocalDate registrationDate;
 
+    @Column(name = "license_plate", length = 20, unique = true)
+    private String licensePlate;
     @Column(name = "mileage")
     private Integer mileage;
 
@@ -187,10 +195,14 @@ public class Car {
      * @see fpt.swp391.carrentalsystem.enums.CarStatus
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private CarStatus status = CarStatus.DRAFT;
+    @Column(name = "status", nullable = false)
+    private CarStatus status = CarStatus.PENDING;
 
     @Column(name = "average_rating", precision = 2, scale = 1)
+    private BigDecimal averageRating = BigDecimal.ZERO;
+
+    @Column(name = "reservation_expire_time")
+    private LocalDateTime reservationExpireTime;
     private BigDecimal averageRating;
 
     @CreationTimestamp
@@ -201,28 +213,15 @@ public class Car {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ========== ENUMS ==========
-    /**
-     * Loại nhiên liệu - giữ lại trong entity vì chỉ liên quan đến Car
-     */
-    public enum FuelType {
-        PETROL("Petrol"),
-        ELECTRIC("Electric"),
-        DIESEL("Diesel"),
-        HYBRID("Hybrid");
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 
-        private final String displayName;
-
-        FuelType(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
-
-
-
 

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách bàn giao xe | CRMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00a58e;
+            --bg-body: #f4f7f6;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+            --white: #ffffff;
+            /* Chỉnh màu viền đậm hơn để rõ nét */
+            --border-color: #cbd5e1;
+            --radius: 12px;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        /* Header Section */
+        .header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .header-box h2 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .count-badge {
+            background: #e6f6f4;
+            color: var(--primary-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            /* Thêm viền cho badge để đồng bộ */
+            border: 1px solid var(--primary-color);
+        }
+
+        /* Table Card */
+        .table-container {
+            background: var(--white);
+            border-radius: var(--radius);
+            /* Tăng độ dày viền lên 2px cho rõ nét */
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead { background: #f8fafb; }
+        th {
+            padding: 16px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-sub);
+            /* Viền dưới của tiêu đề đậm hơn */
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 20px 16px;
+            /* Viền giữa các dòng rõ nét hơn */
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        /* Styles for Data Columns */
+        .booking-id { font-weight: 700; color: #1e293b; }
+
+        .user-info div { font-weight: 600; color: var(--text-main); }
+        .user-info small { color: var(--text-sub); }
+
+        .car-tag {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+            /* Viền tag xe rõ nét hơn */
+            border: 1.5px solid var(--border-color);
+        }
+
+        .date-cell { color: #444; font-weight: 500; }
+
+        /* Action Button */
+        .btn-review {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-review:hover {
+            background: #008a77;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 165, 142, 0.2);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            background: white;
+            border-radius: var(--radius);
+            /* Viền cho trạng thái trống */
+            border: 2px solid var(--border-color);
+        }
+        .empty-state i { font-size: 50px; color: #cbd5e1; margin-bottom: 15px; }
+        .empty-state p { color: var(--text-sub); font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <h2><i class="fas fa-key"></i> Yêu cầu bàn giao xe</h2>
+        <div class="count-badge" th:text="${bookings.size() + ' đơn đang chờ'}">0 đơn đang chờ</div>
+    </div>
+
+    <div class="table-container" th:if="${not #lists.isEmpty(bookings)}">
+        <table>
+            <thead>
+            <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Thông tin xe</th>
+                <th>Ngày bắt đầu</th>
+                <th style="text-align: right;">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${bookings}">
+                <td class="booking-id" th:text="'#' + ${b.bookingId}">#1</td>
+                <td class="user-info">
+                    <div th:text="${b.customer.firstName + ' ' + b.customer.lastName}">Tên Khách</div>
+                    <small th:text="${b.customer.phoneNumber}">0987654321</small>
+                </td>
+                <td>
+                    <div style="font-weight: 600;" th:text="${b.car.brand + ' ' + b.car.model}">Toyota Vios</div>
+                    <span class="car-tag" th:text="${b.car.licensePlate}">29A-123.45</span>
+                </td>
+                <td class="date-cell">
+                    <i class="far fa-calendar-alt" style="color: var(--primary-color); margin-right: 5px;"></i>
+                    <span th:text="${#temporals.format(b.startDate, 'dd/MM/yyyy')}">01/01/2026</span>
+                </td>
+                <td style="text-align: right;">
+                    <a th:href="@{/owner/handover-review/{id}(id=${b.bookingId})}" class="btn-review">
+                        <i class="fas fa-eye"></i> XEM CHI TIẾT
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">
+        <i class="fas fa-clipboard-check"></i>
+        <p>Hiện không có yêu cầu bàn giao nào cần xử lý.</p>
+    </div>
+</div>
+
+</body>
+</html>

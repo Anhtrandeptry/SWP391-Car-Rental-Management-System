@@ -19,10 +19,13 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserMapper userMapper;
+
     @Override
     public void register(RegisterRequest request) {
 
-        User user = UserMapper.toEntity(request);
+        User user = userMapper.registerRequestToUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
 

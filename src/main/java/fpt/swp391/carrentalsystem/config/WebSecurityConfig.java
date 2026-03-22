@@ -1,101 +1,24 @@
 package fpt.swp391.carrentalsystem.config;
 
+import fpt.swp391.carrentalsystem.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Set;
 
 @Configuration
+@EnableMethodSecurity
 public class WebSecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    private final CustomLoginSuccessHandler successHandler;
 
-        http
-                .csrf(csrf -> csrf.disable())
-
-                .authorizeHttpRequests(auth -> auth
-
-                        /* ========= PUBLIC MVC PAGES (TEMPLATES) ========= */
-                        .requestMatchers(
-                                "/",
-                                "/home",
-                                "/income-estimate",
-                                "/auth/**"
-                        ).permitAll()
-
-                        /* ========= STATIC RESOURCES ========= */
-                        .requestMatchers(
-                                "/css/**",
-                                "/js/**",
-                                "/images/**"
-                        ).permitAll()
-
-                        /* ========= PUBLIC APIs ========= */
-                        .requestMatchers(
-                                "/api/brands/**",
-                                "/api/income-estimate"
-                        ).permitAll()
-
-                        /* ========= ROLE BASED ========= */
-                        // Owner routes require CAR_OWNER role
-                        .requestMatchers("/owner/**").hasRole("CAR_OWNER")
-                        .requestMatchers("/api/owner/**").hasRole("CAR_OWNER")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
-                        .requestMatchers("/public/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-
-                .formLogin(form -> form
-                        .loginPage("/auth/login")
-                        .loginProcessingUrl("/auth/login")
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        // Use custom success handler to redirect based on role
-                        .successHandler(loginSuccessHandler())
-                        .failureUrl("/auth/login?error")
-                        .permitAll()
-                )
-
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/auth/login?logout")
-                        .permitAll()
-                );
-
-        return http.build();
-    }
-
-    /**
-     * Custom login success handler that redirects users based on their role
-     */
-    @Bean
-    public AuthenticationSuccessHandler loginSuccessHandler() {
-        return (HttpServletRequest request, HttpServletResponse response, Authentication authentication) -> {
-            Set<String> roles = AuthorityUtils.authorityListToSet(authentication.getAuthorities());
-
-            if (roles.contains("ROLE_ADMIN")) {
-                response.sendRedirect("/admin/dashboard");
-            } else if (roles.contains("ROLE_CAR_OWNER")) {
-                // Owner goes to Owner Dashboard after login
-                response.sendRedirect("/owner/dashboard");
-            } else if (roles.contains("ROLE_CUSTOMER")) {
-                response.sendRedirect("/customer/dashboard");
-            } else {
-                response.sendRedirect("/home");
-            }
-        };
+    public WebSecurityConfig(CustomLoginSuccessHandler successHandler) {
+        this.successHandler = successHandler;
     }
 
     @Bean
@@ -104,9 +27,49 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public DaoAuthenticationProvider authenticationProvider(
+            UserDetailsServiceImpl userDetailsService,
+            PasswordEncoder passwordEncoder) {
+
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
+        return provider;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/**", "/auth/**").permitAll()
+                        .requestMatchers("/payment/payos-return", "/payment/payos-cancel", "/payment/payos-webhook").permitAll()
+                        .requestMatchers("/profile", "/profile/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/owner/**").hasRole("CAR_OWNER")
+                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers(
+                                "/api/brands/**",
+                                "/api/income-estimate"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+
+                .formLogin(login -> login
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
+                        .successHandler(successHandler)
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/auth/logout")
+                        .logoutSuccessUrl("/auth/login?logout")
+                )
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                );
+
+        return http.build();
     }
 }
-

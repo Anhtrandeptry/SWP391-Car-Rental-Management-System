@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Yêu Cầu Bàn Giao | CRMS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00a58e;
+            --primary-hover: #008a77;
+            --text-main: #2d3436;
+            --text-sub: #636e72;
+            --bg-body: #f4f7f6;
+            --white: #ffffff;
+            /* Chỉnh màu viền đậm hơn */
+            --border-color: #cbd5e1;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-body); color: var(--text-main);
+            margin: 0; padding: 30px 20px;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        .card {
+            background: var(--white); border-radius: var(--radius);
+            /* Tăng độ dày viền lên 2px cho rõ nét */
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 25px; background: #f8fafb;
+            /* Viền header đậm hơn */
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 700; color: var(--primary-color);
+            display: flex; align-items: center; gap: 10px; font-size: 1.2rem;
+        }
+
+        .card-body { padding: 30px; }
+
+        /* Vehicle Info Header */
+        .car-summary {
+            background: #e6f6f4; border: 2px solid #b2e2db;
+            border-radius: 10px; padding: 15px 20px; margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .car-summary strong { color: var(--primary-hover); font-size: 1.1rem; }
+        .license-badge { background: white; padding: 4px 10px; border-radius: 6px; font-weight: 700; border: 2px solid #b2e2db; }
+
+        /* Form Styling */
+        .input-block {
+            margin-bottom: 20px;
+        }
+        .input-block label {
+            display: block; font-size: 11px; font-weight: 700; color: var(--text-sub);
+            text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%; padding: 12px 15px; border-radius: 8px;
+            /* Viền các ô nhập liệu 2px rõ nét */
+            border: 2px solid var(--border-color);
+            font-size: 15px;
+            transition: 0.3s; box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 165, 142, 0.1);
+        }
+
+        .warning-box {
+            background: #fff9f0; border: 2px solid #ffecb3;
+            border-radius: 8px; padding: 15px; margin: 25px 0;
+            font-size: 14px; color: #856404; line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn {
+            flex: 1; padding: 14px; border-radius: 10px; font-weight: 700;
+            cursor: pointer; transition: 0.3s; text-align: center; text-decoration: none; border: none;
+        }
+        .btn-submit { background: var(--primary-color); color: white; }
+        .btn-submit:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-back { background: white; color: var(--text-sub); border: 2px solid var(--border-color); }
+        .btn-back:hover { background: #f8fafb; }
+
+        .file-hint { font-size: 12px; color: var(--danger-color); margin-top: 6px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-camera"></i> Yêu Cầu Bàn Giao Xe
+        </div>
+        <div class="card-body">
+            <div class="car-summary">
+                <div>
+                    <small style="display:block; color: var(--text-sub)">Xe thuê:</small>
+                    <strong th:text="${booking.car.brand + ' ' + booking.car.model}">Toyota Vios</strong>
+                </div>
+                <div class="license-badge" th:text="${booking.car.licensePlate}">29A-123.45</div>
+            </div>
+
+            <form th:action="@{/customer/handover/submit}" method="post" enctype="multipart/form-data">
+
+                <input type="hidden" name="bookingId" th:value="${booking.bookingId}">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="input-block">
+                        <label><i class="fas fa-gas-pump"></i> Mức xăng hiện tại (%)</label>
+                        <input type="number" name="fuelLevel" class="form-control" required min="0" max="100" placeholder="VD: 80">
+                    </div>
+                    <div class="input-block">
+                        <label><i class="fas fa-tachometer-alt"></i> Số Odometer (km)</label>
+                        <input type="number" name="odometer" class="form-control" required min="0" placeholder="VD: 12500">
+                    </div>
+                </div>
+
+                <div class="input-block">
+                    <label><i class="fas fa-edit"></i> Ghi chú tình trạng xe</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Ghi chú về vết xước, độ sạch sẽ hoặc các vấn đề khác..."></textarea>
+                </div>
+
+                <div class="input-block">
+                    <label><i class="fas fa-images"></i> Hình ảnh minh chứng</label>
+                    <input type="file" name="images" class="form-control" multiple accept="image/*" required>
+                    <div class="file-hint">* Nên chụp ít nhất 4 ảnh và số ảnh tối đa không đươợc quá 10, dung lượng mỗi ảnh tối đa là 1MB.</div>
+                </div>
+
+                <div class="warning-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Lưu ý:</strong> Yêu cầu sẽ ở trạng thái <b>Chờ Duyệt</b>. Bạn chỉ nên bắt đầu hành trình sau khi Chủ xe đã xác nhận thông tin bàn giao này.
+                </div>
+
+                <div class="btn-group">
+                    <a href="/customer/handover/list" class="btn btn-back">Quay lại</a>
+                    <button type="submit" class="btn btn-submit">GỬI YÊU CẦU XÁC NHẬN</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

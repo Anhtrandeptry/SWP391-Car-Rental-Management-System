@@ -1,4 +1,4 @@
-package fpt.swp391.carrentalsystem.security;
+package fpt.swp391.carrentalsystem.sercurity;
 
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -17,14 +17,17 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
-    // Lấy ID trực tiếp từ đối tượng user bên trong
     public Long getId() {
         return user.getId();
     }
 
+    public User getUser() {
+        return user;
+    }
+
     @Override
-    public String getUsername() {
-        return user.getEmail();
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override
@@ -33,10 +36,8 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
-        );
+    public String getUsername() {
+        return user.getEmail() != null ? user.getEmail() : user.getPhoneNumber();
     }
 
     @Override
@@ -44,7 +45,18 @@ public class CustomUserDetails implements UserDetails {
         return user.getStatus() == UserStatus.ACTIVE;
     }
 
-    @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return true; }
-    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 }

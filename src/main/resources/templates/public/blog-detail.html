@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${blog.title}">Blog Detail</title>
+    <style>
+        :root{--bg:#f3fbf8;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e5e7eb;--teal:#0f766e;--shadow:0 10px 30px rgba(15,23,42,.06)}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+        .wrap{max-width:980px;margin:0 auto;padding:22px 18px 40px}
+        .card{background:var(--card);border:1px solid rgba(15,118,110,.12);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+        .head{padding:18px}
+        h1{margin:0;font-size:22px;font-weight:950}
+        .meta{margin-top:8px;color:var(--muted);font-size:12.5px}
+        .thumb{width:100%;max-height:360px;object-fit:cover;background:#e2e8f0}
+        .body{padding:18px;border-top:1px solid var(--line)}
+        .back{display:inline-block;margin-bottom:12px;color:var(--teal);font-weight:900;text-decoration:none}
+        .back:hover{text-decoration:underline}
+        /* Quill output basic */
+        .ql-content img{max-width:100%;height:auto}
+        .ql-content p{line-height:1.65}
+        .ql-content h2,.ql-content h3{margin-top:16px}
+        .ql-content blockquote{border-left:4px solid rgba(15,118,110,.35);padding-left:12px;color:#334155}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a class="back" th:href="@{/public/blogs}">← Danh sách blog</a>
+
+    <div class="card">
+        <img class="thumb" th:if="${blog.thumbnailUrl != null and !#strings.isEmpty(#strings.trim(blog.thumbnailUrl))}"
+             th:src="${blog.thumbnailUrl}" alt="thumbnail"/>
+
+        <div class="head">
+            <h1 th:text="${blog.title}">Title</h1>
+            <div class="meta" th:text="${blog.createdAt}">time</div>
+            <div class="meta" th:if="${blog.summary != null}" th:text="${blog.summary}"></div>
+        </div>
+
+        <div class="body">
+            <div class="ql-content" th:utext="${blog.contentHtml}">
+                content html
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
