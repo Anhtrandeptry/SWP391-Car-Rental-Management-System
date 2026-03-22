@@ -56,7 +56,7 @@ public class OwnerController {
 
     @GetMapping("/dashboard")
     public String dashboard() {
-        return "owner/car-owner-dashboard";
+        return "car-owner-dashboard-by-thinhht";
     }
 
     // ========================= INCOME ESTIMATE (SSR) =========================
