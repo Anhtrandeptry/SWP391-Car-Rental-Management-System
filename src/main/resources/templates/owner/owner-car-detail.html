@@ -15,7 +15,33 @@
             padding: 16px 24px; position: sticky; top: 0; z-index: 100;
         }
         .header-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #14b8a6; font-size: 1.5rem; text-decoration: none; }
+
+        /* Logo styles from fragment */
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
 
         .container { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
 
@@ -139,7 +165,7 @@
 
 <header>
     <div class="header-container">
-        <a href="/owner/dashboard" class="logo-section">🚗 CRMS</a>
+        <a th:replace="~{fragments/logo :: logo-link}"></a>
         <div class="user-info" th:if="${#authentication != null}">
             <a href="/owner/owner-car-list" style="color: #14b8a6; text-decoration: none; margin-right: 16px;">← Danh sách xe</a>
             <span>Chào, <span th:text="${#authentication.name}">Chủ xe</span></span>

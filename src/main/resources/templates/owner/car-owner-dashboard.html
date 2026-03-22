@@ -31,9 +31,26 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-weight: 700;
-            color: #14b8a6;
-            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
         }
         .user-info {
             display: flex;
@@ -146,7 +163,7 @@
 
 <header>
     <div class="header-container">
-        <span class="text-bold">CRMS</span>
+        <div th:replace="~{fragments/logo :: logo}"></div>
         <div class="user-info">
             <span th:if="${#authentication != null}">
                 Chào, <strong th:text="${#authentication.name}">Chủ xe</strong>
