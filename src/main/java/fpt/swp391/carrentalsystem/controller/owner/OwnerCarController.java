@@ -6,7 +6,7 @@ import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarDocument;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.repository.CarDocumentRepository;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import fpt.swp391.carrentalsystem.security.CustomUserDetails;
 import fpt.swp391.carrentalsystem.service.FinalCarCreationService;
 import fpt.swp391.carrentalsystem.service.LocationService;
@@ -30,7 +30,7 @@ import java.util.Map;
 public class OwnerCarController {
 
     private final FinalCarCreationService finalCarCreationService;
-    private final CarRepository carRepository;
+    private final CarRepositoryByThinhHT carRepositoryByThinhHT;
     private final CarDocumentRepository carDocumentRepository;
     private final LocationService locationService;
 
@@ -59,21 +59,21 @@ public class OwnerCarController {
         switch (filter.toLowerCase()) {
             case "deleted":
                 // Lấy xe đã bị xóa mềm (status = INACTIVE)
-                cars = carRepository.findDeletedCarsByOwnerId(ownerId);
+                cars = carRepositoryByThinhHT.findDeletedCarsByOwnerId(ownerId);
                 break;
             case "pending":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
                 break;
             case "available":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
                 break;
             case "rented":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
                 break;
             case "all":
             default:
                 // Mặc định: lấy tất cả xe CHƯA bị xóa
-                cars = carRepository.findActiveCarsByOwnerId(ownerId);
+                cars = carRepositoryByThinhHT.findActiveCarsByOwnerId(ownerId);
                 break;
         }
 
@@ -82,8 +82,8 @@ public class OwnerCarController {
         // Add data to model for Thymeleaf
         model.addAttribute("cars", cars);
         model.addAttribute("currentFilter", filter);
-        model.addAttribute("totalCars", carRepository.findActiveCarsByOwnerId(ownerId).size());
-        model.addAttribute("deletedCount", carRepository.findDeletedCarsByOwnerId(ownerId).size());
+        model.addAttribute("totalCars", carRepositoryByThinhHT.findActiveCarsByOwnerId(ownerId).size());
+        model.addAttribute("deletedCount", carRepositoryByThinhHT.findDeletedCarsByOwnerId(ownerId).size());
 
         return "owner/owner-car-list";
     }
@@ -151,21 +151,21 @@ public class OwnerCarController {
         // Logic filter
         switch (filter.toLowerCase()) {
             case "deleted":
-                cars = carRepository.findDeletedCarsByOwnerId(ownerId);
+                cars = carRepositoryByThinhHT.findDeletedCarsByOwnerId(ownerId);
                 break;
             case "pending":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
                 break;
             case "available":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
                 break;
             case "rented":
-                cars = carRepository.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
+                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
                 break;
             case "all":
             default:
                 // Mặc định: lấy tất cả xe CHƯA bị xóa
-                cars = carRepository.findActiveCarsByOwnerId(ownerId);
+                cars = carRepositoryByThinhHT.findActiveCarsByOwnerId(ownerId);
                 break;
         }
 
@@ -191,7 +191,7 @@ public class OwnerCarController {
         }
 
         Long ownerId = userDetails.getId();
-        int updatedRows = carRepository.softDeleteCar(id, ownerId);
+        int updatedRows = carRepositoryByThinhHT.softDeleteCar(id, ownerId);
 
         if (updatedRows > 0) {
             return ResponseEntity.ok(Map.of("success", true, "message", "Xóa xe thành công!"));
@@ -206,7 +206,7 @@ public class OwnerCarController {
     @GetMapping("/api/owner/cars/{id}")
     @ResponseBody
     public ResponseEntity<?> getCarDetail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Car car = carRepository.findById(id).orElse(null);
+        Car car = carRepositoryByThinhHT.findById(id).orElse(null);
         if (car != null && car.getOwnerId().equals(userDetails.getId())) {
             return ResponseEntity.ok(Map.of("success", true, "data", car));
         }
@@ -219,14 +219,14 @@ public class OwnerCarController {
     @PutMapping("/api/owner/cars/{id}")
     @ResponseBody
     public ResponseEntity<?> updateCar(@PathVariable Long id, @RequestBody Map<String, Object> payload, @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Car car = carRepository.findById(id).orElse(null);
+        Car car = carRepositoryByThinhHT.findById(id).orElse(null);
         if (car != null && car.getOwnerId().equals(userDetails.getId())) {
             // Cập nhật các trường gửi lên từ JSON
             car.setPricePerDay(new BigDecimal(payload.get("pricePerDay").toString()));
             car.setCity(payload.get("city").toString());
             car.setDescription(payload.get("description").toString());
 
-            carRepository.save(car);
+            carRepositoryByThinhHT.save(car);
             return ResponseEntity.ok(Map.of("success", true));
         }
         return ResponseEntity.status(403).build();
@@ -260,7 +260,7 @@ public class OwnerCarController {
         Long ownerId = userDetails.getId();
 
         // Find car and verify ownership
-        Car car = carRepository.findById(id).orElse(null);
+        Car car = carRepositoryByThinhHT.findById(id).orElse(null);
 
         if (car == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy xe!");
@@ -320,7 +320,7 @@ public class OwnerCarController {
         Long ownerId = userDetails.getId();
 
         // Find existing car
-        Car existingCar = carRepository.findById(id).orElse(null);
+        Car existingCar = carRepositoryByThinhHT.findById(id).orElse(null);
 
         if (existingCar == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy xe!");
@@ -377,7 +377,7 @@ public class OwnerCarController {
         existingCar.setHasSunroof(updatedCar.getHasSunroof());
 
         // Save updated car
-        carRepository.save(existingCar);
+        carRepositoryByThinhHT.save(existingCar);
 
         log.info("Car {} updated successfully by owner {} (locked fields preserved: name={}, brand={}, model={}, year={}, licensePlate={})",
                 id, ownerId, existingCar.getName(), existingCar.getBrand(), existingCar.getModel(),
@@ -409,7 +409,7 @@ public class OwnerCarController {
         Long ownerId = userDetails.getId();
 
         // Find car and verify ownership
-        Car car = carRepository.findById(id).orElse(null);
+        Car car = carRepositoryByThinhHT.findById(id).orElse(null);
 
         if (car == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy xe!");

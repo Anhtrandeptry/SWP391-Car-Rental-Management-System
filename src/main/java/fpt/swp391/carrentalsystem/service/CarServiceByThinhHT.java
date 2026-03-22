@@ -5,9 +5,7 @@ package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
 
-import java.util.List;
-
-public interface CarService {
+public interface CarServiceByThinhHT {
 
     // ... existing methods ...
 

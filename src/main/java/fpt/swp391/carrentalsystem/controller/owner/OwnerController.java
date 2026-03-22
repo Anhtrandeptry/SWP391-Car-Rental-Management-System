@@ -4,7 +4,7 @@ import fpt.swp391.carrentalsystem.dto.request.CarCreationSessionDTO;
 import fpt.swp391.carrentalsystem.dto.request.IncomeEstimateFormDTO;
 import fpt.swp391.carrentalsystem.dto.response.IncomeEstimateResponseDTO;
 import fpt.swp391.carrentalsystem.dto.response.LocationDTO;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import fpt.swp391.carrentalsystem.service.CarCreationService;
 import fpt.swp391.carrentalsystem.service.LocationService;
 import fpt.swp391.carrentalsystem.validation.CarCreationValidation;
@@ -40,7 +40,7 @@ public class OwnerController {
 
     private final LocationService locationService;
     private final CarCreationService carCreationService;
-    private final CarRepository carRepository;
+    private final CarRepositoryByThinhHT carRepositoryByThinhHT;
 
     // Static data for step 1 dropdowns (NOT external API data)
     private static final List<String> COLORS = Arrays.asList(
@@ -159,7 +159,7 @@ public class OwnerController {
 
         // Check if license plate already exists in database
         if (formData.getLicensePlate() != null && !formData.getLicensePlate().isEmpty()) {
-            if (carRepository.existsByLicensePlate(formData.getLicensePlate())) {
+            if (carRepositoryByThinhHT.existsByLicensePlate(formData.getLicensePlate())) {
                 log.warn("License plate already exists: {}", formData.getLicensePlate());
                 bindingResult.rejectValue(
                         "licensePlate",

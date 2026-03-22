@@ -2,7 +2,7 @@ package fpt.swp391.carrentalsystem.service;
 
 
 import fpt.swp391.carrentalsystem.dto.request.CarSetupDTO;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,11 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CarValidationServiceImpl implements CarValidationService {
 
-    private final CarRepository carRepository;
+    private final CarRepositoryByThinhHT carRepositoryByThinhHT;
 
     @Override
     public boolean isLicensePlateExists(String licensePlate) {
-        return carRepository.existsByLicensePlate(licensePlate);
+        return carRepositoryByThinhHT.existsByLicensePlate(licensePlate);
     }
 
     @Override

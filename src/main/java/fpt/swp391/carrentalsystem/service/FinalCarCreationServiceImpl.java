@@ -124,7 +124,7 @@ import fpt.swp391.carrentalsystem.dto.request.FinalCarSubmitDTO;
 import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -140,7 +140,7 @@ import java.util.stream.Stream;
 @Transactional
 public class FinalCarCreationServiceImpl implements FinalCarCreationService {
 
-    private final CarRepository carRepository;
+    private final CarRepositoryByThinhHT carRepositoryByThinhHT;
     private final CarDocumentService carDocumentService;
 
     @Override
@@ -219,7 +219,7 @@ public class FinalCarCreationServiceImpl implements FinalCarCreationService {
         car.setRegistrationDate(LocalDate.now());
 
         // 3. LƯU XE VÀO DATABASE
-        Car savedCar = carRepository.save(car);
+        Car savedCar = carRepositoryByThinhHT.save(car);
 
         // 4. LIÊN KẾT GIẤY TỜ XE
         // Hàm này sẽ lấy các file tạm đã upload trước đó của Owner và gán ID xe vào

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CarRepository extends JpaRepository<Car, Long> {
+public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
 
     // ================== BASIC QUERIES ==================
 

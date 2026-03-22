@@ -2,7 +2,7 @@ package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
-import fpt.swp391.carrentalsystem.repository.CarRepository;
+import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,12 +19,12 @@ import java.util.List;
 @Slf4j
 public class AdminCarServiceImpl implements AdminCarService {
 
-    private final CarRepository carRepository;
+    private final CarRepositoryByThinhHT carRepositoryByThinhHT;
 
     @Override
     public List<Car> getPendingCars() {
         log.info("Fetching all pending cars for admin review");
-        List<Car> cars = carRepository.findByStatus(CarStatus.PENDING);
+        List<Car> cars = carRepositoryByThinhHT.findByStatus(CarStatus.PENDING);
         log.info("DEBUG - Repository returned {} PENDING cars", cars.size());
         return cars;
     }
@@ -32,7 +32,7 @@ public class AdminCarServiceImpl implements AdminCarService {
     @Override
     public List<Car> getAllCars() {
         log.info("Fetching all cars for admin overview");
-        List<Car> allCars = carRepository.findAll();
+        List<Car> allCars = carRepositoryByThinhHT.findAll();
         log.info("DEBUG - Total cars in database: {}", allCars.size());
         // Log status breakdown
         for (Car car : allCars) {
@@ -46,7 +46,7 @@ public class AdminCarServiceImpl implements AdminCarService {
     public void approveCar(Long carId) {
         log.info("Approving car with ID: {}", carId);
 
-        Car car = carRepository.findById(carId)
+        Car car = carRepositoryByThinhHT.findById(carId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe với ID: " + carId));
 
         if (car.getStatus() != CarStatus.PENDING) {
@@ -55,7 +55,7 @@ public class AdminCarServiceImpl implements AdminCarService {
 
         // Set status to AVAILABLE (ready for rent) instead of APPROVED
         car.setStatus(CarStatus.AVAILABLE);
-        carRepository.save(car);
+        carRepositoryByThinhHT.save(car);
 
         log.info("Car {} approved and set to AVAILABLE successfully", carId);
     }
@@ -65,7 +65,7 @@ public class AdminCarServiceImpl implements AdminCarService {
     public void rejectCar(Long carId) {
         log.info("Rejecting car with ID: {}", carId);
 
-        Car car = carRepository.findById(carId)
+        Car car = carRepositoryByThinhHT.findById(carId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy xe với ID: " + carId));
 
         if (car.getStatus() != CarStatus.PENDING) {
@@ -73,40 +73,40 @@ public class AdminCarServiceImpl implements AdminCarService {
         }
 
         car.setStatus(CarStatus.REJECTED);
-        carRepository.save(car);
+        carRepositoryByThinhHT.save(car);
 
         log.info("Car {} rejected successfully", carId);
     }
 
     @Override
     public Car getCarById(Long carId) {
-        return carRepository.findById(carId).orElse(null);
+        return carRepositoryByThinhHT.findById(carId).orElse(null);
     }
 
     @Override
     public long countPendingCars() {
-        return carRepository.countByStatus(CarStatus.PENDING);
+        return carRepositoryByThinhHT.countByStatus(CarStatus.PENDING);
     }
 
     @Override
     public List<Car> getAvailableCars() {
         log.info("Fetching all available cars");
-        return carRepository.findByStatus(CarStatus.AVAILABLE);
+        return carRepositoryByThinhHT.findByStatus(CarStatus.AVAILABLE);
     }
 
     @Override
     public List<Car> getRejectedCars() {
         log.info("Fetching all rejected cars");
-        return carRepository.findByStatus(CarStatus.REJECTED);
+        return carRepositoryByThinhHT.findByStatus(CarStatus.REJECTED);
     }
 
     @Override
     public long countAvailableCars() {
-        return carRepository.countByStatus(CarStatus.AVAILABLE);
+        return carRepositoryByThinhHT.countByStatus(CarStatus.AVAILABLE);
     }
 
     @Override
     public long countRejectedCars() {
-        return carRepository.countByStatus(CarStatus.REJECTED);
+        return carRepositoryByThinhHT.countByStatus(CarStatus.REJECTED);
     }
 }
