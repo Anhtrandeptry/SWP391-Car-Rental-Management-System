@@ -36,7 +36,7 @@ import java.util.List;
 @RequestMapping("/owner")
 @RequiredArgsConstructor
 @Slf4j
-public class OwnerController {
+public class OwnerControllerByThinhHT {
 
     private final LocationService locationService;
     private final CarCreationService carCreationService;

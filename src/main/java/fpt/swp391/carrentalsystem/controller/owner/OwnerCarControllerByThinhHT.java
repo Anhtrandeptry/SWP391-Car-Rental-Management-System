@@ -27,7 +27,7 @@ import java.util.Map;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-public class OwnerCarController {
+public class OwnerCarControllerByThinhHT {
 
     private final FinalCarCreationService finalCarCreationService;
     private final CarRepositoryByThinhHT carRepositoryByThinhHT;

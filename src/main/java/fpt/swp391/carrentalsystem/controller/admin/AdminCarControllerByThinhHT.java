@@ -25,7 +25,7 @@ import java.util.Map;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 @Slf4j
-public class AdminCarController {
+public class AdminCarControllerByThinhHT {
 
     private final AdminCarService adminCarService;
     private final UserRepository userRepository;
