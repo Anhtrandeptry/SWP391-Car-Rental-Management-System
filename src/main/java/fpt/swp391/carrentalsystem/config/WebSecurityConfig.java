@@ -49,6 +49,10 @@ public class WebSecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/owner/**").hasRole("CAR_OWNER")
                         .requestMatchers("/customer/**").hasRole("CUSTOMER")
+                        .requestMatchers(
+                                "/api/brands/**",
+                                "/api/income-estimate"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
 

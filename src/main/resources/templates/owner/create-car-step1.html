@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết Lập Xe - CRMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 48px;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background-color: #14b8a6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: #14b8a6;
+            font-weight: 600;
+        }
+
+        .step-line {
+            width: 120px;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 16px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-error {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #059669;
+        }
+
+        /* Info Card */
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .info-card h2 {
+            font-size: 1.5rem;
+            color: #14b8a6;
+            margin-bottom: 16px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .info-item {
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        /* Form */
+        .setup-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #14b8a6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group label.required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+        }
+
+        input.error, select.error, textarea.error {
+            border-color: #ef4444;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #14b8a6;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #0d9488;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 4px;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #374151;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <span class="logo-text">CRMS</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Thiết Lập</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-label">Thông tin</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Giấy tờ</div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
+    <!-- Thông tin đã chọn từ bước ước tính thu nhập -->
+    <div class="info-card">
+        <h2>Thông tin xe của bạn</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Hãng xe</div>
+                <div class="info-value" th:text="${carSession != null and carSession.brandName != null ? carSession.brandName : '--'}">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mẫu xe</div>
+                <div class="info-value" th:text="${carSession != null and carSession.modelName != null ? carSession.modelName : '--'}">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Năm sản xuất</div>
+                <div class="info-value" th:text="${carSession != null and carSession.year != null ? carSession.year : '--'}">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Thành phố</div>
+                <div class="info-value" th:text="${carSession != null and carSession.city != null ? carSession.city : '--'}">--</div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+                <div class="info-label">Giá thuê / ngày (VNĐ) <span style="color: #ef4444;">*</span></div>
+                <div style="position: relative; margin-top: 8px;">
+                    <input type="text"
+                           id="pricePerDayDisplay"
+                           th:value="${carSession != null and carSession.pricePerDay != null ? #numbers.formatDecimal(carSession.pricePerDay, 0, 'COMMA', 0, 'POINT') : ''}"
+                           placeholder="VD: 1,000,000"
+                           required
+                           oninput="formatCurrency(this)"
+                           style="padding-right: 60px; font-size: 1.125rem; font-weight: 600; color: #14b8a6;"/>
+                    <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #6b7280; font-weight: 500;">VNĐ</span>
+                </div>
+                <div style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">
+                    Nhập giá thuê xe mỗi ngày (tối thiểu 100,000 VNĐ)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form thiết lập -->
+    <div class="setup-form">
+        <h2 class="form-title">Bước 1: Thiết Lập Xe</h2>
+
+        <!-- Form sử dụng Thymeleaf binding -->
+        <form th:action="@{/owner/create-car-step1}" th:object="${carSession}" method="post" id="step1Form">
+
+            <!-- Hidden fields để giữ dữ liệu từ income estimate -->
+            <input type="hidden" th:field="*{brandName}"/>
+            <input type="hidden" th:field="*{modelName}"/>
+            <input type="hidden" th:field="*{year}"/>
+            <input type="hidden" th:field="*{city}"/>
+            <!-- Hidden field for pricePerDay (synced from display input) -->
+            <input type="hidden" th:field="*{pricePerDay}" id="pricePerDayHidden"/>
+
+            <!-- Biển số xe -->
+            <div class="form-group">
+                <label class="required">
+                    Biển số xe
+                    <span class="tooltip">ℹ️
+                        <span class="tooltiptext">Định dạng: 30A-12345 (Số tỉnh + chữ cái - số)</span>
+                    </span>
+                </label>
+                <div style="position: relative;">
+                    <input type="text"
+                           th:field="*{licensePlate}"
+                           id="licensePlateInput"
+                           placeholder="VD: 30A-12345"
+                           maxlength="10"
+                           style="text-transform: uppercase;"
+                           required/>
+                    <!-- Real-time check indicator -->
+                    <span id="licensePlateStatus" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; display: none;"></span>
+                </div>
+                <!-- Backend validation error (shown after form submit) -->
+                <div th:if="${#fields.hasErrors('licensePlate')}" class="error-message">
+                    <span th:errors="*{licensePlate}">License plate error</span>
+                </div>
+                <!-- Real-time AJAX validation message -->
+                <div id="licensePlateMessage" style="font-size: 0.875rem; margin-top: 4px; display: none;"></div>
+            </div>
+
+            <div class="form-row">
+                <!-- Màu sắc -->
+                <div class="form-group">
+                    <label class="required">Màu sắc</label>
+                    <select th:field="*{color}" required>
+                        <option value="">-- Chọn màu sắc --</option>
+                        <option th:each="c : ${colors}" th:value="${c}" th:text="${c}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('color')}" class="error-message">
+                        <span th:errors="*{color}">Color error</span>
+                    </div>
+                </div>
+
+                <!-- Loại hộp số -->
+                <div class="form-group">
+                    <label class="required">Loại hộp số</label>
+                    <select th:field="*{transmissionType}" required>
+                        <option value="">-- Chọn loại hộp số --</option>
+                        <option th:each="t : ${transmissionTypes}" th:value="${t}" th:text="${t}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('transmissionType')}" class="error-message">
+                        <span th:errors="*{transmissionType}">Transmission type error</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <!-- Loại nhiên liệu -->
+                <div class="form-group">
+                    <label class="required">Loại nhiên liệu</label>
+                    <select th:field="*{fuelType}" required>
+                        <option value="">-- Chọn loại nhiên liệu --</option>
+                        <option th:each="f : ${fuelTypes}" th:value="${f}" th:text="${f}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('fuelType')}" class="error-message">
+                        <span th:errors="*{fuelType}">Fuel type error</span>
+                    </div>
+                </div>
+
+                <!-- Số chỗ ngồi -->
+                <div class="form-group">
+                    <label class="required">Số chỗ ngồi</label>
+                    <select th:field="*{seats}" required>
+                        <option value="">-- Chọn số chỗ --</option>
+                        <option th:each="s : ${seatOptions}" th:value="${s}" th:text="${s + ' chỗ'}"></option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('seats')}" class="error-message">
+                        <span th:errors="*{seats}">Seats error</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="form-group">
+                <label>Mô tả xe (tùy chọn)</label>
+                <textarea th:field="*{description}"
+                          rows="4"
+                          placeholder="Nhập mô tả về xe của bạn... (VD: Xe mới, nội thất đẹp, tiết kiệm nhiên liệu)"
+                          maxlength="1000"
+                          id="description"></textarea>
+                <small style="color: #6b7280;">
+                    <span id="charCount">0</span>/1000 ký tự
+                </small>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">
+                Tiếp theo: Thông tin chi tiết
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ===== FORMAT CURRENCY FUNCTION =====
+    function formatCurrency(input) {
+        // Remove all non-digit characters
+        let rawValue = input.value.replace(/\D/g, '');
+
+        if (rawValue === '') {
+            input.value = '';
+            syncPriceToHiddenField('');
+            return;
+        }
+
+        // Format with thousands separator
+        let formatted = Number(rawValue).toLocaleString('vi-VN');
+        input.value = formatted;
+
+        // Sync raw value to hidden field
+        syncPriceToHiddenField(rawValue);
+    }
+
+    // ===== SYNC PRICE TO HIDDEN FIELD =====
+    function syncPriceToHiddenField(rawValue) {
+        const hiddenField = document.getElementById('pricePerDayHidden');
+        if (hiddenField) {
+            hiddenField.value = rawValue;
+        }
+    }
+
+    // ===== LICENSE PLATE REAL-TIME CHECK =====
+    let licensePlateTimer = null;
+    let licensePlateExists = false;
+
+    function checkLicensePlate(plate) {
+        const statusIcon = document.getElementById('licensePlateStatus');
+        const messageDiv = document.getElementById('licensePlateMessage');
+        const input = document.getElementById('licensePlateInput');
+
+        // Normalize
+        plate = plate.trim().toUpperCase().replace(/\s+/g, '');
+
+        // If empty, reset
+        if (!plate) {
+            statusIcon.style.display = 'none';
+            messageDiv.style.display = 'none';
+            input.style.borderColor = '#d1d5db';
+            licensePlateExists = false;
+            return;
+        }
+
+        // Show loading
+        statusIcon.textContent = '⏳';
+        statusIcon.style.display = 'inline';
+        messageDiv.style.display = 'none';
+
+        fetch('/api/owner/create-car-step1/check-license-plate?licensePlate=' + encodeURIComponent(plate))
+            .then(response => response.json())
+            .then(data => {
+                if (data.data === true) {
+                    // License plate EXISTS → show error
+                    licensePlateExists = true;
+                    statusIcon.textContent = '❌';
+                    statusIcon.style.display = 'inline';
+                    messageDiv.textContent = 'Biển số xe đã tồn tại, vui lòng nhập biển số khác';
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.style.display = 'block';
+                    input.style.borderColor = '#ef4444';
+                    input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                } else {
+                    // License plate NOT exists → show success
+                    licensePlateExists = false;
+                    statusIcon.textContent = '✅';
+                    statusIcon.style.display = 'inline';
+                    messageDiv.textContent = 'Biển số hợp lệ';
+                    messageDiv.style.color = '#059669';
+                    messageDiv.style.display = 'block';
+                    input.style.borderColor = '#10b981';
+                    input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking license plate:', error);
+                statusIcon.style.display = 'none';
+                messageDiv.style.display = 'none';
+                input.style.borderColor = '#d1d5db';
+                licensePlateExists = false;
+            });
+    }
+
+    // ===== CHARACTER COUNTER FOR DESCRIPTION =====
+    document.getElementById("description").addEventListener("input", function() {
+        document.getElementById("charCount").innerText = this.value.length;
+    });
+
+    // ===== INITIALIZE ON PAGE LOAD =====
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize character count
+        const desc = document.getElementById("description");
+        if (desc && desc.value) {
+            document.getElementById("charCount").innerText = desc.value.length;
+        }
+
+        // Initialize price display from hidden field if exists
+        const hiddenPrice = document.getElementById('pricePerDayHidden');
+        const displayInput = document.getElementById('pricePerDayDisplay');
+
+        if (hiddenPrice && hiddenPrice.value && displayInput) {
+            let rawValue = hiddenPrice.value.replace(/\D/g, '');
+            if (rawValue) {
+                displayInput.value = Number(rawValue).toLocaleString('vi-VN');
+            }
+        }
+
+        // License plate real-time check with debounce (500ms)
+        const licensePlateInput = document.getElementById('licensePlateInput');
+        if (licensePlateInput) {
+            licensePlateInput.addEventListener('input', function() {
+                clearTimeout(licensePlateTimer);
+                const value = this.value.trim();
+
+                // Only check if at least 5 characters (reasonable plate length)
+                if (value.length >= 5) {
+                    licensePlateTimer = setTimeout(function() {
+                        checkLicensePlate(value);
+                    }, 500);
+                } else {
+                    // Reset indicators for short input
+                    document.getElementById('licensePlateStatus').style.display = 'none';
+                    document.getElementById('licensePlateMessage').style.display = 'none';
+                    licensePlateInput.style.borderColor = '#d1d5db';
+                    licensePlateInput.style.boxShadow = '';
+                    licensePlateExists = false;
+                }
+            });
+
+            // Reset border color on focus
+            licensePlateInput.addEventListener('focus', function() {
+                if (!licensePlateExists) {
+                    this.style.borderColor = '#14b8a6';
+                    this.style.boxShadow = '0 0 0 3px rgba(20, 184, 166, 0.1)';
+                }
+            });
+        }
+    });
+
+    // ===== FORM VALIDATION BEFORE SUBMIT =====
+    document.getElementById('step1Form').addEventListener('submit', function(e) {
+        const priceDisplay = document.getElementById('pricePerDayDisplay');
+        const priceHidden = document.getElementById('pricePerDayHidden');
+
+        // Get raw value
+        const rawValue = priceDisplay.value.replace(/\D/g, '');
+
+        // Validate minimum price
+        if (!rawValue || parseInt(rawValue) < 100000) {
+            e.preventDefault();
+            alert('Vui lòng nhập giá thuê hợp lệ (tối thiểu 100,000 VNĐ)');
+            priceDisplay.focus();
+            return false;
+        }
+
+        // Ensure hidden field has the raw value
+        priceHidden.value = rawValue;
+
+        // Block submit if license plate already exists (caught by real-time check)
+        if (licensePlateExists) {
+            e.preventDefault();
+            alert('Biển số xe đã tồn tại, vui lòng nhập biển số khác');
+            document.getElementById('licensePlateInput').focus();
+            return false;
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package fpt.swp391.carrentalsystem.security;
+package fpt.swp391.carrentalsystem.sercurity;
 
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.UserStatus;

@@ -7,6 +7,7 @@ import lombok.*;
 @Table(name = "car_images")
 @Getter
 @Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
