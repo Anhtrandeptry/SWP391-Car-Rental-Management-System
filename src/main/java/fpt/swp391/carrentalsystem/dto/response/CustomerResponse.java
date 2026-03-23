@@ -27,6 +27,9 @@ public class CustomerResponse {
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
 
+    private Integer totalBookings; // Số xe đã thuê
+    private Double totalSpent;
+
     // Hàm tiện ích để hiển thị tên đầy đủ trên giao diện
     public String getFullName() {
         return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");

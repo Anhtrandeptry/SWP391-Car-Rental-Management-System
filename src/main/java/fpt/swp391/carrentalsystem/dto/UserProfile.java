@@ -3,6 +3,8 @@ package fpt.swp391.carrentalsystem.dto;
 public class UserProfile {
     private Long userId;
 
+
+
     private String firstName;
     private String lastName;
     private String gender;

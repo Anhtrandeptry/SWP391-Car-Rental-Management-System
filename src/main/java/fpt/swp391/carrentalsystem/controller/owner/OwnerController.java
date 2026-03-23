@@ -44,7 +44,7 @@ public class OwnerController {
             log.error("Error loading owner dashboard: {}", e.getMessage(), e);
             model.addAttribute("error", "Error loading dashboard data");
         }
-        return "owner/car-owner-dashboard";
+        return "car-owner-dashboard-by-danhtdt";
     }
 
     @GetMapping("/income")

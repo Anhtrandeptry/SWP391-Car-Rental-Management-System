@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 // Lấy danh sách feedback của một customer, sắp xếp theo createdAt giảm dần.
+
     List<Feedback> findByCustomer_IdOrderByCreatedAtDesc(Long customerId);
 
     boolean existsByBookingIdAndCustomer_Id(Long bookingId, Long customerId);

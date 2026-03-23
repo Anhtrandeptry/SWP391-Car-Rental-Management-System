@@ -12,9 +12,10 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Optional;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
+
 
     List<Booking> findByCar_Owner_IdAndStatus(Integer ownerId, BookingStatus status);
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.car.carId = :carId " +
@@ -62,4 +63,10 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // Find bookings by car
     List<Booking> findByCarCarIdOrderByCreatedAtDesc(Integer carId);
+
+    @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId ORDER BY b.createdAt DESC")
+    List<Booking> findAllByCustomerId(@Param("customerId") Long customerId);
+
+
+    Optional<Booking> findWithDetailsByBookingId(Integer bookingId);
 }

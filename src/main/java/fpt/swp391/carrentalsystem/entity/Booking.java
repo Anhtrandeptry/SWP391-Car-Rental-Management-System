@@ -69,6 +69,9 @@ public class Booking {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private CarReturn carReturn;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
