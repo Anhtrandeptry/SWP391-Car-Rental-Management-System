@@ -8,6 +8,7 @@ public enum CarStatus {
     RESERVED,
     BOOKED,
     UNAVAILABLE,
-    DISABLED
+    DISABLED,
+    INACTIVE
 }
 
