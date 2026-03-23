@@ -32,7 +32,6 @@ public class Blog {
     @Column(name = "thumbnail_url", length = 500)
     private String thumbnailUrl;
 
-    // Quill output HTML
     @Column(name = "content_html", nullable = false, columnDefinition = "LONGTEXT")
     private String contentHtml;
 
