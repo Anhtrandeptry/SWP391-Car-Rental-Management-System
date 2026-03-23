@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giấy Tờ Xe - CRMS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #14b8a6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 48px;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.3s;
+        }
+
+        .step.completed .step-number {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .step.active .step-number {
+            background-color: #14b8a6;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .step.active .step-label {
+            color: #14b8a6;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #10b981;
+        }
+
+        .step-line {
+            width: 120px;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 16px;
+        }
+
+        .step.completed + .step-line {
+            background-color: #10b981;
+        }
+
+        /* Info Card */
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 32px;
+        }
+
+        .info-card h2 {
+            font-size: 1.25rem;
+            color: #14b8a6;
+            margin-bottom: 16px;
+        }
+
+        .info-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .info-tag {
+            padding: 8px 12px;
+            background: #f0fdfa;
+            border: 1px solid #14b8a6;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #0d9488;
+        }
+
+        /* Document Form */
+        .document-form {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        .required-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #14b8a6;
+            background-color: #f0fdfa;
+        }
+
+        .upload-section.active {
+            border-color: #14b8a6;
+            background-color: #f0fdfa;
+        }
+
+        .document-type-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .document-type-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .upload-area {
+            text-align: center;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            color: #9ca3af;
+        }
+
+        .upload-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn-upload {
+            padding: 10px 24px;
+            background-color: #14b8a6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+        }
+
+        .btn-upload:hover {
+            background-color: #0d9488;
+        }
+
+        /* Uploaded File Preview */
+        .file-preview {
+            display: none;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .file-preview.show {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: #14b8a6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .file-size {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-uploaded {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Progress Indicator */
+        .upload-progress {
+            display: none;
+            margin-top: 12px;
+        }
+
+        .upload-progress.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #14b8a6;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Navigation Buttons */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-success:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            color: #92400e;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+
+        @media (max-width: 768px) {
+            .info-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <div class="logo-section">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <span class="logo-text">CRMS</span>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+        <div class="step completed">
+            <div class="step-number">✓</div>
+            <div class="step-label">Thiết Lập</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step completed">
+            <div class="step-number">✓</div>
+            <div class="step-label">Thông tin</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step active">
+            <div class="step-number">3</div>
+            <div class="step-label">Giấy tờ</div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error" style="background-color: #fee2e2; border: 1px solid #fecaca; color: #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error message</span>
+    </div>
+
+    <!-- Summary -->
+    <div class="info-card">
+        <h2>✓ Thông tin đã nhập (Bước 1 & 2)</h2>
+        <div class="info-summary">
+            <div class="info-tag">
+                <strong>Xe:</strong>
+                <span th:text="${carSession != null and carSession.brandName != null ? carSession.brandName : '--'}">--</span>
+                <span th:text="${carSession != null and carSession.modelName != null ? carSession.modelName : ''}"></span>
+            </div>
+            <div class="info-tag">
+                <strong>Biển số:</strong>
+                <span th:text="${carSession != null and carSession.licensePlate != null ? carSession.licensePlate : '--'}">--</span>
+            </div>
+            <div class="info-tag">
+                <strong>Địa chỉ:</strong>
+                <span th:text="${carSession != null ?
+                    ((carSession.address != null ? carSession.address : '') +
+                    (carSession.ward != null ? ', ' + carSession.ward : '') +
+                    (carSession.district != null ? ', ' + carSession.district : '') +
+                    (carSession.province != null ? ', ' + carSession.province : (carSession.city != null ? ', ' + carSession.city : ''))) : '--'}">--</span>
+            </div>
+            <div class="info-tag">
+                <strong>Giá:</strong>
+                <span th:text="${carSession != null and carSession.pricePerDay != null ? #numbers.formatDecimal(carSession.pricePerDay, 0, 'COMMA', 0, 'POINT') : '--'}">--</span> VNĐ/ngày
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert alert-warning" id="alertWarning">
+        ⚠️ Vui lòng upload đầy đủ <strong>3 giấy tờ bắt buộc</strong> để hoàn tất đăng ký xe.
+    </div>
+
+    <div class="alert alert-success" id="alertSuccess">
+        ✅ Đã upload đủ giấy tờ bắt buộc! Bạn có thể hoàn tất đăng ký.
+    </div>
+
+    <!-- Document Form -->
+    <div class="document-form">
+        <h2 class="section-title">Bước 3: Upload Giấy Tờ Xe</h2>
+        <p class="section-subtitle">
+            Upload các giấy tờ cần thiết (định dạng: PDF, JPG, PNG. Tối đa 10MB/file)
+        </p>
+
+        <!-- Document Upload Sections -->
+        <div id="documentsContainer">
+            <!-- REGISTRATION -->
+            <div class="upload-section" data-type="REGISTRATION">
+                <div class="document-type-header">
+                    <div>
+                        <span class="document-type-name">📄 Đăng ký xe</span>
+                        <span class="required-badge">BẮT BUỘC</span>
+                    </div>
+                    <span class="status-badge status-pending" id="status-REGISTRATION">Chưa upload</span>
+                </div>
+
+                <div class="upload-area" id="upload-area-REGISTRATION">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="upload-text">Kéo thả file vào đây hoặc</p>
+                    <button type="button" class="btn-upload" onclick="triggerFileInput('REGISTRATION')">
+                        Chọn file
+                    </button>
+                    <p class="upload-hint">PDF, JPG, PNG (tối đa 10MB)</p>
+                </div>
+
+                <input type="file" id="file-REGISTRATION" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event, 'REGISTRATION')">
+
+                <div class="upload-progress" id="progress-REGISTRATION">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill-REGISTRATION" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="file-preview" id="preview-REGISTRATION">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <div class="file-name" id="filename-REGISTRATION">--</div>
+                            <div class="file-size" id="filesize-REGISTRATION">--</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-icon btn-delete" onclick="deleteDocument('REGISTRATION')" title="Xóa">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSURANCE -->
+            <div class="upload-section" data-type="INSURANCE">
+                <div class="document-type-header">
+                    <div>
+                        <span class="document-type-name">🛡️ Bảo hiểm xe</span>
+                        <span class="required-badge">BẮT BUỘC</span>
+                    </div>
+                    <span class="status-badge status-pending" id="status-INSURANCE">Chưa upload</span>
+                </div>
+
+                <div class="upload-area" id="upload-area-INSURANCE">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="upload-text">Kéo thả file vào đây hoặc</p>
+                    <button type="button" class="btn-upload" onclick="triggerFileInput('INSURANCE')">
+                        Chọn file
+                    </button>
+                    <p class="upload-hint">PDF, JPG, PNG (tối đa 10MB)</p>
+                </div>
+
+                <input type="file" id="file-INSURANCE" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event, 'INSURANCE')">
+
+                <div class="upload-progress" id="progress-INSURANCE">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill-INSURANCE" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="file-preview" id="preview-INSURANCE">
+                    <div class="file-info">
+                        <div class="file-icon">🛡️</div>
+                        <div class="file-details">
+                            <div class="file-name" id="filename-INSURANCE">--</div>
+                            <div class="file-size" id="filesize-INSURANCE">--</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-icon btn-delete" onclick="deleteDocument('INSURANCE')" title="Xóa">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- OWNER_ID -->
+            <div class="upload-section" data-type="OWNER_ID">
+                <div class="document-type-header">
+                    <div>
+                        <span class="document-type-name">🆔 CMND/CCCD chủ xe</span>
+                        <span class="required-badge">BẮT BUỘC</span>
+                    </div>
+                    <span class="status-badge status-pending" id="status-OWNER_ID">Chưa upload</span>
+                </div>
+
+                <div class="upload-area" id="upload-area-OWNER_ID">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    <p class="upload-text">Kéo thả file vào đây hoặc</p>
+                    <button type="button" class="btn-upload" onclick="triggerFileInput('OWNER_ID')">
+                        Chọn file
+                    </button>
+                    <p class="upload-hint">PDF, JPG, PNG (tối đa 10MB)</p>
+                </div>
+
+                <input type="file" id="file-OWNER_ID" accept=".pdf,.jpg,.jpeg,.png,.jpn" onchange="handleFileSelect(event, 'OWNER_ID')">
+
+                <div class="upload-progress" id="progress-OWNER_ID">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill-OWNER_ID" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="file-preview" id="preview-OWNER_ID">
+                    <div class="file-info">
+                        <div class="file-icon">🆔</div>
+                        <div class="file-details">
+                            <div class="file-name" id="filename-OWNER_ID">--</div>
+                            <div class="file-size" id="filesize-OWNER_ID">--</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn-icon btn-delete" onclick="deleteDocument('OWNER_ID')" title="Xóa">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="form-navigation">
+            <button type="button" class="btn btn-secondary" id="prevBtn" onclick="goBack()">
+                ← Quay lại
+            </button>
+            <button type="button" class="btn btn-success" id="submitBtn" disabled onclick="submitFinalForm()">
+                🎉 Hoàn tất đăng ký
+            </button>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /**
+ * QUẢN LÝ ĐĂNG KÝ XE - BƯỚC 3: GIẤY TỜ
+ * Đã chuyển sang sử dụng backend HttpSession thay vì browser sessionStorage
+ */
+
+const API_BASE_URL = '/api';
+const REQUIRED_DOCS = ['REGISTRATION', 'INSURANCE', 'OWNER_ID'];
+
+// Dữ liệu từ backend session (Thymeleaf inline)
+const carSessionData = /*[[${carSession}]]*/ null;
+
+// Lưu trữ ID trả về từ Server sau khi upload thành công
+let uploadedDocumentIds = {
+    'REGISTRATION': null,
+    'INSURANCE': null,
+    'OWNER_ID': null
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Kiểm tra dữ liệu từ backend session
+    if (!carSessionData) {
+        alert('Dữ liệu các bước trước không tồn tại. Vui lòng quay lại Bước 1.');
+        window.location.href = '/owner/create-car-step1';
+        return;
+    }
+
+    // Dữ liệu summary đã được render bởi Thymeleaf ở phía server
+    console.log('Step 3 loaded with backend session data');
+});
+
+/**
+ * XỬ LÝ UPLOAD FILE
+ */
+function triggerFileInput(docType) {
+    document.getElementById(`file-${docType}`).click();
+}
+
+async function handleFileSelect(event, docType) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validation cơ bản
+    if (file.size > 10 * 1024 * 1024) { return alert('File không được quá 10MB'); }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('documentType', docType);
+
+    try {
+        // Hiển thị trạng thái đang xử lý
+        toggleLoading(docType, true);
+
+        const response = await fetch(`${API_BASE_URL}/owner/car-documents/upload`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // LƯU ID VÀO DANH SÁCH (Dùng để gửi Final Submit)
+            uploadedDocumentIds[docType] = result.data.id;
+
+            showPreview(docType, result.data);
+            validateCompletion();
+        } else {
+            alert('Lỗi upload: ' + result.message);
+            toggleLoading(docType, false);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Không thể kết nối đến server');
+        toggleLoading(docType, false);
+    }
+}
+
+function showPreview(docType, data) {
+    document.getElementById(`upload-area-${docType}`).style.display = 'none';
+    document.getElementById(`progress-${docType}`).classList.remove('show');
+
+    const preview = document.getElementById(`preview-${docType}`);
+    preview.classList.add('show');
+    document.getElementById(`filename-${docType}`).innerText = data.fileName;
+    document.getElementById(`filesize-${docType}`).innerText = (data.fileSize / 1024).toFixed(1) + ' KB';
+
+    const statusBadge = document.getElementById(`status-${docType}`);
+    statusBadge.innerText = "Đã upload";
+    statusBadge.className = "status-badge status-uploaded";
+}
+
+function deleteDocument(docType) {
+    uploadedDocumentIds[docType] = null;
+    document.getElementById(`preview-${docType}`).classList.remove('show');
+    document.getElementById(`upload-area-${docType}`).style.display = 'block';
+    document.getElementById(`file-${docType}`).value = '';
+
+    const statusBadge = document.getElementById(`status-${docType}`);
+    statusBadge.innerText = "Chưa upload";
+    statusBadge.className = "status-badge status-pending";
+
+    validateCompletion();
+}
+
+function toggleLoading(docType, isLoading) {
+    const progress = document.getElementById(`progress-${docType}`);
+    const area = document.getElementById(`upload-area-${docType}`);
+    if (isLoading) {
+        area.style.display = 'none';
+        progress.classList.add('show');
+        document.getElementById(`progress-fill-${docType}`).style.width = '100%';
+    }
+}
+
+/**
+ * KIỂM TRA ĐIỀU KIỆN HOÀN TẤT
+ */
+function validateCompletion() {
+    const isFull = REQUIRED_DOCS.every(type => uploadedDocumentIds[type] !== null);
+    const submitBtn = document.getElementById('submitBtn');
+
+    submitBtn.disabled = !isFull;
+    document.getElementById('alertWarning').style.display = isFull ? 'none' : 'block';
+    document.getElementById('alertSuccess').style.display = isFull ? 'block' : 'none';
+}
+
+/**
+ * GỬI FORM CUỐI CÙNG (FINAL POST)
+ * Sử dụng dữ liệu từ backend session thay vì browser sessionStorage
+ */
+async function submitFinalForm() {
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading"></span> Đang lưu hệ thống...';
+
+    // 1. Kiểm tra dữ liệu session từ backend
+    if (!carSessionData) {
+        alert('Dữ liệu phiên làm việc đã hết hạn. Vui lòng bắt đầu lại.');
+        window.location.href = '/owner/create-car-step1';
+        return;
+    }
+
+    // 2. Chuyển Map ID thành List (Long)
+    const docIdList = Object.values(uploadedDocumentIds).filter(id => id !== null);
+
+    // 3. Đóng gói Payload - sử dụng carSessionData từ backend
+    const payload = {
+        step1Data: {
+            brandName: carSessionData.brandName,
+            modelName: carSessionData.modelName,
+            year: carSessionData.year,
+            city: carSessionData.city,
+            licensePlate: carSessionData.licensePlate,
+            color: carSessionData.color,
+            transmissionType: carSessionData.transmissionType,
+            fuelType: carSessionData.fuelType,
+            seats: carSessionData.seats,
+            pricePerDay: carSessionData.pricePerDay,
+            description: carSessionData.description,
+            estimatedMonthlyIncome: carSessionData.estimatedMonthlyIncome
+        },
+        step2Data: {
+            address: carSessionData.address,
+            province: carSessionData.province,
+            district: carSessionData.district,
+            ward: carSessionData.ward,
+            provinceCode: carSessionData.provinceCode,
+            districtCode: carSessionData.districtCode,
+            wardCode: carSessionData.wardCode,
+            mileage: carSessionData.mileage,
+            fuelConsumption: carSessionData.fuelConsumption,
+            hasAirConditioner: carSessionData.hasAirConditioner,
+            hasGPS: carSessionData.hasGPS,
+            hasBluetooth: carSessionData.hasBluetooth,
+            hasDashCam: carSessionData.hasDashCam,
+            specialNotes: carSessionData.specialNotes
+        },
+        documentIds: docIdList,
+        ownerId: null // Backend sẽ lấy từ authenticated user
+    };
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/owner/complete-car-registration`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert('🎉 Chúc mừng! Xe của bạn đã được đăng ký thành công.');
+            // Backend session sẽ được clear bởi server sau khi tạo xe thành công
+            window.location.href = '/owner/owner-car-list';
+        } else {
+            alert('Lỗi lưu xe: ' + (result.message || 'Unknown Error'));
+            submitBtn.disabled = false;
+            submitBtn.innerText = '🎉 Hoàn tất đăng ký';
+        }
+    } catch (error) {
+        alert('Lỗi kết nối server: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = '🎉 Hoàn tất đăng ký';
+    }
+}
+
+function goBack() {
+    window.location.href = '/owner/create-car-step2';
+}
+</script>
+
+
+
+</body>
+</html>

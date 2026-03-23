@@ -1,16 +1,50 @@
 package fpt.swp391.carrentalsystem.dto;
-import jakarta.validation.constraints.NotBlank;
+
+import jakarta.validation.constraints.*;
 
 public class UpdateProfileForm {
-    @NotBlank(message = "Họ không được để trống")
+
+    private static final String NAME_REGEX = "^[\\p{L}][\\p{L}\\s'.-]{0,49}$";
+
+    @NotBlank(message = "First name không được để trống.")
+    @Size(max = 50, message = "First name tối đa 50 ký tự.")
+    @Pattern(regexp = NAME_REGEX, message = "First name chỉ được chứa chữ và các ký tự . ' -")
     private String firstName;
+
+    @NotBlank(message = "Last name không được để trống.")
+    @Size(max = 50, message = "Last name tối đa 50 ký tự.")
+    @Pattern(regexp = NAME_REGEX, message = "Last name chỉ được chứa chữ và các ký tự . ' -")
     private String lastName;
+
+    @NotBlank(message = "Giới tính không được để trống.")
+    @Pattern(regexp = "^(MALE|FEMALE|OTHER)$", message = "Gender phải là MALE, FEMALE hoặc OTHER.")
     private String gender;
 
+    @NotBlank(message = "Số điện thoại không được để trống.")
+    @Size(max = 20, message = "Số điện thoại tối đa 20 ký tự.")
+    @Pattern(
+            regexp = "^(0\\d{9}|\\+84\\d{9})$",
+            message = "Số điện thoại không hợp lệ (vd: 0912345678 hoặc +84912345678)."
+    )
     private String phoneNumber;
+
+    @NotBlank(message = "Email không được để trống.")
+    @Email(message = "Email không hợp lệ.")
+    @Size(max = 100, message = "Email tối đa 100 ký tự.")
     private String email;
+
+    @NotBlank(message = "Address không được để trống.")
+    @Size(min = 5, max = 255, message = "Address phải từ 5 đến 255 ký tự.")
     private String address;
+
+    @NotBlank(message = "National ID không được để trống.")
+    @Size(max = 20, message = "National ID tối đa 20 ký tự.")
+    @Pattern(regexp = "^(\\d{9}|\\d{12})$", message = "CMND/CCCD phải gồm 9 hoặc 12 chữ số.")
     private String nationalId;
+
+    @NotBlank(message = "Driver license không được để trống.")
+    @Size(min = 6, max = 50, message = "Driver license phải từ 6 đến 50 ký tự.")
+    @Pattern(regexp = "^[A-Za-z0-9-]+$", message = "GPLX chỉ được chứa chữ, số và dấu gạch ngang (-).")
     private String driversLicense;
 
     public String getFirstName() { return firstName; }

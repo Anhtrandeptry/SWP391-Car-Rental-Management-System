@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import fpt.swp391.carrentalsystem.enums.BookingStatus;
+import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 
 @Entity
 @Table(name = "bookings")
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Booking {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "booking_id")
