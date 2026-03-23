@@ -28,7 +28,7 @@ public class Feedback {
     private User customer;
 
     @Column(nullable = false)
-    private Integer rating; // 1..5
+    private Integer rating;
 
     @Column(name = "title", nullable = false, length = 150)
     private String title;
