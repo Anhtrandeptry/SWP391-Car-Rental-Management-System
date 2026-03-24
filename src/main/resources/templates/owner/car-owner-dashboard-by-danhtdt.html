@@ -22,15 +22,11 @@
     </style>
 </head>
 <body>
-<!-- SHARED HEADER -->
-<header th:replace="~{fragments/header :: header('OWNER', 'Car Owner')}"></header>
 
-<!-- SHARED SIDEBAR -->
+<header th:replace="~{fragments/header :: header('OWNER', 'Car Owner')}"></header>
 <aside th:replace="~{fragments/sidebar-owner :: sidebar-owner('dashboard')}"></aside>
 
-<!-- MAIN CONTENT -->
 <main class="main-content">
-    <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div class="welcome-content">
             <h2 class="welcome-title">Xin chào, Chủ xe!</h2>
@@ -40,13 +36,11 @@
         </div>
     </div>
 
-    <!-- Page Header -->
     <div class="page-header">
         <h1 class="page-title">Dashboard Chủ xe</h1>
         <p class="page-subtitle">Tổng quan về xe và hoạt động cho thuê</p>
     </div>
 
-    <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon blue"><i class="bi bi-car-front"></i></div>
@@ -78,7 +72,6 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
     <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;">Truy cập nhanh</h2>
     <div class="quick-actions">
         <a th:href="@{/owner/my-cars}" class="action-card">
@@ -86,36 +79,52 @@
             <h3>Xe của tôi</h3>
             <p>Xem và quản lý danh sách xe</p>
         </a>
-        <a th:href="@{/owner/create-car-step1}" class="action-card">
+
+        <a th:href="@{/owner/income-estimate}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="bi bi-plus-circle"></i></div>
             <h3>Thêm xe mới</h3>
             <p>Đăng ký xe cho thuê</p>
         </a>
+
         <a th:href="@{/owner/booking-history}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="bi bi-calendar-check"></i></div>
             <h3>Lịch sử đặt xe</h3>
             <p>Xem các đơn đặt xe</p>
         </a>
+
         <a th:href="@{/owner/handover-list}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="bi bi-hand-index"></i></div>
             <h3>Bàn giao xe</h3>
             <p>Quản lý bàn giao xe</p>
         </a>
+
         <a th:href="@{/owner/return/list-car-return}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);"><i class="bi bi-arrow-return-left"></i></div>
             <h3>Trả xe</h3>
             <p>Quản lý trả xe</p>
         </a>
+
         <a th:href="@{/owner/income}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><i class="bi bi-wallet2"></i></div>
             <h3>Thu nhập</h3>
             <p>Xem báo cáo thu nhập</p>
         </a>
+
         <a th:href="@{/owner/car-availability}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#64748b,#475569);"><i class="bi bi-toggle-on"></i></div>
             <h3>Trạng thái xe</h3>
             <p>Bật/tắt cho thuê</p>
         </a>
+
+        <!-- NÚT MỚI -->
+        <a th:href="@{/owner/owner-car-list}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#14b8a6,#0f766e);">
+                <i class="bi bi-gear"></i>
+            </div>
+            <h3>Thiết đặt xe</h3>
+            <p>Cấu hình và quản lý chi tiết xe</p>
+        </a>
+
         <a th:href="@{/profile}" class="action-card">
             <div class="action-icon" style="background:linear-gradient(135deg,#a855f7,#7c3aed);"><i class="bi bi-person"></i></div>
             <h3>Hồ sơ cá nhân</h3>

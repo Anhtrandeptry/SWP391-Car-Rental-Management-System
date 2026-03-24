@@ -18,18 +18,48 @@
         body { margin: 0; background: #f4f7fa; color: var(--text-main); }
         .container { width: 95%; max-width: 1300px; margin: 0 auto; padding-bottom: 50px; }
 
-        /* HEADER CUSTOMER */
         .page-header { padding: 1.5rem 0; display: flex; align-items: center; justify-content: space-between; }
         .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary); text-decoration: none; }
 
-        .profile-btn {
-            width: 42px; height: 42px; border-radius: 50%; overflow: hidden;
-            border: 2px solid var(--primary); transition: 0.3s; display: block;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
 
-        /* SEARCH WRAPPER */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            background: #e2e8f0;
+            color: var(--text-main);
+            transition: 0.3s;
+        }
+        .btn-back:hover {
+            background: #cbd5e1;
+        }
+
+        .profile-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            border: 2px solid var(--primary);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+            background: #fff;
+        }
+        .profile-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
         .search-wrapper {
             background: linear-gradient(135deg, #1e293b, var(--dark-bg));
             padding: 40px; border-radius: 24px; margin-bottom: 30px; color: #fff;
@@ -65,7 +95,6 @@
             min-height: 60px;
         }
 
-        /* FILTER BAR */
         .filter-bar {
             display: flex; gap: 12px; margin-bottom: 30px; background: #fff;
             padding: 15px 20px; border-radius: 14px; align-items: center;
@@ -74,7 +103,6 @@
         .filter-bar select { padding: 10px; border-radius: 8px; border: 1px solid #d1d5db; min-width: 130px; }
         .btn-reset { margin-left: auto; text-decoration: none; color: var(--text-muted); font-size: 0.85rem; }
 
-        /* CAR GRID */
         .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .car-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-decoration: none; color: inherit; transition: 0.3s; }
         .car-card:hover { transform: translateY(-5px); }
@@ -88,9 +116,15 @@
 <div class="container">
     <header class="page-header">
         <a th:href="@{/customer/cars}" class="logo">CRMS</a>
+
         <div class="header-actions">
-            <a th:href="@{/customer/profile}" class="profile-btn" title="Hồ sơ của tôi">
-                <img src="/images/profile-icon.png" alt="Profile">
+            <!-- NÚT QUAY LẠI -->
+            <a th:href="@{/customer/dashboard}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+
+            <a th:href="@{/profile}" class="profile-btn" title="Hồ sơ của tôi">
+                <i class="fas fa-user"></i>
             </a>
         </div>
     </header>
@@ -167,6 +201,7 @@
         <p>Hiện tại không có xe nào trống trong khung giờ bạn chọn.</p>
     </div>
 </div>
+
 
 </body>
 </html>

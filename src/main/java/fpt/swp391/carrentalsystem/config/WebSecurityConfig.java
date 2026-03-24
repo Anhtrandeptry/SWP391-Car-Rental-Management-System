@@ -43,6 +43,7 @@ public class WebSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/css/**", "/js/**", "/images/**", "/assets/**", "/webjars/**").permitAll()
                         .requestMatchers("/", "/home", "/public/**", "/auth/**").permitAll()
                         .requestMatchers("/income-estimate").permitAll()
                         .requestMatchers("/payment/payos-return", "/payment/payos-cancel", "/payment/payos-webhook").permitAll()

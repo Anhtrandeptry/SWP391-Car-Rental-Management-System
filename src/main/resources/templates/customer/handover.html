@@ -104,9 +104,9 @@
             <div class="car-summary">
                 <div>
                     <small style="display:block; color: var(--text-sub)">Xe thuê:</small>
-                    <strong th:text="${booking.car.brand + ' ' + booking.car.model}">Toyota Vios</strong>
+                    <strong th:text="${booking.car.brand + ' ' + booking.car.model}"></strong>
                 </div>
-                <div class="license-badge" th:text="${booking.car.licensePlate}">29A-123.45</div>
+                <div class="license-badge" th:text="${booking.car.licensePlate}"></div>
             </div>
 
             <form th:action="@{/customer/handover/submit}" method="post" enctype="multipart/form-data">

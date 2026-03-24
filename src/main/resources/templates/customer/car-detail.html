@@ -170,6 +170,7 @@ body {
 }
 
 .btn-booking {
+display: block;
     width: 100%;
     background: var(--primary-color);
     color: white;
@@ -270,8 +271,7 @@ body {
                     </div>
                 </div>
 
-                <button class="btn-booking">Đặt xe ngay</button>
-            </div>
+                <a th:href="@{/customer/booking}" class="btn-booking">Đặt xe ngay</a>            </div>
         </div>
     </div>
 </div>
