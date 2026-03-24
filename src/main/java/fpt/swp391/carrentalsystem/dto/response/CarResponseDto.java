@@ -23,4 +23,7 @@ public class CarResponseDto {
     // Owner info
     private String ownerName;
     private String ownerPhone;
+
+    // For car availability management (transient - not from DB)
+    private boolean hasActiveBooking;
 }

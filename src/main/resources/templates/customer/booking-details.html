@@ -161,9 +161,26 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="text-center mt-4">
-                    <a href="/customer/dashboard" class="btn btn-back">
-                        <i class="bi bi-arrow-left"></i> Quay Lại Dashboard
+                <div class="text-center mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="/customer/booking-history" class="btn btn-back">
+                        <i class="bi bi-arrow-left"></i> Quay Lại Danh Sách
+                    </a>
+
+                    <!-- Cancel Button -->
+                    <form th:if="${canCancel}"
+                          th:action="@{'/customer/booking/' + ${booking.bookingId} + '/cancel'}"
+                          method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Bạn có chắc muốn hủy đơn này?')">
+                            <i class="bi bi-x-circle"></i> Hủy Đơn
+                        </button>
+                    </form>
+
+                    <!-- Pay Button -->
+                    <a th:if="${canPay}"
+                       th:href="@{'/customer/booking/' + ${booking.bookingId} + '/payment'}"
+                       class="btn btn-success">
+                        <i class="bi bi-credit-card"></i> Thanh Toán
                     </a>
                 </div>
             </div>

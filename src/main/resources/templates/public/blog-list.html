@@ -4,6 +4,8 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Blog - CRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link th:href="@{/css/common.css}" rel="stylesheet"/>
     <style>
         :root{
           --bg:#f3fbf8; --card:#fff; --text:#0f172a; --muted:#64748b; --line:#e5e7eb;
@@ -38,16 +40,10 @@
     </style>
 </head>
 <body>
+<!-- PUBLIC NAVBAR -->
+<nav th:replace="~{fragments/public-navbar :: public-navbar('blogs')}"></nav>
+
 <div class="wrap">
-    <div class="top">
-        <div class="brand">
-            <div class="logo" aria-hidden="true"></div>
-            <div>
-                <h2 class="title">CRMS Blog</h2>
-                <div class="sub">Tin tức • Kinh nghiệm thuê xe • Mẹo lái xe an toàn</div>
-            </div>
-        </div>
-        <a th:href="@{/public/home}" class="link">← Trang chủ</a>
     </div>
 
     <div class="grid" th:if="${blogs != null and !#lists.isEmpty(blogs)}">

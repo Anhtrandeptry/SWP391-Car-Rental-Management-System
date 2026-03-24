@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar-admin(activePage)" class="crms-sidebar">
+    <div class="nav-section">
+        <div class="nav-title">Quan tri he thong</div>
+        <ul class="nav-list">
+            <li class="nav-item"><a th:href="@{/admin/dashboard}" class="nav-link" th:classappend="${activePage == 'dashboard'} ? 'active' : ''"><i class="bi bi-speedometer2"></i><span>Tong quan</span></a></li>
+            <li class="nav-item"><a th:href="@{/admin/customers}" class="nav-link" th:classappend="${activePage == 'customers'} ? 'active' : ''"><i class="bi bi-people"></i><span>Khach hang</span></a></li>
+            <li class="nav-item"><a th:href="@{/admin/owners}" class="nav-link" th:classappend="${activePage == 'owners'} ? 'active' : ''"><i class="bi bi-person-badge"></i><span>Chu xe</span></a></li>
+            <li class="nav-item"><a th:href="@{/admin/cars}" class="nav-link" th:classappend="${activePage == 'cars'} ? 'active' : ''"><i class="bi bi-car-front"></i><span>Quan ly xe</span></a></li>
+            <li class="nav-item"><a th:href="@{/admin/blogs}" class="nav-link" th:classappend="${activePage == 'blogs'} ? 'active' : ''"><i class="bi bi-journal-text"></i><span>Quan ly blog</span></a></li>
+        </ul>
+    </div>
+    <div class="nav-section">
+        <div class="nav-title">Bao cao</div>
+        <ul class="nav-list">
+            <li class="nav-item"><a th:href="@{/admin/reports/revenue}" class="nav-link" th:classappend="${activePage == 'revenue'} ? 'active' : ''"><i class="bi bi-graph-up"></i><span>Doanh thu</span></a></li>
+        </ul>
+    </div>
+    <div class="nav-section">
+        <div class="nav-title">Tai khoan</div>
+        <ul class="nav-list">
+            <li class="nav-item"><a th:href="@{/profile}" class="nav-link" th:classappend="${activePage == 'profile'} ? 'active' : ''"><i class="bi bi-person"></i><span>Ho so ca nhan</span></a></li>
+            <li class="nav-item"><a th:href="@{/profile/change-password}" class="nav-link" th:classappend="${activePage == 'password'} ? 'active' : ''"><i class="bi bi-key"></i><span>Doi mat khau</span></a></li>
+        </ul>
+    </div>
+    <div class="logout-section">
+        <form th:action="@{/auth/logout}" method="post">
+            <button type="submit" class="logout-btn"><i class="bi bi-box-arrow-right"></i> Dang xuat</button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>

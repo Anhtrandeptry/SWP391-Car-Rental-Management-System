@@ -32,6 +32,11 @@ public class Car {
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
+    // Relationship with CarImage
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<CarImage> images = new java.util.ArrayList<>();
+
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
@@ -75,8 +80,7 @@ public class Car {
     @Column(name = "estimated_income", precision = 15, scale = 2)
     private BigDecimal estimatedIncome;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+
 
     // ========== STEP 2: Thông tin chi tiết ==========
 
@@ -86,6 +90,7 @@ public class Car {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
     @Column(name = "address", length = 200)
     private String address;
 
@@ -108,8 +113,7 @@ public class Car {
     @Column(name = "registration_date")
     private LocalDate registrationDate;
 
-    @Column(name = "license_plate", length = 20, unique = true)
-    private String licensePlate;
+
     @Column(name = "mileage")
     private Integer mileage;
 
@@ -203,7 +207,7 @@ public class Car {
 
     @Column(name = "reservation_expire_time")
     private LocalDateTime reservationExpireTime;
-    private BigDecimal averageRating;
+
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -222,6 +226,16 @@ public class Car {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Convenience method for template compatibility
+    public Integer getId() {
+        return carId;
+    }
+
+    // Convenience method for backward compatibility
+    public Long getOwnerId() {
+        return owner != null ? owner.getId() : null;
     }
 }
 

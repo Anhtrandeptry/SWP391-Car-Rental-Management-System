@@ -47,7 +47,7 @@ public class OwnerServiceImpl implements OwnerService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Owner not found: " + ownerId));
 
-        List<Car> ownerCars = carRepository.findByOwnerId(ownerId);
+        List<Car> ownerCars = carRepository.findByOwner_Id(ownerId);
         BigDecimal totalIncome = bookingRepository.calculateTotalRevenueByOwnerId(ownerId);
 
         List<CarIncomeDto> carIncomes = new ArrayList<>();

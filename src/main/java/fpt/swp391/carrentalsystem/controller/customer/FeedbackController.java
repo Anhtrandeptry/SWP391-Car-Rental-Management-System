@@ -4,7 +4,7 @@ import fpt.swp391.carrentalsystem.dto.request.FeedbackForm;
 import fpt.swp391.carrentalsystem.dto.response.FeedbackResponse;
 import fpt.swp391.carrentalsystem.repository.UserRepository;
 import fpt.swp391.carrentalsystem.service.FeedbackService;
-import fpt.swp391.carrentalsystem.sercurity.CustomUserDetails;
+import fpt.swp391.carrentalsystem.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

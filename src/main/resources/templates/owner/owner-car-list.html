@@ -47,7 +47,7 @@
         .car-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.3s; }
         .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .car-card.deleted { opacity: 0.7; border: 2px dashed #dc2626; }
-        .car-image { width: 100%; height: 200px; object-fit: cover; background: #eee; }
+        /* Car image now uses standardized .car-image from common.css (220px height) */
         .car-content { padding: 20px; }
 
         .car-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
@@ -146,8 +146,16 @@
         <div th:each="car : ${cars}"
              th:classappend="${car.status.name() == 'INACTIVE'} ? 'deleted'"
              class="car-card">
-            <img th:src="${car.coverImage != null ? car.coverImage : 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=500'}"
-                 class="car-image" alt="Car">
+            <!-- Standardized car image with fallback -->
+            <img th:if="${car.coverImage != null and !car.coverImage.isEmpty()}"
+                 th:src="${car.coverImage}"
+                 th:alt="${car.brand + ' ' + car.model}"
+                 class="car-image">
+            <div th:unless="${car.coverImage != null and !car.coverImage.isEmpty()}"
+                 class="car-image car-image-placeholder">
+                <i class="bi bi-car-front"></i>
+            </div>
+
             <div class="car-content">
                 <div class="car-header">
                     <div>

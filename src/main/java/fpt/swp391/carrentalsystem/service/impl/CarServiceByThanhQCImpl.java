@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CarServiceImpl implements CarServiceByThanhQC {
+public class CarServiceByThanhQCImpl implements CarServiceByThanhQC {
 
     private final CarRepositoryByThanhQC carRepository;
     private final CarMapper carMapper;
@@ -42,10 +42,10 @@ public class CarServiceImpl implements CarServiceByThanhQC {
     @Override public List<String> getAllCarTypes() { return carRepository.findDistinctCarTypes(); }
     @Override public List<String> getAllFuelTypes() { return carRepository.findDistinctFuelTypes(); }
     @Override public List<Integer> getAllSeats() { return carRepository.findDistinctSeats(); }
-    @Override public Car getCarById(Long id) { return carRepository.findById(id).orElse(null); }
+    @Override public Car getCarById(Long id) { return carRepository.findByIdWithImages(id).orElse(null); }
 
     @Override public List<CarListItemResponse> getCarsByOwner(Long ownerId) {
-        return carRepository.findByOwnerId(ownerId).stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
+        return carRepository.findByOwner_Id(ownerId).stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
     }
 
     @Override

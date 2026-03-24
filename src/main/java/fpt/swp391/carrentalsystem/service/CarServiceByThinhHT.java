@@ -3,7 +3,7 @@ package fpt.swp391.carrentalsystem.service;
 
 
 
-import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 
 public interface CarServiceByThinhHT {
 
@@ -22,7 +22,7 @@ public interface CarServiceByThinhHT {
     /**
      * Khôi phục xe đã xóa mềm
      */
-    CarResponseDTO restoreCar(Long id, Long ownerId);
+    CarResponseDto restoreCar(Long id, Long ownerId);
 
     /**
      * Kiểm tra xe có đang được thuê không

@@ -207,9 +207,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<RentalHistoryDto> getCustomerRentalHistory(Long customerId) {
-        List<Booking> bookings = bookingRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        // Use optimized query with JOIN FETCH
+        List<Booking> bookings = bookingRepository.findCustomerBookingsWithDetails(customerId);
         return bookings.stream()
                 .map(this::toRentalHistoryDtoForCustomer)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RentalHistoryDto> getOwnerRentalHistory(Long ownerId) {
+        // Use optimized query with JOIN FETCH
+        List<Booking> bookings = bookingRepository.findOwnerBookingsWithDetails(ownerId);
+        return bookings.stream()
+                .map(this::toRentalHistoryDtoForOwner)
                 .collect(Collectors.toList());
     }
 
@@ -279,9 +290,97 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public RentalHistoryDto getBookingDetails(Integer bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         return toRentalHistoryDtoForCustomer(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RentalHistoryDto getBookingDetailsForCustomer(Integer bookingId, Long customerId) {
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify the customer owns this booking
+        if (!booking.getCustomer().getId().equals(customerId)) {
+            throw new RuntimeException("You don't have permission to view this booking");
+        }
+
+        return toRentalHistoryDtoForCustomer(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RentalHistoryDto getBookingDetailsForOwner(Integer bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify the owner owns the car
+        if (!booking.getCar().getOwner().getId().equals(ownerId)) {
+            throw new RuntimeException("You don't have permission to view this booking");
+        }
+
+        return toRentalHistoryDtoForOwner(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canCancelBooking(Integer bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check ownership
+        if (!booking.getCustomer().getId().equals(userId)) {
+            return false;
+        }
+
+        // Can cancel if: status is PENDING or PAYMENT_PENDING AND current time < startDate
+        boolean validStatus = booking.getStatus() == BookingStatus.PENDING
+                || booking.getStatus() == BookingStatus.PAYMENT_PENDING;
+        boolean beforeStartDate = LocalDateTime.now().isBefore(booking.getStartDate());
+
+        return validStatus && beforeStartDate;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canPayBooking(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Can pay if: paymentStatus is UNPAID AND current time < startDate
+        boolean unpaid = booking.getPaymentStatus() == PaymentStatus.UNPAID;
+        boolean beforeStartDate = LocalDateTime.now().isBefore(booking.getStartDate());
+        boolean validStatus = booking.getStatus() == BookingStatus.PAYMENT_PENDING;
+
+        return unpaid && beforeStartDate && validStatus;
+    }
+
+    private RentalHistoryDto toRentalHistoryDtoForOwner(Booking booking) {
+        User customer = booking.getCustomer();
+        Car car = booking.getCar();
+
+        return RentalHistoryDto.builder()
+                .bookingId(booking.getBookingId())
+                .carId(car.getCarId())
+                .carName(car.getName())
+                .carBrand(car.getBrand())
+                .carModel(car.getModel())
+                .licensePlate(car.getLicensePlate())
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .pickupLocation(booking.getPickupLocation())
+                .rentalFee(booking.getRentalFee())
+                .depositAmount(booking.getDepositAmount())
+                .holdingFee(booking.getHoldingFee())
+                .totalAmount(booking.getTotalAmount())
+                .status(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .createdAt(booking.getCreatedAt())
+                .customerName(customer.getFirstName() + " " + customer.getLastName())
+                .customerPhone(customer.getPhoneNumber())
+                .customerEmail(customer.getEmail())
+                .build();
     }
 
     private boolean isCarAvailable(Integer carId, LocalDateTime startDate, LocalDateTime endDate) {

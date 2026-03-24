@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
@@ -53,7 +54,10 @@ public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
     @Query("SELECT DISTINCT c.seats FROM Car c WHERE c.seats IS NOT NULL")
     List<Integer> findDistinctSeats();
 
-    List<Car> findByOwnerId(Long ownerId);
+    List<Car> findByOwner_Id(Long ownerId);
 
     List<Car> findByStatus(CarStatus status);
+
+    @Query("SELECT c FROM Car c LEFT JOIN FETCH c.images WHERE c.carId = :id")
+    Optional<Car> findByIdWithImages(@Param("id") Long id);
 }

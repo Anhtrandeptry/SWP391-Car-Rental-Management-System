@@ -69,4 +69,85 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
 
     Optional<Booking> findWithDetailsByBookingId(Integer bookingId);
+
+    // ===== NEW: Optimized queries with JOIN FETCH to avoid N+1 problem =====
+
+    /**
+     * Get customer booking history with car and owner info (JOIN FETCH)
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.car c " +
+           "JOIN FETCH c.owner " +
+           "WHERE b.customer.id = :customerId " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findCustomerBookingsWithDetails(@Param("customerId") Long customerId);
+
+    /**
+     * Get owner booking history with car and customer info (JOIN FETCH)
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.car c " +
+           "JOIN FETCH b.customer " +
+           "WHERE c.owner.id = :ownerId " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findOwnerBookingsWithDetails(@Param("ownerId") Long ownerId);
+
+    /**
+     * Get booking detail with all related entities
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.car c " +
+           "JOIN FETCH c.owner " +
+           "JOIN FETCH b.customer " +
+           "WHERE b.bookingId = :bookingId")
+    Optional<Booking> findBookingWithAllDetails(@Param("bookingId") Integer bookingId);
+
+    /**
+     * Check if car has any active booking (IN_USE status)
+     */
+    @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM Booking b " +
+           "WHERE b.car.carId = :carId " +
+           "AND b.status = fpt.swp391.carrentalsystem.enums.BookingStatus.IN_USE")
+    boolean hasCarInUseBooking(@Param("carId") Integer carId);
+
+    // ===== Admin Dashboard queries =====
+
+    /**
+     * Count bookings by status
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
+    Long countByStatus(@Param("status") BookingStatus status);
+
+    /**
+     * Count bookings created after a specific date (for "new this month" stats)
+     */
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.createdAt >= :startDate")
+    Long countBookingsCreatedAfter(@Param("startDate") LocalDateTime startDate);
+
+    /**
+     * Calculate total revenue (sum of rental fees from paid and completed/confirmed bookings)
+     */
+    @Query("SELECT COALESCE(SUM(b.rentalFee), 0) FROM Booking b " +
+           "WHERE b.paymentStatus = fpt.swp391.carrentalsystem.enums.PaymentStatus.PAID " +
+           "AND b.status <> fpt.swp391.carrentalsystem.enums.BookingStatus.CANCELLED")
+    BigDecimal calculateTotalRevenue();
+
+    /**
+     * Calculate revenue for a specific period
+     */
+    @Query("SELECT COALESCE(SUM(b.rentalFee), 0) FROM Booking b " +
+           "WHERE b.paymentStatus = fpt.swp391.carrentalsystem.enums.PaymentStatus.PAID " +
+           "AND b.status <> fpt.swp391.carrentalsystem.enums.BookingStatus.CANCELLED " +
+           "AND b.createdAt >= :startDate AND b.createdAt < :endDate")
+    BigDecimal calculateRevenueForPeriod(@Param("startDate") LocalDateTime startDate,
+                                          @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Get recent bookings with details for admin dashboard
+     */
+    @Query("SELECT b FROM Booking b " +
+           "JOIN FETCH b.car c " +
+           "JOIN FETCH b.customer " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findRecentBookingsWithDetails(org.springframework.data.domain.Pageable pageable);
 }

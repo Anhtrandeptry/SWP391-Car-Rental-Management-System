@@ -54,10 +54,6 @@ public class OwnerControllerByThinhHT {
     );
     private static final List<Integer> SEAT_OPTIONS = Arrays.asList(4, 5, 7, 16);
 
-    @GetMapping("/dashboard")
-    public String dashboard() {
-        return "car-owner-dashboard-by-thinhht";
-    }
 
     // ========================= INCOME ESTIMATE (SSR) =========================
 

@@ -3,7 +3,7 @@ package fpt.swp391.carrentalsystem.controller.admin;
 import fpt.swp391.carrentalsystem.dto.request.BlogForm;
 import fpt.swp391.carrentalsystem.entity.Blog;
 import fpt.swp391.carrentalsystem.repository.UserRepository;
-import fpt.swp391.carrentalsystem.sercurity.CustomUserDetails;
+import fpt.swp391.carrentalsystem.security.CustomUserDetails;
 import fpt.swp391.carrentalsystem.service.BlogService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;

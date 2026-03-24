@@ -1,1111 +1,127 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-<<<<<<< HEAD
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>Customer Dashboard - CRMS</title>
+    <title>Owner Dashboard - CRMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/common.css}" rel="stylesheet"/>
     <style>
-        :root{
-            --bg: #f8f9fa;
-            --panel: #ffffff;
-            --text: #1e293b;
-            --muted: #64748b;
-            --line: #e5e7eb;
-
-            --primary: #0d6efd;
-            --primary-light: #3b82f6;
-            --primary-dark: #0056b3;
-
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #06b6d4;
-
-            --sidebar-width: 280px;
-            --header-height: 70px;
-
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
-
-            --radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body{
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            color: var(--text);
-            background: var(--bg);
-            overflow-x: hidden;
-        }
-
-        a{
-            color: inherit;
-            text-decoration: none;
-        }
-
-        /* TOP HEADER */
-        .header{
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: var(--header-height);
-            background: var(--panel);
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 1000;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .header-left{
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .logo-section{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .logo{
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .brand-info h1{
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text);
-            letter-spacing: -0.3px;
-        }
-
-        .brand-info span{
-            font-size: 0.75rem;
-            color: var(--muted);
-        }
-
-        .header-right{
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .search-box{
-            position: relative;
-        }
-
-        .search-box input{
-            width: 300px;
-            padding: 0.6rem 1rem 0.6rem 2.5rem;
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-
-        .search-box input:focus{
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
-        }
-
-        .search-box i{
-            position: absolute;
-            left: 0.9rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--muted);
-        }
-
-        .header-actions{
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .icon-btn{
-            position: relative;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: var(--bg);
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .icon-btn:hover{
-            background: var(--line);
-            color: var(--text);
-        }
-
-        .icon-btn .badge{
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            background: var(--danger);
-            color: white;
-            font-size: 0.65rem;
-            padding: 2px 5px;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        .user-menu{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.4rem 0.6rem 0.4rem 0.4rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .user-menu:hover{
-            background: var(--bg);
-        }
-
-        .avatar{
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .user-info{
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-info .name{
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .user-info .role{
-            font-size: 0.75rem;
-            color: var(--muted);
-        }
-
-        /* SIDEBAR */
-        .sidebar{
-            position: fixed;
-            left: 0;
-            top: var(--header-height);
-            bottom: 0;
-            width: var(--sidebar-width);
-            background: var(--panel);
-            border-right: 1px solid var(--line);
-            overflow-y: auto;
-            padding: 1.5rem 0;
-        }
-
-        .sidebar-section{
-            padding: 0 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .sidebar-title{
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.75rem;
-            padding: 0 0.75rem;
-        }
-
-        .nav-menu{
-            list-style: none;
-        }
-
-        .nav-item{
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-link{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 10px;
-            color: var(--muted);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover{
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .nav-link.active{
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: var(--shadow);
-        }
-
-        .nav-link i{
-            font-size: 1.1rem;
-            width: 20px;
-        }
-
-        .logout-btn{
-            width: calc(100% - 2rem);
-            margin: 0 1rem;
-            padding: 0.75rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 10px;
-            color: var(--danger);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .logout-btn:hover{
-            background: var(--danger);
-            color: white;
-        }
-
-        /* MAIN CONTENT */
-        .main-content{
-            margin-left: var(--sidebar-width);
-            margin-top: var(--header-height);
-            padding: 2rem;
-            min-height: calc(100vh - var(--header-height));
-        }
-
-        .page-header{
-            margin-bottom: 2rem;
-        }
-
-        .page-title{
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 0.5rem;
-        }
-
-        .page-subtitle{
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        /* STATS GRID */
-        .stats-grid{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card{
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: all 0.3s;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .stat-card:hover{
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stat-icon{
-            width: 60px;
-            height: 60px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .stat-icon.blue{
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-        }
-
-        .stat-icon.green{
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .stat-icon.orange{
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-        }
-
-        .stat-icon.purple{
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            color: white;
-        }
-
-        .stat-content{
-            flex: 1;
-        }
-
-        .stat-label{
-            font-size: 0.85rem;
-            color: var(--muted);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .stat-value{
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-        }
-
-        .stat-change{
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .stat-change.up{
-            color: var(--success);
-        }
-
-        .stat-change.down{
-            color: var(--danger);
-        }
-
-        /* CARDS GRID */
-        .cards-grid{
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card{
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .card-header{
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.25rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .card-title{
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .card-action{
-            font-size: 0.85rem;
-            color: var(--primary);
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .card-action:hover{
-            text-decoration: underline;
-        }
-
-        /* QUICK ACTIONS */
-        .quick-actions{
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .action-item{
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            border-radius: 10px;
-            background: var(--bg);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .action-item:hover{
-            background: var(--line);
-            transform: translateX(4px);
-        }
-
-        .action-icon{
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            background: var(--panel);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-
-        .action-content{
-            flex: 1;
-        }
-
-        .action-title{
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 0.25rem;
-        }
-
-        .action-desc{
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
-        .action-arrow{
-            color: var(--muted);
-            font-size: 1.1rem;
-        }
-
-        /* WELCOME BANNER */
-        .welcome-banner{
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: var(--radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-banner::before{
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-        }
-
-        .welcome-content{
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-title{
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .welcome-text{
-            opacity: 0.9;
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1024px){
-            .sidebar{
-                transform: translateX(-100%);
-            }
-            .main-content{
-                margin-left: 0;
-            }
-            .stats-grid{
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px){
-            .header{
-                padding: 0 1rem;
-            }
-            .search-box{
-                display: none;
-            }
-            .main-content{
-                padding: 1rem;
-            }
-            .cards-grid{
-                grid-template-columns: 1fr;
-            }
-=======
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Chủ Xe - Car Rental System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <style>
-        body {
-            background: #f5f7fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .card-header {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            border-radius: 15px 15px 0 0 !important;
-            font-weight: 600;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border: none;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
-        }
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-payment_pending { background: #e2e3e5; color: #383d41; }
-        .status-confirmed { background: #d4edda; color: #155724; }
-        .status-completed { background: #cce5ff; color: #004085; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
-        .car-status-available { background: #d4edda; color: #155724; }
-        .car-status-reserved { background: #fff3cd; color: #856404; }
-        .car-status-booked { background: #cce5ff; color: #004085; }
-        .car-status-unavailable { background: #e2e3e5; color: #383d41; }
-        .table th { border-top: none; }
-        .alert { border-radius: 10px; }
-        .nav-pills .nav-link.active {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .nav-pills .nav-link {
-            color: #f5576c;
->>>>>>> origin/main
-        }
+        .welcome-banner{background:linear-gradient(135deg,#0d6efd 0%,#0056b3 100%);border-radius:16px;padding:2rem;color:#fff;margin-bottom:1.5rem;}
+        .welcome-title{font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;}
+        .welcome-text{color:rgba(255,255,255,.8);font-size:0.9rem;}
+        .page-header{margin-bottom:1.5rem;}
+        .page-title{font-size:1.5rem;font-weight:700;}
+        .page-subtitle{color:var(--muted);font-size:0.85rem;margin-top:0.25rem;}
+        .quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1.5rem;}
+        .action-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:1.5rem;text-align:center;text-decoration:none;color:var(--text);transition:all .3s;display:block;}
+        .action-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+        .action-icon{width:52px;height:52px;border-radius:12px;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;}
+        .action-card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.3rem;}
+        .action-card p{font-size:0.8rem;color:var(--muted);}
     </style>
 </head>
 <body>
-<<<<<<< HEAD
-<!-- TOP HEADER -->
-<header class="header">
-    <div class="header-left">
-        <div class="logo-section">
-            <div class="logo">
-                <i class="bi bi-car-front-fill"></i>
-            </div>
-            <div class="brand-info">
-                <h1>CRMS</h1>
-                <span>Car Rental System</span>
-            </div>
-        </div>
-    </div>
+<!-- SHARED HEADER -->
+<header th:replace="~{fragments/header :: header('OWNER', 'Car Owner')}"></header>
 
-    <div class="header-right">
-        <div class="search-box">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Tìm kiếm...">
-        </div>
-
-        <div class="header-actions">
-            <button class="icon-btn">
-                <i class="bi bi-bell"></i>
-                <span class="badge">3</span>
-            </button>
-
-            <button class="icon-btn">
-                <i class="bi bi-gear"></i>
-            </button>
-
-            <div class="user-menu">
-                <div class="avatar">CN</div>
-                <div class="user-info">
-                    <span class="name">Owner</span>
-                    <span class="role">Chủ xe</span>
-                </div>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="sidebar-section">
-        <div class="sidebar-title">Menu chính</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/owner/dashboard}" class="nav-link active">
-                    <i class="bi bi-house-door"></i>
-                    <span>Trang chủ</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-calendar-check"></i>
-                    <span>Quản lí xe</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-clock-history"></i>
-                    <span>Lịch sử cho thuê</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/owner/return/list-car-return}" class="nav-link">
-                    <i class="bi bi-journal-text"></i> <span>Quản lý trả xe</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="sidebar-section">
-        <div class="sidebar-title">Tài khoản</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/profile}" class="nav-link">
-                    <i class="bi bi-person"></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/profile/change-password}" class="nav-link">
-                    <i class="bi bi-key"></i>
-                    <span>Đổi mật khẩu</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-chat-left-text"></i>
-                    <span>Phản hồi của tôi</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-send"></i>
-                    <span>Gửi phản hồi</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <form th:action="@{/auth/logout}" method="post" style="margin-top: auto;">
-        <button type="submit" class="logout-btn">
-            <i class="bi bi-box-arrow-right"></i>
-            Đăng xuất
-        </button>
-    </form>
-</aside>
+<!-- SHARED SIDEBAR -->
+<aside th:replace="~{fragments/sidebar-owner :: sidebar-owner('dashboard')}"></aside>
 
 <!-- MAIN CONTENT -->
 <main class="main-content">
     <!-- Welcome Banner -->
     <div class="welcome-banner">
         <div class="welcome-content">
-            <h2 class="welcome-title">Xin chào! Chào mừng bạn đến với CRMS!</h2>
+            <h2 class="welcome-title">Xin chào, Chủ xe!</h2>
             <p class="welcome-text">
-                Bạn có thể quản lý tài khoản, đặt xe, xem lịch sử chuyến đi và gửi phản hồi tại đây.
-                Hãy khám phá các tính năng của hệ thống để có trải nghiệm tốt nhất!
+                Quản lý xe, theo dõi đơn đặt, bàn giao và thu nhập của bạn tại đây.
             </p>
         </div>
     </div>
 
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="page-subtitle">Tổng quan về hoạt động và thống kê của bạn</p>
+        <h1 class="page-title">Dashboard Chủ xe</h1>
+        <p class="page-subtitle">Tổng quan về xe và hoạt động cho thuê</p>
     </div>
 
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="bi bi-car-front"></i>
-            </div>
+            <div class="stat-icon blue"><i class="bi bi-car-front"></i></div>
             <div class="stat-content">
-                <div class="stat-label">Tổng chuyến đi</div>
-                <div class="stat-value" th:text="${stats != null ? stats.trips : 0}">0</div>
-                <div class="stat-change up">
-                    <i class="bi bi-arrow-up"></i>
-                    <span>+12% so với tháng trước</span>
-                </div>
+                <div class="stat-label">Tổng số xe</div>
+                <div class="stat-value" th:text="${totalCars != null ? totalCars : 0}">0</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="bi bi-heart-fill"></i>
-            </div>
+            <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
             <div class="stat-content">
-                <div class="stat-label">Xe yêu thích</div>
-                <div class="stat-value" th:text="${stats != null ? stats.favorites : 0}">0</div>
-                <div class="stat-change up">
-                    <i class="bi bi-arrow-up"></i>
-                    <span>+3 xe mới</span>
-                </div>
+                <div class="stat-label">Đơn đặt xe</div>
+                <div class="stat-value" th:text="${totalBookings != null ? totalBookings : 0}">0</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="bi bi-star-fill"></i>
-            </div>
+            <div class="stat-icon orange"><i class="bi bi-star-fill"></i></div>
             <div class="stat-content">
                 <div class="stat-label">Đánh giá trung bình</div>
-                <div class="stat-value" th:text="${stats != null ? stats.rating : '0.0'}">0.0</div>
-                <div class="stat-change up">
-                    <i class="bi bi-arrow-up"></i>
-                    <span>Xuất sắc</span>
-                </div>
+                <div class="stat-value" th:text="${avgRating != null ? avgRating : '0.0'}">0.0</div>
             </div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="bi bi-wallet2"></i>
-            </div>
+            <div class="stat-icon purple"><i class="bi bi-wallet2"></i></div>
             <div class="stat-content">
-                <div class="stat-label">Tổng chi tiêu</div>
-                <div class="stat-value">5.2M</div>
-                <div class="stat-change down">
-                    <i class="bi bi-arrow-down"></i>
-                    <span>-8% so với tháng trước</span>
-=======
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">🚗 Car Rental - Chủ Xe</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/owner/income">
-                    <i class="bi bi-graph-up"></i> Quản Lý Thu Nhập
-                </a>
-                <form action="/auth/logout" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-outline-light btn-sm ms-2">
-                        <i class="bi bi-box-arrow-right"></i> Đăng Xuất
-                    </button>
-                </form>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <!-- Alert Messages -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-circle"></i> <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <!-- Tabs -->
-        <ul class="nav nav-pills mb-4" id="ownerTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="rentals-tab" data-bs-toggle="pill"
-                        data-bs-target="#rentals" type="button" role="tab">
-                    <i class="bi bi-list-ul"></i> Lịch Sử Cho Thuê
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="cars-tab" data-bs-toggle="pill"
-                        data-bs-target="#cars" type="button" role="tab">
-                    <i class="bi bi-car-front"></i> Quản Lý Xe
-                </button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="ownerTabsContent">
-            <!-- Rental History Tab -->
-            <div class="tab-pane fade show active" id="rentals" role="tabpanel">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-calendar-check"></i> Lịch Sử Cho Thuê
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${rentalHistory == null || rentalHistory.isEmpty()}" class="text-center py-5">
-                            <i class="bi bi-inbox text-muted" style="font-size: 50px;"></i>
-                            <p class="text-muted mt-3">Chưa có đơn thuê xe nào</p>
-                        </div>
-
-                        <div th:if="${rentalHistory != null && !rentalHistory.isEmpty()}" class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Mã Đơn</th>
-                                        <th>Xe</th>
-                                        <th>Khách Hàng</th>
-                                        <th>Ngày Nhận</th>
-                                        <th>Ngày Trả</th>
-                                        <th>Phí Thuê</th>
-                                        <th>Trạng Thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="booking : ${rentalHistory}">
-                                        <td th:text="'#' + ${booking.bookingId}"></td>
-                                        <td>
-                                            <strong th:text="${booking.carName}"></strong><br>
-                                            <small class="text-muted" th:text="${booking.licensePlate}"></small>
-                                        </td>
-                                        <td>
-                                            <span th:text="${booking.customerName}"></span><br>
-                                            <small class="text-muted">
-                                                <i class="bi bi-telephone"></i> <span th:text="${booking.customerPhone}"></span>
-                                            </small>
-                                        </td>
-                                        <td th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                        <td th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                        <td th:text="${#numbers.formatDecimal(booking.rentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
-                                        <td>
-                                            <span th:class="'status-badge status-' + ${booking.status.toLowerCase()}" th:text="${booking.status}"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cars Management Tab -->
-            <div class="tab-pane fade" id="cars" role="tabpanel">
-                <div class="card">
-                    <div class="card-header">
-                        <i class="bi bi-car-front"></i> Danh Sách Xe Của Bạn
-                    </div>
-                    <div class="card-body">
-                        <div th:if="${cars == null || cars.isEmpty()}" class="text-center py-5">
-                            <i class="bi bi-car-front text-muted" style="font-size: 50px;"></i>
-                            <p class="text-muted mt-3">Bạn chưa có xe nào</p>
-                        </div>
-
-                        <div th:if="${cars != null && !cars.isEmpty()}" class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Xe</th>
-                                        <th>Biển Số</th>
-                                        <th>Giá/Ngày</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Thao Tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="car : ${cars}">
-                                        <td>
-                                            <strong th:text="${car.name}"></strong><br>
-                                            <small class="text-muted" th:text="${car.brand} + ' ' + ${car.model}"></small>
-                                        </td>
-                                        <td th:text="${car.licensePlate}"></td>
-                                        <td th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + ' VND'"></td>
-                                        <td>
-                                            <span th:class="'status-badge car-status-' + ${car.status.toLowerCase()}" th:text="${car.status}"></span>
-                                        </td>
-                                        <td>
-                                            <!-- Set Available -->
-                                            <form th:if="${car.status == 'UNAVAILABLE'}"
-                                                  th:action="@{/owner/car/{id}/set-available(id=${car.carId})}"
-                                                  method="post" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-success">
-                                                    <i class="bi bi-check-circle"></i> Mở Cho Thuê
-                                                </button>
-                                            </form>
-
-                                            <!-- Set Unavailable -->
-                                            <form th:if="${car.status == 'AVAILABLE'}"
-                                                  th:action="@{/owner/car/{id}/set-unavailable(id=${car.carId})}"
-                                                  method="post" style="display:inline;">
-                                                <button type="submit" class="btn btn-sm btn-warning">
-                                                    <i class="bi bi-pause-circle"></i> Tạm Dừng
-                                                </button>
-                                            </form>
-
-                                            <!-- Booked - Cannot change -->
-                                            <span th:if="${car.status == 'BOOKED' || car.status == 'RESERVED'}"
-                                                  class="text-muted">
-                                                <i class="bi bi-lock"></i> Đang có khách
-                                            </span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
->>>>>>> origin/main
-                </div>
+                <div class="stat-label">Thu nhập</div>
+                <div class="stat-value" th:text="${totalIncome != null ? #numbers.formatDecimal(totalIncome, 0, 'COMMA', 0, 'POINT') + ' đ' : '0 đ'}">0 đ</div>
             </div>
         </div>
     </div>
 
-<<<<<<< HEAD
-    <!-- Cards Grid -->
-    <div class="cards-grid">
-        <!-- Quick Actions Card -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Thao tác nhanh</h3>
-                <span class="card-action">Xem tất cả</span>
-            </div>
-
-            <div class="quick-actions">
-                <a th:href="@{/profile}" class="action-item">
-                    <div class="action-icon">
-                        <i class="bi bi-person"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Hồ sơ cá nhân</div>
-                        <div class="action-desc">Cập nhật thông tin, địa chỉ, CCCD, bằng lái</div>
-                    </div>
-                    <i class="bi bi-chevron-right action-arrow"></i>
-                </a>
-
-                <a th:href="@{/profile/change-password}" class="action-item">
-                    <div class="action-icon">
-                        <i class="bi bi-key"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Đổi mật khẩu</div>
-                        <div class="action-desc">Đổi mật khẩu an toàn cho tài khoản</div>
-                    </div>
-                    <i class="bi bi-chevron-right action-arrow"></i>
-                </a>
-
-                <a th:href="@{/customer/feedbacks/new}" class="action-item">
-                    <div class="action-icon">
-                        <i class="bi bi-send"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Gửi phản hồi</div>
-                        <div class="action-desc">Đánh giá và gửi phản hồi cho chuyến đi</div>
-                    </div>
-                    <i class="bi bi-chevron-right action-arrow"></i>
-                </a>
-
-                <a th:href="@{/customer/feedbacks}" class="action-item">
-                    <div class="action-icon">
-                        <i class="bi bi-chat-left-text"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Phản hồi của tôi</div>
-                        <div class="action-desc">Xem trạng thái phản hồi đã gửi</div>
-                    </div>
-                    <i class="bi bi-chevron-right action-arrow"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Recent Activity Card -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Hoạt động gần đây</h3>
-                <span class="card-action">Xem tất cả</span>
-            </div>
-
-            <div class="quick-actions">
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #e0f2fe; color: #0891b2;">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Chuyến đi hoàn thành</div>
-                        <div class="action-desc">2 giờ trước • Toyota Vios</div>
-                    </div>
-                </div>
-
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #fef3c7; color: #d97706;">
-                        <i class="bi bi-clock"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Đặt xe mới</div>
-                        <div class="action-desc">5 giờ trước • Honda City</div>
-                    </div>
-                </div>
-
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #dcfce7; color: #16a34a;">
-                        <i class="bi bi-star"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Đánh giá mới</div>
-                        <div class="action-desc">1 ngày trước • 5 sao</div>
-                    </div>
-                </div>
-
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #fce7f3; color: #db2777;">
-                        <i class="bi bi-heart"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Yêu thích xe mới</div>
-                        <div class="action-desc">2 ngày trước • Mazda CX-5</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Quick Actions -->
+    <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem;">Truy cập nhanh</h2>
+    <div class="quick-actions">
+        <a th:href="@{/owner/my-cars}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);"><i class="bi bi-car-front"></i></div>
+            <h3>Xe của tôi</h3>
+            <p>Xem và quản lý danh sách xe</p>
+        </a>
+        <a th:href="@{/owner/create-car-step1}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#10b981,#059669);"><i class="bi bi-plus-circle"></i></div>
+            <h3>Thêm xe mới</h3>
+            <p>Đăng ký xe cho thuê</p>
+        </a>
+        <a th:href="@{/owner/booking-history}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="bi bi-calendar-check"></i></div>
+            <h3>Lịch sử đặt xe</h3>
+            <p>Xem các đơn đặt xe</p>
+        </a>
+        <a th:href="@{/owner/handover-list}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="bi bi-hand-index"></i></div>
+            <h3>Bàn giao xe</h3>
+            <p>Quản lý bàn giao xe</p>
+        </a>
+        <a th:href="@{/owner/return/list-car-return}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);"><i class="bi bi-arrow-return-left"></i></div>
+            <h3>Trả xe</h3>
+            <p>Quản lý trả xe</p>
+        </a>
+        <a th:href="@{/owner/income}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#06b6d4,#0891b2);"><i class="bi bi-wallet2"></i></div>
+            <h3>Thu nhập</h3>
+            <p>Xem báo cáo thu nhập</p>
+        </a>
+        <a th:href="@{/owner/car-availability}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#64748b,#475569);"><i class="bi bi-toggle-on"></i></div>
+            <h3>Trạng thái xe</h3>
+            <p>Bật/tắt cho thuê</p>
+        </a>
+        <a th:href="@{/profile}" class="action-card">
+            <div class="action-icon" style="background:linear-gradient(135deg,#a855f7,#7c3aed);"><i class="bi bi-person"></i></div>
+            <h3>Hồ sơ cá nhân</h3>
+            <p>Cập nhật thông tin tài khoản</p>
+        </a>
     </div>
 </main>
-=======
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
->>>>>>> origin/main
 </body>
 </html>

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Admin Dashboard - CRMS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/common.css}" rel="stylesheet"/>
     <style>
         :root{
             --bg: #f8f9fa;
@@ -587,94 +588,11 @@
     </style>
 </head>
 <body>
-<header class="header">
-    <div class="header-left">
-        <div class="logo-section">
-            <div class="logo">
-                <i class="bi bi-car-front-fill"></i>
-            </div>
-            <div class="brand-info">
-                <h1>CRMS</h1>
-                <span>Car Rental System</span>
-            </div>
-        </div>
-    </div>
+<!-- SHARED HEADER -->
+<header th:replace="~{fragments/header :: header('ADMIN', 'Administrator')}"></header>
 
-    <div class="header-right">
-            <div class="user-menu">
-                <div class="avatar">AD</div>
-                <div class="user-info">
-                    <span class="name">Administrator</span>
-                    <span class="role">Quản trị viên</span>
-                </div>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-        </div>
-    </div>
-</header>
-
-<aside class="sidebar">
-    <div class="sidebar-section">
-        <div class="sidebar-title">Quản trị hệ thống</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/admin/dashboard}" class="nav-link active">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Tổng quan (Dashboard)</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/customers}" class="nav-link">
-                    <i class="bi bi-people"></i>
-                    <span>Quản lý người dùng</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/cars}" class="nav-link">
-                    <i class="bi bi-car-front"></i>
-                    <span>Quản lý xe</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/bookings}" class="nav-link">
-                    <i class="bi bi-calendar-check"></i>
-                    <span>Quản lý đơn đặt xe</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/reports/revenue}" class="nav-link">
-                    <i class="bi bi-file-earmark-bar-graph"></i>
-                    <span>Quản lý báo cáo</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="sidebar-section">
-        <div class="sidebar-title">Tài khoản</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/admin/profile}" class="nav-link">
-                    <i class="bi bi-person"></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/admin/settings}" class="nav-link">
-                    <i class="bi bi-sliders"></i>
-                    <span>Cài đặt hệ thống</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <form th:action="@{/auth/logout}" method="post" style="margin-top: auto; margin-bottom: 20px;">
-        <button type="submit" class="logout-btn">
-            <i class="bi bi-box-arrow-right"></i>
-            Đăng xuất
-        </button>
-    </form>
-</aside>
+<!-- SHARED SIDEBAR -->
+<aside th:replace="~{fragments/sidebar-admin :: sidebar-admin('dashboard')}"></aside>
 
 <main class="main-content">
     <div class="welcome-banner">
@@ -698,10 +616,10 @@
             </div>
             <div class="stat-content">
                 <div class="stat-label">Tổng người dùng</div>
-                <div class="stat-value" th:text="${adminStats != null ? adminStats.totalUsers : '1,250'}">1,250</div>
-                <div class="stat-change up">
+                <div class="stat-value" th:text="${stats.totalUsers != null ? #numbers.formatInteger(stats.totalUsers, 1, 'COMMA') : '0'}">0</div>
+                <div class="stat-change up" th:if="${stats.newUsersThisMonth != null and stats.newUsersThisMonth > 0}">
                     <i class="bi bi-arrow-up"></i>
-                    <span>+15% so với tháng trước</span>
+                    <span th:text="'+' + ${stats.newUsersThisMonth} + ' tháng này'">+0 tháng này</span>
                 </div>
             </div>
         </div>
@@ -712,24 +630,24 @@
             </div>
             <div class="stat-content">
                 <div class="stat-label">Tổng xe hệ thống</div>
-                <div class="stat-value" th:text="${adminStats != null ? adminStats.totalCars : '345'}">345</div>
-                <div class="stat-change up">
+                <div class="stat-value" th:text="${stats.totalCars != null ? #numbers.formatInteger(stats.totalCars, 1, 'COMMA') : '0'}">0</div>
+                <div class="stat-change up" th:if="${stats.newCarsThisMonth != null and stats.newCarsThisMonth > 0}">
                     <i class="bi bi-arrow-up"></i>
-                    <span>+12 xe mới</span>
+                    <span th:text="'+' + ${stats.newCarsThisMonth} + ' xe mới'">+0 xe mới</span>
                 </div>
             </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon orange">
-                <i class="bi bi-file-earmark-text"></i>
+                <i class="bi bi-calendar-check"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Báo cáo chờ xử lý</div>
-                <div class="stat-value" th:text="${adminStats != null ? adminStats.pendingReports : '18'}">18</div>
-                <div class="stat-change down">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <span>Cần phê duyệt sớm</span>
+                <div class="stat-label">Tổng đơn đặt xe</div>
+                <div class="stat-value" th:text="${stats.totalBookings != null ? #numbers.formatInteger(stats.totalBookings, 1, 'COMMA') : '0'}">0</div>
+                <div class="stat-change" th:classappend="${stats.pendingBookings != null and stats.pendingBookings > 0} ? 'down' : 'up'">
+                    <i class="bi" th:classappend="${stats.pendingBookings != null and stats.pendingBookings > 0} ? 'bi-exclamation-triangle' : 'bi-check-circle'"></i>
+                    <span th:text="${stats.pendingBookings != null and stats.pendingBookings > 0} ? ${stats.pendingBookings} + ' đang chờ xử lý' : 'Không có đơn chờ'">0 đang chờ</span>
                 </div>
             </div>
         </div>
@@ -740,10 +658,17 @@
             </div>
             <div class="stat-content">
                 <div class="stat-label">Doanh thu tháng</div>
-                <div class="stat-value">85.4M</div>
-                <div class="stat-change up">
+                <div class="stat-value">
+                    <span th:if="${stats.revenueThisMonth != null}" th:text="${#numbers.formatDecimal(stats.revenueThisMonth / 1000000, 1, 'COMMA', 1, 'POINT')} + 'M'">0M</span>
+                    <span th:unless="${stats.revenueThisMonth != null}">0</span>
+                </div>
+                <div class="stat-change up" th:if="${stats.revenueGrowthPercent != null and stats.revenueGrowthPercent >= 0}">
                     <i class="bi bi-arrow-up"></i>
-                    <span>+22% so với tháng trước</span>
+                    <span th:text="'+' + ${#numbers.formatDecimal(stats.revenueGrowthPercent, 1, 'POINT', 1, 'POINT')} + '% so với tháng trước'">+0%</span>
+                </div>
+                <div class="stat-change down" th:if="${stats.revenueGrowthPercent != null and stats.revenueGrowthPercent < 0}">
+                    <i class="bi bi-arrow-down"></i>
+                    <span th:text="${#numbers.formatDecimal(stats.revenueGrowthPercent, 1, 'POINT', 1, 'POINT')} + '% so với tháng trước'">-0%</span>
                 </div>
             </div>
         </div>
@@ -805,49 +730,198 @@
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Log hệ thống gần đây</h3>
-                <span class="card-action">Tất cả log</span>
+                <h3 class="card-title">Hoạt động gần đây</h3>
+                <a th:href="@{/admin/bookings}" class="card-action">Xem tất cả</a>
             </div>
 
             <div class="quick-actions">
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #e0f2fe; color: #0891b2;">
-                        <i class="bi bi-person-check"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Tài khoản mới đăng ký</div>
-                        <div class="action-desc">15 phút trước • Tran Van A</div>
-                    </div>
-                </div>
-
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #fef3c7; color: #d97706;">
-                        <i class="bi bi-calendar-plus"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Đơn đặt xe mới #1042</div>
-                        <div class="action-desc">1 giờ trước • Honda Civic</div>
+                <!-- Dynamic recent activities from database -->
+                <div th:if="${stats.recentActivities != null and !stats.recentActivities.isEmpty()}"
+                     th:each="activity : ${stats.recentActivities}">
+                    <div class="action-item" style="cursor: default;">
+                        <div class="action-icon" th:style="${activity.iconBgClass}">
+                            <i th:class="${activity.iconClass}"></i>
+                        </div>
+                        <div class="action-content">
+                            <div class="action-title" th:text="${activity.title}">Activity Title</div>
+                            <div class="action-desc" th:text="${activity.description}">Description</div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #fce7f3; color: #db2777;">
-                        <i class="bi bi-exclamation-circle"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Báo cáo sự cố</div>
-                        <div class="action-desc">2 giờ trước • Xe Mazda CX-5 trầy xước</div>
-                    </div>
+                <!-- Empty state when no activities -->
+                <div th:if="${stats.recentActivities == null or stats.recentActivities.isEmpty()}"
+                     class="text-center py-4" style="color: #666;">
+                    <i class="bi bi-inbox" style="font-size: 2rem; color: #ddd;"></i>
+                    <p class="mt-2 mb-0">Chưa có hoạt động nào</p>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="action-item" style="cursor: default;">
-                    <div class="action-icon" style="background: #dcfce7; color: #16a34a;">
-                        <i class="bi bi-check-all"></i>
-                    </div>
-                    <div class="action-content">
-                        <div class="action-title">Duyệt đơn thành công</div>
-                        <div class="action-desc">5 giờ trước • Admin đã duyệt đơn #1041</div>
-                    </div>
+    <!-- DETAILED STATS BREAKDOWN -->
+    <div class="cards-grid" style="margin-bottom: 2rem;">
+        <!-- User Breakdown -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="bi bi-people" style="color:var(--primary);margin-right:8px;"></i>Chi tiết người dùng</h3>
+                <a th:href="@{/admin/customers}" class="card-action">Quản lý</a>
+            </div>
+            <div style="display:grid;gap:0.75rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:var(--bg);border-radius:10px;">
+                    <span style="color:var(--muted);font-weight:500;">Khách hàng</span>
+                    <span style="font-weight:700;color:var(--text);" th:text="${stats.totalCustomers != null ? stats.totalCustomers : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:var(--bg);border-radius:10px;">
+                    <span style="color:var(--muted);font-weight:500;">Chủ xe</span>
+                    <span style="font-weight:700;color:var(--text);" th:text="${stats.totalOwners != null ? stats.totalOwners : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:var(--bg);border-radius:10px;">
+                    <span style="color:var(--muted);font-weight:500;">Admin</span>
+                    <span style="font-weight:700;color:var(--text);" th:text="${stats.totalAdmins != null ? stats.totalAdmins : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:#fff3cd;border-radius:10px;">
+                    <span style="color:#856404;font-weight:500;">Chờ duyệt</span>
+                    <span style="font-weight:700;color:#856404;" th:text="${stats.pendingUsers != null ? stats.pendingUsers : 0}">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Car Breakdown -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="bi bi-car-front" style="color:var(--success);margin-right:8px;"></i>Chi tiết xe</h3>
+                <a th:href="@{/admin/cars}" class="card-action">Quản lý</a>
+            </div>
+            <div style="display:grid;gap:0.75rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:#d4edda;border-radius:10px;">
+                    <span style="color:#155724;font-weight:500;">Sẵn sàng</span>
+                    <span style="font-weight:700;color:#155724;" th:text="${stats.availableCars != null ? stats.availableCars : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:#cce5ff;border-radius:10px;">
+                    <span style="color:#004085;font-weight:500;">Đang thuê</span>
+                    <span style="font-weight:700;color:#004085;" th:text="${stats.bookedCars != null ? stats.bookedCars : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:#f8d7da;border-radius:10px;">
+                    <span style="color:#721c24;font-weight:500;">Không khả dụng</span>
+                    <span style="font-weight:700;color:#721c24;" th:text="${stats.unavailableCars != null ? stats.unavailableCars : 0}">0</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;background:#fff3cd;border-radius:10px;">
+                    <span style="color:#856404;font-weight:500;">Chờ duyệt</span>
+                    <span style="font-weight:700;color:#856404;" th:text="${stats.pendingCars != null ? stats.pendingCars : 0}">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECENT BOOKINGS TABLE -->
+    <div class="card" style="margin-bottom:2rem;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-calendar-check" style="color:var(--warning);margin-right:8px;"></i>Đơn đặt xe gần đây</h3>
+            <a th:href="@{/admin/bookings}" class="card-action">Xem tất cả</a>
+        </div>
+        <div th:if="${stats.recentBookings != null and !stats.recentBookings.isEmpty()}" style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                <thead>
+                    <tr style="border-bottom:2px solid var(--line);text-align:left;">
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Mã đơn</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Khách hàng</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Xe</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Trạng thái</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Thanh toán</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;text-align:right;">Tổng tiền</th>
+                        <th style="padding:0.75rem 1rem;color:var(--muted);font-weight:600;">Ngày tạo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b : ${stats.recentBookings}" style="border-bottom:1px solid var(--line);">
+                        <td style="padding:0.75rem 1rem;font-weight:600;" th:text="'#' + ${b.bookingId}"></td>
+                        <td style="padding:0.75rem 1rem;" th:text="${b.customerName}"></td>
+                        <td style="padding:0.75rem 1rem;" th:text="${b.carName}"></td>
+                        <td style="padding:0.75rem 1rem;">
+                            <span th:switch="${b.status}">
+                                <span th:case="'CONFIRMED'" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#d4edda;color:#155724;">Đã xác nhận</span>
+                                <span th:case="'PAYMENT_PENDING'" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#e2e3e5;color:#383d41;">Chờ thanh toán</span>
+                                <span th:case="'CANCELLED'" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#f8d7da;color:#721c24;">Đã hủy</span>
+                                <span th:case="'COMPLETED'" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#cce5ff;color:#004085;">Hoàn thành</span>
+                                <span th:case="'IN_USE'" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#d1ecf1;color:#0c5460;">Đang sử dụng</span>
+                                <span th:case="*" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#fff3cd;color:#856404;" th:text="${b.status}">Pending</span>
+                            </span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;">
+                            <span th:if="${b.paymentStatus == 'PAID'}" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#d4edda;color:#155724;">Đã thanh toán</span>
+                            <span th:unless="${b.paymentStatus == 'PAID'}" style="padding:4px 10px;border-radius:15px;font-size:0.8rem;font-weight:600;background:#fff3cd;color:#856404;" th:text="${b.paymentStatus}">UNPAID</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;text-align:right;font-weight:600;">
+                            <span th:if="${b.totalAmount != null}" th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0</span>
+                            <span th:unless="${b.totalAmount != null}">0 ₫</span>
+                        </td>
+                        <td style="padding:0.75rem 1rem;color:var(--muted);" th:text="${b.createdAt}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${stats.recentBookings == null or stats.recentBookings.isEmpty()}"
+             style="text-align:center;padding:2rem;color:#666;">
+            <i class="bi bi-inbox" style="font-size:2.5rem;color:#ddd;display:block;margin-bottom:0.75rem;"></i>
+            <p style="margin:0;">Chưa có đơn đặt xe nào</p>
+        </div>
+    </div>
+
+    <!-- BOOKING STATUS BREAKDOWN -->
+    <div class="card" style="margin-bottom:2rem;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-bar-chart" style="color:var(--info);margin-right:8px;"></i>Thống kê đơn đặt xe</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:1rem;">
+            <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:10px;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--text);" th:text="${stats.confirmedBookings != null ? stats.confirmedBookings : 0}">0</div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem;">Đã xác nhận</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:10px;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--text);" th:text="${stats.inUseBookings != null ? stats.inUseBookings : 0}">0</div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem;">Đang sử dụng</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:10px;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--text);" th:text="${stats.completedBookings != null ? stats.completedBookings : 0}">0</div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem;">Hoàn thành</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:10px;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--text);" th:text="${stats.cancelledBookings != null ? stats.cancelledBookings : 0}">0</div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem;">Đã hủy</div>
+            </div>
+            <div style="text-align:center;padding:1rem;background:var(--bg);border-radius:10px;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--text);" th:text="${stats.pendingBookings != null ? stats.pendingBookings : 0}">0</div>
+                <div style="font-size:0.8rem;color:var(--muted);margin-top:0.25rem;">Đang chờ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVENUE SUMMARY -->
+    <div class="card" style="margin-bottom:2rem;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="bi bi-cash-stack" style="color:var(--success);margin-right:8px;"></i>Tổng quan doanh thu</h3>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:1.5rem;">
+            <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg, #d4edda, #c3e6cb);border-radius:12px;">
+                <div style="font-size:0.85rem;color:#155724;font-weight:500;margin-bottom:0.5rem;">Tổng doanh thu</div>
+                <div style="font-size:1.5rem;font-weight:700;color:#155724;">
+                    <span th:if="${stats.totalRevenue != null}" th:text="${#numbers.formatDecimal(stats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    <span th:unless="${stats.totalRevenue != null}">0 ₫</span>
+                </div>
+            </div>
+            <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg, #cce5ff, #b8daff);border-radius:12px;">
+                <div style="font-size:0.85rem;color:#004085;font-weight:500;margin-bottom:0.5rem;">Doanh thu tháng này</div>
+                <div style="font-size:1.5rem;font-weight:700;color:#004085;">
+                    <span th:if="${stats.revenueThisMonth != null}" th:text="${#numbers.formatDecimal(stats.revenueThisMonth, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    <span th:unless="${stats.revenueThisMonth != null}">0 ₫</span>
+                </div>
+            </div>
+            <div style="text-align:center;padding:1.25rem;background:linear-gradient(135deg, #e2e3e5, #d6d8db);border-radius:12px;">
+                <div style="font-size:0.85rem;color:#383d41;font-weight:500;margin-bottom:0.5rem;">Doanh thu tháng trước</div>
+                <div style="font-size:1.5rem;font-weight:700;color:#383d41;">
+                    <span th:if="${stats.revenueLastMonth != null}" th:text="${#numbers.formatDecimal(stats.revenueLastMonth, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    <span th:unless="${stats.revenueLastMonth != null}">0 ₫</span>
                 </div>
             </div>
         </div>

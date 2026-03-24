@@ -1,10 +1,14 @@
 package fpt.swp391.carrentalsystem.controller.admin;
 
+import fpt.swp391.carrentalsystem.dto.response.AdminDashboardStatsDto;
 import fpt.swp391.carrentalsystem.dto.response.CustomerResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerResponse;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
+import fpt.swp391.carrentalsystem.service.admin.AdminDashboardService;
 import fpt.swp391.carrentalsystem.service.admin.ManageCustomerService;
 import fpt.swp391.carrentalsystem.service.admin.ManageOwnerService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,24 +16,31 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminController {
 
     private final ManageCustomerService manageCustomerService;
     private final ManageOwnerService manageOwnerService;
-
-    // ✅ Constructor Injection (khuyến nghị)
-    public AdminController(ManageCustomerService manageCustomerService,
-                           ManageOwnerService manageOwnerService) {
-        this.manageCustomerService = manageCustomerService;
-        this.manageOwnerService = manageOwnerService;
-    }
+    private final AdminDashboardService adminDashboardService;
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+        try {
+            // Fetch all dashboard statistics from database
+            AdminDashboardStatsDto stats = adminDashboardService.getDashboardStats();
+            model.addAttribute("stats", stats);
+
+            log.info("Admin dashboard loaded with stats: totalUsers={}, totalBookings={}, totalRevenue={}",
+                    stats.getTotalUsers(), stats.getTotalBookings(), stats.getTotalRevenue());
+        } catch (Exception e) {
+            log.error("Error loading admin dashboard: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải dữ liệu dashboard. Vui lòng thử lại.");
+            // Provide empty stats to prevent template errors
+            model.addAttribute("stats", AdminDashboardStatsDto.builder().build());
+        }
         return "admin/admin-dashboard";
     }
 

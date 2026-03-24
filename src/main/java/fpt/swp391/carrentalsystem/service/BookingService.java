@@ -35,6 +35,11 @@ public interface BookingService {
     List<RentalHistoryDto> getCustomerRentalHistory(Long customerId);
 
     /**
+     * Get rental history for owner (all bookings on their cars)
+     */
+    List<RentalHistoryDto> getOwnerRentalHistory(Long ownerId);
+
+    /**
      * Cancel booking before payment
      */
     void cancelBookingBeforePayment(Integer bookingId, Long userId);
@@ -49,6 +54,25 @@ public interface BookingService {
      */
     RentalHistoryDto getBookingDetails(Integer bookingId);
 
+    /**
+     * Get booking details with permission check for customer
+     */
+    RentalHistoryDto getBookingDetailsForCustomer(Integer bookingId, Long customerId);
+
+    /**
+     * Get booking details with permission check for owner
+     */
+    RentalHistoryDto getBookingDetailsForOwner(Integer bookingId, Long ownerId);
+
+    /**
+     * Check if booking can be cancelled
+     */
+    boolean canCancelBooking(Integer bookingId, Long userId);
+
+    /**
+     * Check if booking can be paid
+     */
+    boolean canPayBooking(Integer bookingId);
 
     /**
      * Search available cars with raw parameters
