@@ -8,6 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 @Controller
 @RequestMapping("/auth")
@@ -28,9 +30,24 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(RegisterRequest request) {
-        authService.register(request);
-        return "redirect:/auth/login";
+    public String register(@Valid RegisterRequest request, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            return "auth/register";
+        }
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            model.addAttribute("passwordError", "Mật khẩu xác nhận không khớp");
+            return "auth/register";
+        }
+
+        try {
+            authService.register(request);
+        } catch (RuntimeException e) {
+            model.addAttribute("registerError", e.getMessage());
+            return "auth/register";
+        }
+
+        return "redirect:/auth/login?success";
     }
 }
 

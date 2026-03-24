@@ -24,7 +24,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void register(RegisterRequest request) {
-
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email này đã được sử dụng!");
+        }
         User user = userMapper.registerRequestToUser(request);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE);
