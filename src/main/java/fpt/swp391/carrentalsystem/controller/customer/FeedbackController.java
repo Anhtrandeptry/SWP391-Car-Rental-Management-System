@@ -46,10 +46,14 @@ public class FeedbackController {
 
     @GetMapping("/new")
     public String sendForm(Model model,
-                           @RequestParam(value = "ok", required = false) String ok) {
-        model.addAttribute("form", new FeedbackForm());
+                           @RequestParam(value = "ok", required = false) String ok,
+                           @RequestParam(value = "bookingId", required = false) Long bookingId) {
+        FeedbackForm form = new FeedbackForm();
+        if (bookingId != null) {
+            form.setBookingId(bookingId);
+        }
+        model.addAttribute("form", form);
         model.addAttribute("ok", ok != null);
-
         model.addAttribute("suggestions", """
 - Mô tả đúng trải nghiệm bạn gặp phải (trước/sau khi nhận xe).
 - Nêu rõ điểm tốt và điểm cần cải thiện.

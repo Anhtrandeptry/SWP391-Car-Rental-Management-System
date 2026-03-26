@@ -72,109 +72,117 @@
     </style>
 </head>
 <body>
-    <div class="page-header">
-        <div class="container">
-            <h2><i class="bi bi-clock-history"></i> Lịch Sử Đặt Xe</h2>
-            <p class="mb-0">Xem tất cả các đơn đặt xe của bạn</p>
-        </div>
+<div class="page-header">
+    <div class="container">
+        <h2><i class="bi bi-clock-history"></i> Lịch Sử Đặt Xe</h2>
+        <p class="mb-0">Xem tất cả các đơn đặt xe của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Back button -->
+    <div class="mb-3">
+        <a href="/customer/dashboard" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+        </a>
     </div>
 
-    <div class="container">
-        <!-- Back button -->
-        <div class="mb-3">
-            <a href="/customer/dashboard" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left"></i> Quay lại Dashboard
+    <!-- Alert messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Booking history table -->
+    <div class="table-container">
+        <div th:if="${#lists.isEmpty(bookingHistory)}" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h4>Chưa có đơn đặt xe nào</h4>
+            <p>Hãy đặt xe đầu tiên của bạn!</p>
+            <a href="/customer/booking" class="btn btn-primary">
+                <i class="bi bi-car-front"></i> Đặt xe ngay
             </a>
         </div>
 
-        <!-- Alert messages -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <!-- Booking history table -->
-        <div class="table-container">
-            <div th:if="${#lists.isEmpty(bookingHistory)}" class="empty-state">
-                <i class="bi bi-inbox"></i>
-                <h4>Chưa có đơn đặt xe nào</h4>
-                <p>Hãy đặt xe đầu tiên của bạn!</p>
-                <a href="/customer/booking" class="btn btn-primary">
-                    <i class="bi bi-car-front"></i> Đặt xe ngay
-                </a>
-            </div>
-
-            <div th:if="${!#lists.isEmpty(bookingHistory)}">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Mã đơn</th>
-                                <th>Chủ xe</th>
-                                <th>SĐT Chủ xe</th>
-                                <th>Ngày tạo</th>
-                                <th>Ngày nhận xe</th>
-                                <th>Ngày trả xe</th>
-                                <th>Trạng thái</th>
-                                <th>Thanh toán</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="booking : ${bookingHistory}">
-                                <td><strong th:text="'#' + ${booking.bookingId}"></strong></td>
-                                <td th:text="${booking.ownerName}"></td>
-                                <td>
-                                    <a th:href="'tel:' + ${booking.ownerPhone}" th:text="${booking.ownerPhone}"></a>
-                                </td>
-                                <td th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td>
+        <div th:if="${!#lists.isEmpty(bookingHistory)}">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Chủ xe</th>
+                        <th>SĐT Chủ xe</th>
+                        <th>Ngày tạo</th>
+                        <th>Ngày nhận xe</th>
+                        <th>Ngày trả xe</th>
+                        <th>Trạng thái</th>
+                        <th>Thanh toán</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="booking : ${bookingHistory}">
+                        <td><strong th:text="'#' + ${booking.bookingId}"></strong></td>
+                        <td th:text="${booking.ownerName}"></td>
+                        <td>
+                            <a th:href="'tel:' + ${booking.ownerPhone}" th:text="${booking.ownerPhone}"></a>
+                        </td>
+                        <td th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td>
                                     <span th:class="'status-badge status-' + ${booking.status.toLowerCase()}"
                                           th:text="${booking.status}"></span>
-                                </td>
-                                <td>
+                        </td>
+                        <td>
                                     <span th:class="'badge ' + (${booking.paymentStatus == 'PAID'} ? 'bg-success' : 'bg-warning')"
                                           th:text="${booking.paymentStatus}"></span>
-                                </td>
-                                <td>
-                                    <!-- View Detail -->
-                                    <a th:href="@{'/customer/booking/' + ${booking.bookingId}}"
-                                       class="btn btn-action btn-view">
-                                        <i class="bi bi-eye"></i> Chi tiết
-                                    </a>
+                        </td>
+                        <td>
+                            <!-- View Detail -->
+                            <a th:href="@{'/customer/booking/' + ${booking.bookingId}}"
+                               class="btn btn-action btn-view">
+                                <i class="bi bi-eye"></i> Chi tiết
+                            </a>
 
-                                    <!-- Cancel Button (only for PENDING/PAYMENT_PENDING and before startDate) -->
-                                    <form th:if="${(booking.status == 'PENDING' or booking.status == 'PAYMENT_PENDING') and #temporals.createNow().isBefore(booking.startDate)}"
-                                          th:action="@{'/customer/booking/' + ${booking.bookingId} + '/cancel'}"
-                                          method="post" style="display: inline;">
-                                        <button type="submit" class="btn btn-action btn-cancel"
-                                                onclick="return confirm('Bạn có chắc muốn hủy đơn này?')">
-                                            <i class="bi bi-x-circle"></i> Hủy
-                                        </button>
-                                    </form>
+                            <!-- Cancel Button (only for PENDING/PAYMENT_PENDING and before startDate) -->
+                            <form th:if="${(booking.status == 'PENDING' or booking.status == 'PAYMENT_PENDING') and #temporals.createNow().isBefore(booking.startDate)}"
+                                  th:action="@{'/customer/booking/' + ${booking.bookingId} + '/cancel'}"
+                                  method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-action btn-cancel"
+                                        onclick="return confirm('Bạn có chắc muốn hủy đơn này?')">
+                                    <i class="bi bi-x-circle"></i> Hủy
+                                </button>
+                            </form>
 
-                                    <!-- Pay Button (only for UNPAID and before startDate) -->
-                                    <a th:if="${booking.paymentStatus == 'UNPAID' and booking.status == 'PAYMENT_PENDING' and #temporals.createNow().isBefore(booking.startDate)}"
-                                       th:href="@{'/customer/booking/' + ${booking.bookingId} + '/payment'}"
-                                       class="btn btn-action btn-pay">
-                                        <i class="bi bi-credit-card"></i> Thanh toán
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                            <!-- Pay Button (only for UNPAID and before startDate) -->
+                            <a th:if="${booking.paymentStatus == 'UNPAID' and booking.status == 'PAYMENT_PENDING' and #temporals.createNow().isBefore(booking.startDate)}"
+                               th:href="@{'/customer/booking/' + ${booking.bookingId} + '/payment'}"
+                               class="btn btn-action btn-pay">
+                                <i class="bi bi-credit-card"></i> Thanh toán
+                            </a>
+
+                            <!-- Feedback Button (only for PAID) -->
+                            <a th:if="${booking.paymentStatus == 'PAID'}"
+                               th:href="@{'/customer/feedbacks/new?bookingId=' + ${booking.bookingId}}"
+                               class="btn btn-action"
+                               style="background: #ffc107; color: #000; border: none;">
+                                <i class="bi bi-star"></i> Feedback
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 
