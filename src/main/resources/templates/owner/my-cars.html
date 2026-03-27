@@ -7,48 +7,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f9fafb; color: #333; line-height: 1.6;
-        }
-        header {
-            background-color: #ffffff; border-bottom: 1px solid #e5e7eb;
-            padding: 16px 24px; position: sticky; top: 0; z-index: 100;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f9fafb; color: #333; line-height: 1.6; }
+        header { background-color: #ffffff; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; position: sticky; top: 0; z-index: 100; }
         .header-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
         .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #14b8a6; font-size: 1.5rem; text-decoration: none; }
-
         .container { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
+
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
         .page-title { font-size: 1.8rem; font-weight: 700; color: #111827; }
 
-        .btn-add {
-            padding: 12px 24px; background-color: #14b8a6; color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; text-decoration: none; display: inline-block;
-        }
+        .btn-add { padding: 12px 24px; background-color: #14b8a6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; display: inline-block; }
         .btn-add:hover { background-color: #0d9488; transform: translateY(-2px); }
 
+        /* Nút quay lại trang dashboard */
+        .btn-back-dashboard { padding: 10px 18px; background-color: #f3f4f6; color: #4b5563; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 8px; border: 1px solid #e5e7eb; }
+        .btn-back-dashboard:hover { background-color: #e5e7eb; color: #111827; }
+
         /* Tabs Filter */
-        .tabs-container {
-            display: flex; gap: 10px; margin-bottom: 30px; background: #fff;
-            padding: 6px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            width: fit-content;
-        }
-        .tab-btn {
-            padding: 8px 20px; border: none; background: none; border-radius: 8px;
-            cursor: pointer; font-weight: 600; color: #6b7280; transition: 0.3s;
-        }
-        .tab-btn.active { background: #14b8a6; color: white; }
-        .tab-btn:hover:not(.active) { background: #f3f4f6; }
+        .tabs-container { display: flex; gap: 10px; margin-bottom: 30px; background: #fff; padding: 6px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); width: fit-content; }
+        .tab-btn { padding: 8px 20px; border: none; background: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: #6b7280; transition: 0.3s; text-decoration: none; display: inline-block; font-size: 0.9rem; }
+        .tab-btn.active { background: #14b8a6; color: white !important; }
+        .tab-btn:hover:not(.active) { background: #f3f4f6; color: #111827; }
+        .tab-btn.inactive.active { background: #ef4444; }
+        .tab-btn.inactive:hover:not(.active) { color: #ef4444; background: #fee2e2; }
 
         /* Car Grid */
         .car-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-        .car-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.3s; }
+        .car-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.3s; display: flex; flex-direction: column; position: relative; }
         .car-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .car-card.is-inactive { opacity: 0.75; }
+
+        .car-link { text-decoration: none; color: inherit; display: block; flex-grow: 1; }
         .car-image { width: 100%; height: 200px; object-fit: cover; background: #eee; }
         .car-content { padding: 20px; }
-
         .car-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .car-name { font-size: 1.2rem; font-weight: 700; color: #111827; }
         .car-license { color: #6b7280; font-size: 0.85rem; margin-top: 4px; }
@@ -57,28 +49,29 @@
         .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
         .status-pending { background: #fef3c7; color: #92400e; }
         .status-available { background: #d1fae5; color: #065f46; }
+        .status-rented { background: #e0f2fe; color: #0369a1; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
 
         .car-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 15px 0; padding: 15px 0; border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6; }
         .detail-label { color: #9ca3af; font-size: 0.75rem; }
         .detail-value { font-weight: 600; font-size: 0.9rem; color: #374151; }
 
-        .car-actions { display: flex; gap: 10px; margin-top: 15px; }
-        .btn-action {
-            flex: 1; padding: 10px; border-radius: 8px; font-weight: 600;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-            font-size: 0.85rem; text-decoration: none; transition: 0.2s;
-        }
+        .car-actions { display: flex; gap: 8px; padding: 0 20px 20px 20px; position: relative; z-index: 2; }
+        .btn-action { flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; text-decoration: none; transition: 0.2s; border: none; cursor: pointer; }
         .btn-img { background: #e0f2f1; color: #00796b; border: 1px solid #b2dfdb; }
         .btn-edit { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .btn-delete { background: #fff5f5; color: #e03131; border: 1px solid #ffc9c9; }
+        .btn-delete:hover { background: #fa5252; color: white; }
 
-        .empty-state { text-align: center; padding: 80px 0; grid-column: 1 / -1; display: none; }
+        .inactive-label { flex: 1; display: flex; align-items: center; justify-content: center; background: #f9fafb; color: #9ca3af; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: 1px dashed #e5e7eb; height: 40px; }
+
+        .empty-state { text-align: center; padding: 80px 0; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
-
 <header>
     <div class="header-container">
-        <a href="/owner/my-cars" class="logo-section">CRMS</a>
+        <a th:href="@{/owner/my-cars}" class="logo-section">CRMS</a>
         <div class="user-info" th:if="${#authentication != null}">
             Chào, <span th:text="${#authentication.principal.user.firstName}">Chủ xe</span> 👋
         </div>
@@ -87,81 +80,69 @@
 
 <div class="container">
     <div class="page-header">
-        <h1 class="page-title">Xe của tôi</h1>
+        <div class="header-left">
+            <a th:href="@{/owner/dashboard}" class="btn-back-dashboard">
+                <i class="fas fa-chevron-left"></i> Dashboard
+            </a>
+            <h1 class="page-title">Xe của tôi</h1>
+        </div>
         <a th:href="@{/owner/income-estimate}" class="btn-add"><i class="fas fa-plus"></i> Đăng ký xe mới</a>
     </div>
 
     <div class="tabs-container">
-        <button class="tab-btn active" onclick="filterByStatus('ALL', this)">Tất cả xe</button>
-        <button class="tab-btn" onclick="filterByStatus('Pending', this)">Xe chờ duyệt</button>
-        <button class="tab-btn" onclick="filterByStatus('Available', this)">Xe hoạt động</button>
+        <a th:href="@{/owner/my-cars(filter='all')}" class="tab-btn" th:classappend="${currentFilter == 'all' or currentFilter == null} ? 'active' : ''">Tất cả xe</a>
+        <a th:href="@{/owner/my-cars(filter='pending')}" class="tab-btn" th:classappend="${currentFilter == 'pending'} ? 'active' : ''">Xe chờ duyệt</a>
+        <a th:href="@{/owner/my-cars(filter='available')}" class="tab-btn" th:classappend="${currentFilter == 'available'} ? 'active' : ''">Xe hoạt động</a>
+        <a th:href="@{/owner/my-cars(filter='rented')}" class="tab-btn" th:classappend="${currentFilter == 'rented'} ? 'active' : ''">Đang thuê</a>
+        <a th:href="@{/owner/my-cars(filter='inactive')}" class="tab-btn inactive" th:classappend="${currentFilter == 'inactive'} ? 'active' : ''">🗑️ Đã xóa</a>
     </div>
 
-    <div class="car-grid" id="carGrid">
-        <div th:each="car : ${cars}" class="car-card" th:attr="data-status=${car.status}">
-            <img th:src="${car.mainImageUrl != null ? car.mainImageUrl : 'https://via.placeholder.com/400x250?text=No+Image'}" class="car-image">
+    <div class="car-grid">
+        <div th:each="car : ${cars}" class="car-card" th:classappend="${#strings.toString(car.status) == 'INACTIVE'} ? 'is-inactive' : ''">
 
-            <div class="car-content">
-                <div class="car-header">
-                    <div>
-                        <div class="car-name" th:text="${car.name}">Tên xe</div>
-                        <div class="car-license" th:text="'ID: #' + ${car.id}">ID</div>
+            <a th:href="@{/owner/car-detail/{id}(id=${car.id})}" class="car-link">
+                <img th:src="${car.mainImageUrl != null ? car.mainImageUrl : 'https://via.placeholder.com/400x250?text=No+Image'}" class="car-image">
+                <div class="car-content">
+                    <div class="car-header">
+                        <div>
+                            <div class="car-name" th:text="${car.name}">Tên xe</div>
+                            <div class="car-license" th:text="'ID: #' + ${car.id}">ID</div>
+                        </div>
+                        <span th:class="'status-badge status-' + ${#strings.toLowerCase(car.status)}"
+                              th:text="${#strings.toString(car.status) == 'AVAILABLE' ? 'Hoạt động' : (#strings.toString(car.status) == 'PENDING' ? 'Chờ duyệt' : (#strings.toString(car.status) == 'INACTIVE' ? 'Đã xóa' : car.status))}">
+                        </span>
                     </div>
-                    <span th:class="'status-badge status-' + ${#strings.toLowerCase(car.status)}"
-                          th:text="${car.status == 'Available' ? 'Hoạt động' : (car.status == 'Pending' ? 'Chờ duyệt' : car.status)}">
-                    </span>
+                    <div class="car-details">
+                        <div><p class="detail-label">ĐỊA ĐIỂM</p><p class="detail-value" th:text="${car.location}"></p></div>
+                        <div><p class="detail-label">GIÁ THUÊ</p><p class="detail-value" style="color: #14b8a6;" th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + 'đ'"></p></div>
+                    </div>
                 </div>
+            </a>
 
-                <div class="car-details">
-                    <div><p class="detail-label">ĐỊA ĐIỂM</p><p class="detail-value" th:text="${car.location}"></p></div>
-                    <div><p class="detail-label">GIÁ THUÊ</p><p class="detail-value" style="color: #14b8a6;" th:text="${#numbers.formatDecimal(car.pricePerDay, 0, 'COMMA', 0, 'POINT')} + 'đ'"></p></div>
-                </div>
+            <div class="car-actions">
 
-                <div class="car-actions">
-                    <a th:href="@{/owner/cars/{id}/images(id=${car.id})}" class="btn-action btn-img"><i class="fas fa-images"></i> Ảnh</a>
-                    <a th:href="@{/owner/edit-car/{id}(id=${car.id})}" class="btn-action btn-edit"><i class="fas fa-edit"></i> Sửa</a>
+                <th:block th:if="${#strings.toString(car.status) != 'INACTIVE'}">
+                    <a th:href="@{/owner/cars/{id}/edit(id=${car.id})}" class="btn-action btn-edit" title="Sửa"><i class="fas fa-edit"></i></a>
+                    <a th:href="@{/owner/cars/{id}/images(id=${car.id})}" class="btn-action btn-img" title="Ảnh"><i class="fas fa-images"></i></a>
+                    <form th:action="@{/owner/delete-car/{id}(id=${car.id})}" method="post" style="flex: 1; display: flex;"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa xe này? Xe sẽ ngừng hoạt động.');">
+                        <button type="submit" class="btn-action btn-delete" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </th:block>
+
+                <div th:if="${#strings.toString(car.status) == 'INACTIVE'}" class="inactive-label">
+                    <i class="fas fa-ban" style="margin-right: 5px;"></i> Đã ngừng hoạt động
                 </div>
             </div>
         </div>
 
-        <div id="filterEmptyState" class="empty-state">
+        <div th:if="${#lists.isEmpty(cars)}" class="empty-state">
             <i class="fas fa-search" style="font-size: 3rem; color: #e5e7eb; margin-bottom: 1rem;"></i>
-            <p style="color: #9ca3af;">Không tìm thấy xe nào ở trạng thái này.</p>
+            <p style="color: #9ca3af;">Không tìm thấy xe nào trong danh mục này.</p>
         </div>
     </div>
 </div>
-
-<script>
-    function filterByStatus(status, btn) {
-        // 1. Đổi active cho nút
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // 2. Lọc các Card xe
-        const cards = document.querySelectorAll('.car-card');
-        let hasVisibleCard = false;
-
-        cards.forEach(card => {
-            const cardStatus = card.getAttribute('data-status');
-
-            // Nếu chọn ALL hoặc status khớp với data-status của card
-            if (status === 'ALL' || cardStatus === status) {
-                card.style.display = 'block';
-                hasVisibleCard = true;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        // 3. Hiển thị thông báo trống nếu không có xe nào khớp
-        const emptyState = document.getElementById('filterEmptyState');
-        if (!hasVisibleCard) {
-            emptyState.style.display = 'block';
-        } else {
-            emptyState.style.display = 'none';
-        }
-    }
-</script>
-
 </body>
 </html>

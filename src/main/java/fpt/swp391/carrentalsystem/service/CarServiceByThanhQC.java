@@ -2,6 +2,8 @@ package fpt.swp391.carrentalsystem.service;
 
 import fpt.swp391.carrentalsystem.dto.response.CarListItemResponse;
 import fpt.swp391.carrentalsystem.entity.Car;
+import fpt.swp391.carrentalsystem.enums.CarStatus;
+
 import java.util.List;
 
 public interface CarServiceByThanhQC {
@@ -15,9 +17,11 @@ public interface CarServiceByThanhQC {
     List<String> getAllFuelTypes();
     List<Integer> getAllSeats();
     Car getCarById(Long id);
+    List<CarListItemResponse> getCarsByOwnerAndStatus(Long ownerId, String filter);
 
     List<CarListItemResponse> getCarsByOwner(Long ownerId);
     List<CarListItemResponse> getPendingCars();
     void approveCar(Long id);
     void rejectCar(Long id);
+    void updateCarStatus(Long id, CarStatus status);
 }
