@@ -15,31 +15,31 @@
             padding: 16px 24px; position: sticky; top: 0; z-index: 100;
         }
         .header-container { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #14b8a6; font-size: 1.5rem; }
+        .logo-section { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #0d6efd; font-size: 1.5rem; }
 
         .container { max-width: 1280px; margin: 40px auto; padding: 0 24px; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
         .page-title { font-size: 1.8rem; font-weight: 700; color: #111827; }
 
         .btn-add {
-            padding: 12px 24px; background-color: #14b8a6; color: white;
+            padding: 12px 24px; background-color: #0d6efd; color: white;
             border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
             transition: all 0.3s; text-decoration: none; display: inline-block;
         }
-        .btn-add:hover { background-color: #0d9488; transform: translateY(-2px); }
+        .btn-add:hover { background-color: #0056b3; transform: translateY(-2px); }
 
         /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 24px; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); flex-wrap: wrap; }
         .tab { padding: 10px 20px; border: none; background: none; border-radius: 8px; cursor: pointer; color: #6b7280; font-weight: 500; text-decoration: none; display: inline-block; }
         .tab:hover { background: #f3f4f6; }
-        .tab.active { background: #14b8a6; color: white; }
+        .tab.active { background: #0d6efd; color: white; }
         .tab.deleted { color: #dc2626; }
         .tab.deleted.active { background: #dc2626; color: white; }
 
         /* Stats bar */
         .stats-bar { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
         .stat-item { background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .stat-item span { font-weight: 600; color: #14b8a6; }
+        .stat-item span { font-weight: 600; color: #0d6efd; }
         .stat-item.deleted span { color: #dc2626; }
 
         /* Car Grid */
@@ -99,7 +99,7 @@
     <div class="header-container">
         <a href="/owner/dashboard" class="logo-section" style="text-decoration: none;">🚗 CRMS</a>
         <div class="user-info" th:if="${#authentication != null}">
-            <a href="/owner/dashboard" style="color: #14b8a6; text-decoration: none; margin-right: 16px;">Dashboard</a>
+            <a href="/owner/dashboard" style="color: #0d6efd; text-decoration: none; margin-right: 16px;">Dashboard</a>
             Chào, <span th:text="${#authentication.name}">Chủ xe</span>
             <a href="/logout" style="margin-left: 16px; padding: 8px 16px; background-color: #fee2e2; color: #dc2626; border-radius: 6px; text-decoration: none;">Đăng xuất</a>
         </div>
@@ -267,3 +267,5 @@
 </script>
 </body>
 </html>
+
+
