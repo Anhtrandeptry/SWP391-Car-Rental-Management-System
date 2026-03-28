@@ -16,6 +16,12 @@ import java.util.Optional;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
+    /**
+     * Find booking by PayOS orderCode for webhook processing
+     * IMPORTANT: orderCode is NOT the same as bookingId
+     */
+    Optional<Booking> findByOrderCode(Long orderCode);
+
 
     List<Booking> findByCar_Owner_IdAndStatus(Integer ownerId, BookingStatus status);
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.car.carId = :carId " +

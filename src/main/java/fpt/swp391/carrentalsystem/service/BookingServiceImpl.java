@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     private final CarMapper carMapper;
     private final PaymentService paymentService;
 
-    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
+    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(5000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
     private static final int PAYMENT_TIMEOUT_MINUTES = 5;
 
@@ -131,6 +131,18 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
+        // Check if already paid (idempotency)
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            log.info("Booking {} already PAID, returning cached info", bookingId);
+            return PaymentResponseDto.builder()
+                    .bookingId(bookingId)
+                    .amount(booking.getHoldingFee())
+                    .status("PAID")
+                    .message("Payment already completed")
+                    .timestamp(System.currentTimeMillis())
+                    .build();
+        }
+
         // Check if booking is still pending payment
         if (booking.getStatus() != BookingStatus.PAYMENT_PENDING) {
             throw new RuntimeException("Booking is not in pending payment status");
@@ -141,8 +153,42 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Payment deadline has passed. Please create a new booking.");
         }
 
-        String description = "Phi giu cho Booking " + bookingId;
-        return paymentService.createPayOSPayment(bookingId, booking.getHoldingFee(), description);
+        // IDEMPOTENCY CHECK: If orderCode already exists, return cached payment URL
+        // This prevents "Đơn thanh toán đã tồn tại" error on page reload/retry
+        if (booking.getOrderCode() != null && booking.getPaymentUrl() != null) {
+            log.info("Booking {} already has PayOS payment - orderCode: {}, reusing existing payment URL",
+                    bookingId, booking.getOrderCode());
+            return PaymentResponseDto.builder()
+                    .transactionId(String.valueOf(booking.getOrderCode()))
+                    .bookingId(bookingId)
+                    .amount(booking.getHoldingFee())
+                    .status("PENDING")
+                    .paymentUrl(booking.getPaymentUrl())
+                    .message("Reusing existing PayOS payment")
+                    .timestamp(System.currentTimeMillis())
+                    .build();
+        }
+
+        // Generate GLOBALLY UNIQUE orderCode for PayOS
+        // Format: timestamp (13 digits) + random (3 digits) = 16 digits max
+        // PayOS orderCode must be positive and unique across all transactions
+        long orderCode = System.currentTimeMillis() * 1000 + new java.util.Random().nextInt(1000);
+
+        log.info("Creating NEW PayOS payment - bookingId: {}, orderCode: {}", bookingId, orderCode);
+
+        String description = "GiuCho BK" + bookingId;
+        PaymentResponseDto response = paymentService.createPayOSPayment(
+                bookingId, orderCode, booking.getHoldingFee(), description);
+
+        // PERSIST orderCode and paymentUrl to booking for idempotency
+        booking.setOrderCode(orderCode);
+        booking.setPaymentUrl(response.getPaymentUrl());
+        bookingRepository.save(booking);
+
+        log.info("Saved PayOS payment info - bookingId: {}, orderCode: {}, paymentUrl: {}",
+                bookingId, orderCode, response.getPaymentUrl());
+
+        return response;
     }
 
     @Override

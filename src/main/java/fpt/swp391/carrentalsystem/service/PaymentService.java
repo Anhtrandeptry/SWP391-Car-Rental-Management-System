@@ -8,12 +8,13 @@ public interface PaymentService {
 
     /**
      * Create PayOS payment link for a booking
-     * @param bookingId The booking ID (used as orderCode)
+     * @param bookingId The booking ID (for reference)
+     * @param orderCode Globally unique order code for PayOS
      * @param amount The payment amount
      * @param description Description of the payment
      * @return PaymentResponseDto containing the checkout URL
      */
-    PaymentResponseDto createPayOSPayment(Integer bookingId, BigDecimal amount, String description);
+    PaymentResponseDto createPayOSPayment(Integer bookingId, Long orderCode, BigDecimal amount, String description);
 
     /**
      * Process PayOS webhook callback

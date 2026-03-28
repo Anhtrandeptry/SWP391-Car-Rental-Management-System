@@ -61,6 +61,19 @@ public class Booking {
     @Column(name = "payment_deadline")
     private LocalDateTime paymentDeadline;
 
+    /**
+     * Unique order code for PayOS payment (generated once per booking)
+     * This is NOT the same as bookingId - it's globally unique for PayOS
+     */
+    @Column(name = "order_code", unique = true)
+    private Long orderCode;
+
+    /**
+     * PayOS checkout URL (cached to avoid creating duplicate payments)
+     */
+    @Column(name = "payment_url", length = 500)
+    private String paymentUrl;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

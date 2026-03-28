@@ -35,10 +35,9 @@ public class PaymentServiceImpl implements PaymentService {
     private final WebClient payosWebClient;
 
     @Override
-    public PaymentResponseDto createPayOSPayment(Integer bookingId, BigDecimal amount, String description) {
+    public PaymentResponseDto createPayOSPayment(Integer bookingId, Long orderCode, BigDecimal amount, String description) {
         try {
-            // Use bookingId as orderCode (must be unique and positive)
-            long orderCode = bookingId.longValue();
+            // orderCode is now passed from BookingServiceImpl (globally unique)
             int amountInt = amount.intValue();
 
             // Build request body for PayOS API
@@ -63,7 +62,7 @@ public class PaymentServiceImpl implements PaymentService {
                     paymentConfig.getCancelUrl(), paymentConfig.getReturnUrl());
             requestBody.put("signature", signature);
 
-            log.info("Creating PayOS payment for booking {}: amount={}", bookingId, amountInt);
+            log.info("Creating PayOS payment - bookingId: {}, orderCode: {}, amount: {}", bookingId, orderCode, amountInt);
 
             // Call PayOS API
             Map<String, Object> response = payosWebClient.post()
@@ -88,7 +87,7 @@ public class PaymentServiceImpl implements PaymentService {
             String checkoutUrl = (String) data.get("checkoutUrl");
             String qrCode = (String) data.get("qrCode");
 
-            log.info("Created PayOS payment link for booking {}: checkoutUrl={}", bookingId, checkoutUrl);
+            log.info("PayOS payment created - bookingId: {}, orderCode: {}, checkoutUrl: {}", bookingId, orderCode, checkoutUrl);
 
             return PaymentResponseDto.builder()
                     .transactionId(String.valueOf(orderCode))
@@ -102,7 +101,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error creating PayOS payment for booking {}: {}", bookingId, e.getMessage(), e);
+            log.error("Error creating PayOS payment - bookingId: {}, orderCode: {}, error: {}", bookingId, orderCode, e.getMessage(), e);
             throw new RuntimeException("Error creating PayOS payment: " + e.getMessage());
         }
     }
@@ -243,28 +242,29 @@ public class PaymentServiceImpl implements PaymentService {
                 orderCode = Long.parseLong(orderCodeObj.toString());
             }
 
-            // IMPORTANT: orderCode IS the bookingId directly (see createPayOSPayment method)
-            Integer bookingId = (int) orderCode;
-            log.info(">>> OrderCode: {}, BookingId: {}", orderCode, bookingId);
+            log.info(">>> OrderCode from webhook: {}", orderCode);
 
             // Extract payment status code
             String code = webhookData.get("code") != null ?
                     String.valueOf(webhookData.get("code")) :
                     (data.get("code") != null ? String.valueOf(data.get("code")) : null);
 
-            log.info("PayOS webhook - bookingId: {}, code: {}", bookingId, code);
-
-            // Find booking
-            log.info("Looking up booking {} in database...", bookingId);
-            Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+            // IMPORTANT: Find booking by orderCode (NOT by bookingId directly)
+            // orderCode is a unique identifier generated when creating PayOS payment
+            log.info("Looking up booking by orderCode {} in database...", orderCode);
+            Optional<Booking> bookingOpt = bookingRepository.findByOrderCode(orderCode);
             if (bookingOpt.isEmpty()) {
-                log.error("!!! BOOKING NOT FOUND for ID: {} !!!", bookingId);
+                log.error("!!! BOOKING NOT FOUND for orderCode: {} !!!", orderCode);
+                log.error("This could mean the payment was created before orderCode field was added, or data mismatch");
                 return false;
             }
 
             Booking booking = bookingOpt.get();
-            log.info("Found booking: id={}, status={}, paymentStatus={}",
-                    booking.getBookingId(), booking.getStatus(), booking.getPaymentStatus());
+            Integer bookingId = booking.getBookingId();
+            log.info("Found booking: id={}, orderCode={}, status={}, paymentStatus={}",
+                    bookingId, orderCode, booking.getStatus(), booking.getPaymentStatus());
+
+            log.info("PayOS webhook - bookingId: {}, orderCode: {}, code: {}", bookingId, orderCode, code);
 
             // Check if already processed (idempotency)
             if (booking.getPaymentStatus() == PaymentStatus.PAID) {
