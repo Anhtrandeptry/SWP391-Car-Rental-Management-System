@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class CarListItemResponse {
-    private Long id;
+    private Integer id;
     private String name;
     private String location;
     private String brand;

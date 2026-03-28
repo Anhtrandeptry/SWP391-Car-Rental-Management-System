@@ -22,7 +22,7 @@
             --primary-light: #3b82f6;
             --primary-dark: #0056b3;
 
-            --success: #10b981;
+            --success: #0d6efd;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #06b6d4;
@@ -169,7 +169,7 @@
 </head>
 <body>
 
-    <!-- SHARED HEADER -->
+   <!-- SHARED HEADER -->
     <header th:replace="~{fragments/header :: header('ADMIN', 'Administrator')}"></header>
 
     <!-- SHARED SIDEBAR -->
@@ -211,10 +211,10 @@
             <div class="table-header">
                 <div class="tab-group">
                     <a th:href="@{/admin/customers}" class="tab">
-                        <i class="fas fa-users"></i> Customers
+                        <i class="fas fa-users"></i> Khách hàng
                     </a>
                     <a th:href="@{/admin/owners}" class="tab active">
-                        <i class="fas fa-car-side"></i> Owners
+                        <i class="fas fa-car-side"></i> Chủ xe 
                         <span class="badge-tab" th:text="${totalElements}">0</span>
                     </a>
                 </div>
@@ -261,23 +261,38 @@
                         <td th:text="${owner.phoneNumber}">Phone</td>
                         <td style="text-align: center;" th:text="${owner.numberOfCars}">0</td>
                         <td style="font-weight: 600;" th:text="${#numbers.formatDecimal(owner.totalRevenue != null ? owner.totalRevenue : 0, 0, 'COMMA', 0, 'POINT') + ' đ'}">0 đ</td>
-                        <td>
+                         <td>
                             <span class="status-pill" th:classappend="${owner.status.name() == 'ACTIVE' ? 'active' : (owner.status.name() == 'PENDING' ? 'pending' : 'disabled')}">
                                 <span class="dot"></span>
-                                <span th:text="${owner.status.name()}">Status</span>
+                                <span th:text="${owner.status.name() == 'ACTIVE' ? 'Hoạt động' : 
+                                                (owner.status.name() == 'PENDING' ? 'Chờ duyệt' : 'Đã khóa')}">
+                                    Status
+                                </span>
                             </span>
                         </td>
                         <td th:text="${owner.createdAt != null ? #temporals.format(owner.createdAt, 'dd/MM/yyyy') : 'N/A'}">Date</td>
                         <td class="action-dropdown" onclick="event.stopPropagation();">
                             <i class="fas fa-ellipsis-v" style="cursor: pointer; padding: 5px;" onclick="toggleDropdown(this)"></i>
                             <div class="dropdown-content">
-                                <a th:if="${owner.status.name() == 'PENDING'}" href="javascript:void(0)"
-                                   th:onclick="confirmStatus('APPROVE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
-                                    <i class="fas fa-check-circle" style="color: var(--success)"></i> Phê duyệt
-                                </a>
+                                
                                 <a th:if="${owner.status.name() == 'ACTIVE'}" href="javascript:void(0)"
-                                   th:onclick="confirmStatus('DISABLE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
-                                    <i class="fas fa-user-slash" style="color: var(--danger)"></i> Vô hiệu hóa
+                                th:onclick="confirmStatus('DISABLE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                                    <i class="fas fa-user-slash" style="color: var(--danger)"></i> Vô hiệu hóa (Sang Disable)
+                                </a>
+
+                                <a th:if="${owner.status.name() == 'DISABLED'}" href="javascript:void(0)"
+                                th:onclick="confirmStatus('PENDING', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                                    <i class="fas fa-clock" style="color: var(--warning)"></i> Khôi phục (Sang Pending)
+                                </a>
+
+                                <a th:if="${owner.status.name() == 'PENDING'}" href="javascript:void(0)" 
+                                th:onclick="confirmStatus('APPROVE', [[${owner.id}]], [[${owner.fullName}]], [[${owner.email}]])">
+                                    <i class="fas fa-check-circle" style="color: var(--success)"></i> Phê duyệt (Sang Active)
+                                </a>
+
+                                <hr style="margin: 5px 0; border: 0; border-top: 1px solid var(--line);">
+                                <a th:href="@{/admin/owners/detail-page(id=${owner.id})}">
+                                    <i class="fas fa-info-circle"></i> Xem chi tiết
                                 </a>
                             </div>
                         </td>
@@ -336,25 +351,40 @@
         }
 
         function confirmStatus(action, id, name, email) {
-            const modal = document.getElementById('confirmModal');
-            const form = document.getElementById('statusForm');
-            const confirmBtn = document.getElementById('modalConfirmBtn');
+        const modal = document.getElementById('confirmModal');
+        const form = document.getElementById('statusForm');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const modalTitle = document.getElementById('modalTitle'); // Đảm bảo bạn có ID này trong HTML modal
+        
+        // Gán dữ liệu vào các field trong modal
+        document.getElementById('targetUserId').value = id;
+        document.getElementById('modalUserName').innerText = name;
+        document.getElementById('modalUserEmail').innerText = email;
 
-            document.getElementById('targetUserId').value = id;
-            document.getElementById('modalUserName').innerText = name;
-            document.getElementById('modalUserEmail').innerText = email;
-
-            if (action === 'DISABLE') {
-                form.action = "/admin/owners/disable";
-                confirmBtn.innerText = "Khóa chủ xe";
-                confirmBtn.style.backgroundColor = "var(--danger)";
-            } else if (action === 'APPROVE') {
-                form.action = "/admin/owners/approve";
-                confirmBtn.innerText = "Phê duyệt";
-                confirmBtn.style.backgroundColor = "var(--success)";
-            }
-            modal.style.display = "block";
+        if (action === 'DISABLE') {
+            form.action = "/admin/owners/disable";
+            if(modalTitle) modalTitle.innerText = "Xác nhận khóa chủ xe?";
+            confirmBtn.innerText = "Vô hiệu hóa";
+            confirmBtn.style.backgroundColor = "var(--danger)";
+            
+        } else if (action === 'PENDING') {
+            // Hành động chuyển từ Disable -> Pending (Chờ duyệt lại)
+            form.action = "/admin/owners/pending"; 
+            if(modalTitle) modalTitle.innerText = "Đưa chủ xe vào danh sách chờ?";
+            confirmBtn.innerText = "Khôi phục trạng thái chờ";
+            confirmBtn.style.backgroundColor = "var(--warning)";
+            
+        } else if (action === 'APPROVE') {
+            // Hành động chuyển từ Pending -> Active
+            form.action = "/admin/owners/approve";
+            if(modalTitle) modalTitle.innerText = "Xác nhận phê duyệt chủ xe?";
+            confirmBtn.innerText = "Phê duyệt hoạt động";
+            confirmBtn.style.backgroundColor = "var(--success)";
         }
+
+        modal.style.display = "block";
+    }
+
 
         function closeModal() { document.getElementById('confirmModal').style.display = "none"; }
         

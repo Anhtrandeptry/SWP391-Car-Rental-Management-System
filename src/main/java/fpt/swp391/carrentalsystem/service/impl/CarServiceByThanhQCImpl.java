@@ -37,12 +37,39 @@ public class CarServiceByThanhQCImpl implements CarServiceByThanhQC {
                 .stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
     }
 
+    @Override
+    public List<CarListItemResponse> getCarsByOwnerAndStatus(Long ownerId, String filter) {
+        // Lấy tất cả xe của chủ xe này
+        List<Car> allCars = carRepository.findByOwner_Id(ownerId);
+
+        return allCars.stream()
+                .filter(car -> {
+                    if (filter == null || "all".equalsIgnoreCase(filter)) return true;
+
+                    // Logic lọc dựa trên Enum CarStatus
+                    switch (filter.toLowerCase()) {
+                        case "pending":
+                            return car.getStatus() == CarStatus.PENDING;
+                        case "available":
+                            return car.getStatus() == CarStatus.AVAILABLE;
+                        case "rented":
+                            return car.getStatus() == CarStatus.RENTED; // Đảm bảo Enum có RENTED
+                        case "inactive":
+                            return car.getStatus() == CarStatus.INACTIVE; // Đảm bảo Enum có DELETED
+                        default:
+                            return true;
+                    }
+                })
+                .map(carMapper::toListItemResponse)
+                .collect(Collectors.toList());
+    }
+
     @Override public List<String> getAllLocations() { return carRepository.findDistinctLocations(); }
     @Override public List<String> getAllBrands() { return carRepository.findDistinctBrands(); }
     @Override public List<String> getAllCarTypes() { return carRepository.findDistinctCarTypes(); }
     @Override public List<String> getAllFuelTypes() { return carRepository.findDistinctFuelTypes(); }
     @Override public List<Integer> getAllSeats() { return carRepository.findDistinctSeats(); }
-    @Override public Car getCarById(Long id) { return carRepository.findByIdWithImages(id).orElse(null); }
+    @Override public Car getCarById(Integer id) { return carRepository.findByIdWithImages(id).orElse(null); }
 
     @Override public List<CarListItemResponse> getCarsByOwner(Long ownerId) {
         return carRepository.findByOwner_Id(ownerId).stream().map(carMapper::toListItemResponse).collect(Collectors.toList());
@@ -58,16 +85,25 @@ public class CarServiceByThanhQCImpl implements CarServiceByThanhQC {
     }
 
     @Override @Transactional
-    public void approveCar(Long id) {
+    public void approveCar(Integer id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
         car.setStatus(CarStatus.AVAILABLE);
         carRepository.save(car);
     }
 
     @Override @Transactional
-    public void rejectCar(Long id) {
+    public void rejectCar(Integer id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
         car.setStatus(CarStatus.REJECTED);
+        carRepository.save(car);
+    }
+
+    @Override
+    @Transactional
+    public void updateCarStatus(Integer id, CarStatus status) {
+        Car car = carRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy xe"));
+        car.setStatus(status);
         carRepository.save(car);
     }
 }

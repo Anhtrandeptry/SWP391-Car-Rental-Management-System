@@ -58,7 +58,7 @@ public class CustomerCarController {
     }
 
     @GetMapping("/cars/{id}")
-    public String carDetail(@PathVariable Long id, Model model) {
+    public String carDetail(@PathVariable Integer id, Model model) {
         Car car = carService.getCarById(id);
         if (car == null) return "redirect:/customer/cars";
         model.addAttribute("car", car);

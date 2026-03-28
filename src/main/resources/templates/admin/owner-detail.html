@@ -166,13 +166,7 @@
                             <span class="info-value" th:text="${#temporals.format(owner.createdAt, 'dd/MM/yyyy')}">10/02/2026</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="sidebar-action">
-                    <form id="disableForm" th:action="@{/admin/owners/disable(id=${owner.id})}" method="post">
-                        <button type="button" class="btn-disable-outline" onclick="confirmDisable()">Vô hiệu hóa tài khoản</button>
-                    </form>
-                </div>
+                </div>  
             </div>
         </aside>
 

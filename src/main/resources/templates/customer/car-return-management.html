@@ -4,8 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Customer Dashboard - CRMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link th:href="@{/css/common.css}" rel="stylesheet"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -21,7 +20,7 @@
             --primary-light: #3b82f6;
             --primary-dark: #0056b3;
 
-            --success: #10b981;
+            --success: #0d6efd;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #06b6d4;
@@ -222,96 +221,10 @@
             color: var(--muted);
         }
 
-        /* SIDEBAR */
-        .sidebar{
-            position: fixed;
-            left: 0;
-            top: var(--header-height);
-            bottom: 0;
-            width: var(--sidebar-width);
-            background: var(--panel);
-            border-right: 1px solid var(--line);
-            overflow-y: auto;
-            padding: 1.5rem 0;
-        }
-
-        .sidebar-section{
-            padding: 0 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .sidebar-title{
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.75rem;
-            padding: 0 0.75rem;
-        }
-
-        .nav-menu{
-            list-style: none;
-            padding-left: 0px;
-        }
-
-        .nav-item{
-            margin-bottom: 0.25rem;
-        }
-
-        .nav-link{
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 10px;
-            color: var(--muted);
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover{
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .nav-link.active{
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: var(--shadow);
-        }
-
-        .nav-link i{
-            font-size: 1.1rem;
-            width: 20px;
-        }
-
-        .logout-btn{
-            width: calc(100% - 2rem);
-            margin: 0 1rem;
-            padding: 0.75rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 10px;
-            color: var(--danger);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .logout-btn:hover{
-            background: var(--danger);
-            color: white;
-        }
-
         /* MAIN CONTENT */
         .main-content{
             margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
             padding: 2rem;
             min-height: calc(100vh - var(--header-height));
         }
@@ -374,7 +287,7 @@
         }
 
         .stat-icon.green{
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #0d6efd, #0056b3);
             color: white;
         }
 
@@ -675,7 +588,7 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.7rem 1.5rem;
-            background: linear-gradient(135deg, var(--success), #059669);
+            background: linear-gradient(135deg, var(--success), #0056b3);
             color: white;
             border: none;
             border-radius: var(--radius);
@@ -769,115 +682,10 @@
 </head>
 <body>
 <!-- TOP HEADER -->
-<header class="header">
-    <div class="header-left">
-        <div class="logo-section">
-            <div class="logo">
-                <i class="bi bi-car-front-fill"></i>
-            </div>
-            <div class="brand-info">
-                <h1>CRMS</h1>
-                <span>Car Rental System</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="header-right">
-        <div class="search-box">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Tìm kiếm...">
-        </div>
-
-        <div class="header-actions">
-            <button class="icon-btn">
-                <i class="bi bi-bell"></i>
-                <span class="badge">3</span>
-            </button>
-
-            <button class="icon-btn">
-                <i class="bi bi-gear"></i>
-            </button>
-
-            <div class="user-menu">
-                <div class="avatar">CN</div>
-                <div class="user-info">
-                    <span class="name">Customer</span>
-                    <span class="role">Khách hàng</span>
-                </div>
-                <i class="bi bi-chevron-down"></i>
-            </div>
-        </div>
-    </div>
-</header>
+<header th:replace="~{fragments/header :: header('CUSTOMER', 'Customer')}"></header>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
-    <div class="sidebar-section">
-        <div class="sidebar-title">Menu chính</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/customer/dashboard}" class="nav-link ">
-                    <i class="bi bi-house-door"></i>
-                    <span>Trang chủ</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-calendar-check"></i>
-                    <span>Đặt xe</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="bi bi-clock-history"></i>
-                    <span>Lịch sử chuyến đi</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/customer/return/list-car-return}" class="nav-link active">
-                    <i class="bi bi-journal-text"></i> <span>Quản lí trả xe</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <div class="sidebar-section">
-        <div class="sidebar-title">Tài khoản</div>
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a th:href="@{/profile}" class="nav-link">
-                    <i class="bi bi-person"></i>
-                    <span>Hồ sơ cá nhân</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/profile/change-password}" class="nav-link">
-                    <i class="bi bi-key"></i>
-                    <span>Đổi mật khẩu</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/customer/feedbacks}" class="nav-link">
-                    <i class="bi bi-chat-left-text"></i>
-                    <span>Phản hồi của tôi</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a th:href="@{/customer/feedbacks/new}" class="nav-link">
-                    <i class="bi bi-send"></i>
-                    <span>Gửi phản hồi</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <form th:action="@{/auth/logout}" method="post" style="margin-top: auto;">
-        <button type="submit" class="logout-btn">
-            <i class="bi bi-box-arrow-right"></i>
-            Đăng xuất
-        </button>
-    </form>
-</aside>
+<aside th:replace="~{fragments/sidebar-customer :: sidebar-customer('dashboard')}"></aside>
 
 <!-- MAIN CONTENT -->
 <main class="main-content">
@@ -896,14 +704,14 @@
                 <div class="stat-value" th:text="${returnList != null ? returnList.size() : 0}">0</div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon orange">
                 <i class="bi bi-clock-history"></i>
             </div>
             <div class="stat-content">
                 <div class="stat-label">Tổng tiền phạt</div>
-                <div class="stat-value" style="font-size: 1.5rem;" 
+                <div class="stat-value" style="font-size: 1.5rem;"
                      th:text="${#numbers.formatDecimal(#aggregates.sum(returnList.![penaltyAmount]) ?: 0, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</div>
             </div>
         </div>
@@ -919,7 +727,7 @@
                 <span>Tạo đơn trả xe mới</span>
             </button>
         </div>
-        
+
         <div class="search-box">
             <i class="bi bi-search"></i>
             <input type="text" id="tableSearch" placeholder="Tìm biển số, mã đơn..." style="width: 250px;">
@@ -955,7 +763,7 @@
                         </td>
                         <td>
                             <div style="font-size: 0.85rem;">
-                                <i class="bi bi-calendar-check"></i> 
+                                <i class="bi bi-calendar-check"></i>
                                 <span th:text="${#temporals.format(ret.actualReturnDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
                             </div>
                         </td>
@@ -966,7 +774,7 @@
                             </div>
                         </td>
                         <td>
-                            <span class="price text-danger" 
+                            <span class="price text-danger"
                                   th:text="${#numbers.formatDecimal(ret.penaltyAmount, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</span>
                         </td>
                         <td>
@@ -979,16 +787,16 @@
                         </td>
                         <td>
                             <div style="display: flex; justify-content: center;">
-                                <a th:href="@{/customer/return/detail/{id}(id=${ret.returnId})}" 
-                                    class="btn-icon-sm" 
-                                    title="Xem chi tiết trả xe" 
+                                <a th:href="@{/customer/return/detail/{id}(id=${ret.returnId})}"
+                                    class="btn-icon-sm"
+                                    title="Xem chi tiết trả xe"
                                     style="color: #0d6efd;">
                                         <i class="bi bi-eye"></i>
                                     </a>
                             </div>
                         </td>
                     </tr>
-                    
+
                     <tr th:if="${#lists.isEmpty(returnList)}">
                         <td colspan="7" style="text-align: center; padding: 3rem; color: var(--muted);">
                             <i class="bi bi-clipboard-x" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
@@ -1032,9 +840,9 @@
                                     <span th:text="${#temporals.format(b.startDate, 'dd/MM')} + ' - ' + ${#temporals.format(b.endDate, 'dd/MM')}"></span>
                                 </td>
                                 <td style="text-align: right; padding-right: 1.5rem;">
-                                    <button type="button" 
+                                    <button type="button"
                                             th:onclick="'confirmSelection(' + ${b.bookingId} + ')'"
-                                            class="btn btn-primary btn-sm" 
+                                            class="btn btn-primary btn-sm"
                                             style="border-radius: 8px; font-weight: 600;">
                                         Chọn đơn này
                                     </button>
@@ -1087,3 +895,5 @@
 </script>
 </body>
 </html>
+
+

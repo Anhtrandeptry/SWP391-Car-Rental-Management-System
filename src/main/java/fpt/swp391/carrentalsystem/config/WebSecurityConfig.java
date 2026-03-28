@@ -47,6 +47,8 @@ public class WebSecurityConfig {
                         .requestMatchers("/", "/home", "/public/**", "/auth/**").permitAll()
                         .requestMatchers("/income-estimate").permitAll()
                         .requestMatchers("/payment/payos-return", "/payment/payos-cancel", "/payment/payos-webhook").permitAll()
+                        // DEBUG: Allow test webhook endpoints (REMOVE IN PRODUCTION)
+                        .requestMatchers("/payment/test-webhook", "/payment/webhook-health", "/payment/api/status/**").permitAll()
                         .requestMatchers("/profile", "/profile/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/owner/**").hasRole("CAR_OWNER")

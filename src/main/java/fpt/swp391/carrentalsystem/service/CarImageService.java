@@ -24,12 +24,12 @@ public class CarImageService {
     private final CarImageRepository carImageRepository;
     private final Cloudinary cloudinary;
 
-    public List<CarImage> getImagesByCar(Long carId, User owner) {
+    public List<CarImage> getImagesByCar(Integer carId, User owner) {
         Car car = getOwnedCar(carId, owner);
         return carImageRepository.findByCarOrderByDisplayOrderAsc(car);
     }
 
-    public void uploadImages(Long carId, User owner, List<MultipartFile> files) throws Exception {
+    public void uploadImages(Integer carId, User owner, List<MultipartFile> files) throws Exception {
         Car car = getOwnedCar(carId, owner);
         if (files == null || files.isEmpty() || files.get(0).isEmpty()) {
             throw new RuntimeException("Vui lòng cung cấp ít nhất 1 hình ảnh minh chứng.");
@@ -104,7 +104,7 @@ public class CarImageService {
         carImageRepository.delete(image);
     }
 
-    private Car getOwnedCar(Long carId, User owner) {
+    private Car getOwnedCar(Integer carId, User owner) {
         Car car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
 
