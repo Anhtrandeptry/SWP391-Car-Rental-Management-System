@@ -71,7 +71,7 @@ public class CarController {
     }
 
     @GetMapping("/cars/{id}")
-    public String carDetail(@PathVariable Long id, Model model) {
+    public String carDetail(@PathVariable Integer id, Model model) {
         try {
             log.info("Loading car detail for id: {}", id);
             var car = carService.getCarById(id);

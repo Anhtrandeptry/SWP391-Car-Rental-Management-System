@@ -33,7 +33,7 @@ public class OwnerCarController {
     }
 
     @GetMapping("/car-detail/{id}")
-    public String viewCarDetail(@PathVariable Long id, Model model) {
+    public String viewCarDetail(@PathVariable Integer id, Model model) {
         Car car = carService.getCarById(id);
         if (car == null) {
             return "redirect:/owner/my-cars?error=notfound";
@@ -43,7 +43,7 @@ public class OwnerCarController {
     }
 
     @PostMapping("/delete-car/{id}")
-    public String deleteCar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteCar(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         try {
             carService.updateCarStatus(id, CarStatus.INACTIVE);
             redirectAttributes.addFlashAttribute("successMessage", "Đã xóa xe thành công (Ngừng hoạt động)");

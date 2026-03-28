@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import fpt.swp391.carrentalsystem.enums.BookingStatus;
-import fpt.swp391.carrentalsystem.enums.PaymentStatus;
 
 @Entity
 @Table(name = "bookings")
