@@ -12,7 +12,7 @@
         .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid rgba(15,118,110,.12);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
         h1{margin:0;font-size:18px;font-weight:950}
         .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(15,118,110,.15);background:rgba(15,118,110,.06);color:var(--teal);font-weight:900;text-decoration:none}
-        .btn.primary{background:linear-gradient(135deg,#0d6efd,#0f766e);color:#fff;border-color:transparent}
+        .btn.primary{background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;border-color:transparent}
         .table{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
         table{width:100%;border-collapse:collapse}
         th,td{padding:12px 12px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
@@ -61,7 +61,7 @@
                 <td>
                     <div class="acts">
                         <a class="link" th:href="@{|/admin/blogs/${b.id}/edit|}">Edit</a>
-                        <a class="link" th:href="@{|/public/blogs/${b.id}|}" target="_blank">View</a>
+                        <a class="link" th:href="@{|/admin/blogs/${b.id}|}">View</a>
                         <form th:action="@{|/admin/blogs/${b.id}/delete|}" method="post"
                               onsubmit="return confirm('Delete this blog?');">
                             <button class="link danger" type="submit" style="background:none;border:none;cursor:pointer;padding:0">Delete</button>
@@ -79,5 +79,3 @@
 </div>
 </body>
 </html>
-
-

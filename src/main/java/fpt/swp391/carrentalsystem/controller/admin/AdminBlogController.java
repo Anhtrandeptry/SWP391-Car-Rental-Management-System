@@ -46,6 +46,12 @@ public class AdminBlogController {
         return "admin/blog-list";
     }
 
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        model.addAttribute("blog", blogService.getBlogByIdAdmin(id));
+        return "admin/blog-detail";
+    }
+
     @GetMapping("/new")
     public String createForm(Model model) {
         BlogForm f = new BlogForm();

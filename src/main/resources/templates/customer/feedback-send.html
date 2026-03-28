@@ -242,16 +242,6 @@
                  Nếu chưa có bookingId -> hiển thị 1 input nhỏ để nhập. -->
             <input type="hidden" th:if="*{bookingId} != null" th:field="*{bookingId}"/>
 
-            <div class="field" th:if="*{bookingId} == null">
-                <label class="label">Booking ID<span class="req">*</span></label>
-                <div class="booking-compact">
-                    <div>
-                        <div class="booking-note">Nhập mã chuyến đi để gửi phản hồi</div>
-                        <input class="input" type="number" th:field="*{bookingId}" placeholder="Ví dụ: 12"/>
-                        <div class="error" th:if="${#fields.hasErrors('bookingId')}" th:errors="*{bookingId}"></div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Rating -->
             <div class="field">
