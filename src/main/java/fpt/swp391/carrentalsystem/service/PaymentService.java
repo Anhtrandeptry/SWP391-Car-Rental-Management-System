@@ -38,6 +38,13 @@ public interface PaymentService {
     PaymentResponseDto getPaymentInfo(Integer bookingId);
 
     /**
+     * Get payment info by PayOS orderCode
+     * @param orderCode The PayOS order code
+     * @return PaymentResponseDto containing booking information
+     */
+    PaymentResponseDto getPaymentInfoByOrderCode(Long orderCode);
+
+    /**
      * Cancel a PayOS payment
      * @param orderCode The order code (bookingId)
      * @return true if cancelled successfully
