@@ -43,8 +43,8 @@ public class UpdateProfileForm {
     private String nationalId;
 
     @NotBlank(message = "Driver license không được để trống.")
-    @Size(min = 6, max = 50, message = "Driver license phải từ 6 đến 50 ký tự.")
-    @Pattern(regexp = "^[A-Za-z0-9-]+$", message = "GPLX chỉ được chứa chữ, số và dấu gạch ngang (-).")
+    @Size(min = 12, max = 12, message = "Giấy phép lái xe phải 12 số.")
+    @Pattern(regexp = "^\\d{12}$", message = "Giấy phép lái xe phải gồm 12 chữ số.")
     private String driversLicense;
 
     public String getFirstName() { return firstName; }
