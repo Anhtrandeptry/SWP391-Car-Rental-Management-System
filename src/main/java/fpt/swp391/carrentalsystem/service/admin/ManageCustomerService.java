@@ -1,5 +1,6 @@
 package fpt.swp391.carrentalsystem.service.admin;
 
+import fpt.swp391.carrentalsystem.dto.response.BookingHistoryResponse;
 import fpt.swp391.carrentalsystem.dto.response.CustomerResponse;
 import fpt.swp391.carrentalsystem.dto.response.CustomerStatsResponse;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -24,4 +25,5 @@ public interface ManageCustomerService {
 
     // Hàm để chuyển bất kỳ trạng thái nào về Pending
     void setToPending(Long customerId);
+    List<BookingHistoryResponse> getRecentBookings(Long customerId);
 }

@@ -4,6 +4,7 @@ import fpt.swp391.carrentalsystem.entity.Booking;
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.BookingStatus;
 import fpt.swp391.carrentalsystem.enums.PaymentStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -156,4 +157,64 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
            "JOIN FETCH b.customer " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findRecentBookingsWithDetails(org.springframework.data.domain.Pageable pageable);
+    @Query("""
+        SELECT 
+            b.customer.id as customerId,
+            COUNT(b) as totalBookings,
+            COALESCE(SUM(b.totalAmount), 0) as totalSpent
+        FROM Booking b
+        WHERE b.status = 'COMPLETED'
+        GROUP BY b.customer.id
+    """)
+    List<Object[]> getCustomerBookingStats();
+    @Query("""
+        SELECT b.car.owner.id, COUNT(DISTINCT b.car.carId)
+        FROM Booking b
+        WHERE b.status = 'COMPLETED'
+        GROUP BY b.car.owner.id
+    """)
+    List<Object[]> countRentedCarsByOwner();
+    @Query("""
+        SELECT b.car.owner.id, COALESCE(SUM(b.totalAmount), 0)
+        FROM Booking b
+        WHERE b.status = 'COMPLETED'
+        GROUP BY b.car.owner.id
+    """)
+    List<Object[]> getRevenueByOwner();
+
+    @Query("""
+    SELECT b
+    FROM Booking b
+    WHERE b.customer.id = :customerId
+    ORDER BY b.createdAt DESC
+    """)
+    List<Booking> findTop5ByCustomerId(@Param("customerId") Long customerId, Pageable pageable);
+
+    @Query("""
+    SELECT b FROM Booking b 
+    JOIN FETCH b.car c 
+    JOIN FETCH b.customer 
+    WHERE c.owner.id = :ownerId 
+    ORDER BY b.createdAt DESC
+    """)
+    List<Booking> findTopOwnerBookingsWithDetails(
+            @Param("ownerId") Long ownerId,
+            Pageable pageable
+    );
+
+    @Query("""
+    SELECT COUNT(b)
+    FROM Booking b
+    WHERE b.car.owner.id = :ownerId
+    """)
+    Long countBookingsByOwner(@Param("ownerId") Long ownerId);
+
+    @Query("""
+    SELECT COALESCE(SUM(b.totalAmount), 0)
+    FROM Booking b
+    WHERE b.car.owner.id = :ownerId
+    AND b.status IN ('CONFIRMED', 'COMPLETED', 'IN_USE')
+    AND b.paymentStatus = 'PAID'
+    """)
+    BigDecimal sumRevenueByOwner(@Param("ownerId") Long ownerId);
 }

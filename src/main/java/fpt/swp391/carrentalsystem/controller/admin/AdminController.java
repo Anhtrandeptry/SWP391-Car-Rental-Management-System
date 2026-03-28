@@ -1,6 +1,7 @@
 package fpt.swp391.carrentalsystem.controller.admin;
 
 import fpt.swp391.carrentalsystem.dto.response.AdminDashboardStatsDto;
+import fpt.swp391.carrentalsystem.dto.response.BookingHistoryResponse;
 import fpt.swp391.carrentalsystem.dto.response.CustomerResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerResponse;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -15,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -71,13 +74,16 @@ public class AdminController {
     // Lấy chi tiết khách hàng theo ID dưới dạng JSON
     @GetMapping("/customers/detail-page")
     public String customerDetailPage(@RequestParam("id") Long id, Model model) {
-        // Lấy dữ liệu chi tiết từ service
+
         CustomerResponse customer = manageCustomerService.getCustomerById(id);
 
-        // Đưa dữ liệu vào model để Thymeleaf bên trang detail sử dụng
-        model.addAttribute("customer", customer);
+        // 🔥 thêm dòng này
+        List<BookingHistoryResponse> histories =
+                manageCustomerService.getRecentBookings(id);
 
-        // Trả về file customer-detail.html
+        model.addAttribute("customer", customer);
+        model.addAttribute("histories", histories);
+
         return "admin/customer-detail";
     }
 
@@ -135,9 +141,17 @@ public class AdminController {
     // 2. Trang chi tiết chủ xe
     @GetMapping("/owners/detail-page")
     public String ownerDetailPage(@RequestParam("id") Long id, Model model) {
+
         OwnerResponse owner = manageOwnerService.getOwnerById(id);
+
+        // 🔥 Lấy lịch sử booking của owner
+        List<BookingHistoryResponse> histories =
+                manageOwnerService.getRecentBookingsByOwner(id);
+
         model.addAttribute("owner", owner);
-        return "admin/owner-detail"; // Trả về file owner-detail.html
+        model.addAttribute("histories", histories);
+
+        return "admin/owner-detail";
     }
 
     // 3. Phê duyệt chủ xe

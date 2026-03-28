@@ -4,6 +4,7 @@ import fpt.swp391.carrentalsystem.enums.UserStatus;
 import fpt.swp391.carrentalsystem.enums.Gender;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -27,8 +28,8 @@ public class CustomerResponse {
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
 
-    private Integer totalBookings; // Số xe đã thuê
-    private Double totalSpent;
+    private Long totalBookings;      // ✅ fix
+    private BigDecimal totalSpent;   // ✅ fix
 
     // Hàm tiện ích để hiển thị tên đầy đủ trên giao diện
     public String getFullName() {

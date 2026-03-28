@@ -1,11 +1,13 @@
 package fpt.swp391.carrentalsystem.service.admin.impl;
 
+import fpt.swp391.carrentalsystem.dto.response.BookingHistoryResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerStatsResponse;
 import fpt.swp391.carrentalsystem.entity.User;
 import fpt.swp391.carrentalsystem.enums.Role;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
 import fpt.swp391.carrentalsystem.mapper.admin.OwnerMapper;
+import fpt.swp391.carrentalsystem.repository.BookingRepository;
 import fpt.swp391.carrentalsystem.repository.OwnerRepository;
 import fpt.swp391.carrentalsystem.service.admin.ManageOwnerService;
 import org.springframework.data.domain.Page;
@@ -13,20 +15,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 public class ManageOwnerServiceImpl implements ManageOwnerService {
 
     // Các field final bắt buộc phải được khởi tạo trong Constructor
     private final OwnerRepository ownerRepository;
     private final OwnerMapper ownerMapper;
+    private final BookingRepository bookingRepository;
 
     /**
      * Constructor Injection thủ công
      * Spring sẽ tự động tìm các Bean OwnerRepository và OwnerMapper để truyền vào đây
      */
-    public ManageOwnerServiceImpl(OwnerRepository ownerRepository, OwnerMapper ownerMapper) {
+    public ManageOwnerServiceImpl(OwnerRepository ownerRepository,
+                                  OwnerMapper ownerMapper,
+                                  BookingRepository bookingRepository) {
         this.ownerRepository = ownerRepository;
         this.ownerMapper = ownerMapper;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -51,7 +62,38 @@ public class ManageOwnerServiceImpl implements ManageOwnerService {
         }
 
         // Map kết quả sang OwnerResponse
-        return owners.map(ownerMapper::toResponse);
+        // 🔥 lấy số xe đã được thuê (DISTINCT)
+        Map<Long, Long> rentedCarMap = bookingRepository.countRentedCarsByOwner()
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (Long) r[0],
+                        r -> (Long) r[1]
+                ));
+
+// 🔥 lấy doanh thu
+        Map<Long, BigDecimal> revenueMap = bookingRepository.getRevenueByOwner()
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> (Long) r[0],
+                        r -> (BigDecimal) r[1]
+                ));
+
+// 🔥 map + inject thêm data
+        return owners.map(owner -> {
+            OwnerResponse res = ownerMapper.toResponse(owner);
+
+            Long ownerId = owner.getId();
+
+            res.setNumberOfCars(
+                    rentedCarMap.getOrDefault(ownerId, 0L).intValue()
+            );
+
+            res.setTotalRevenue(
+                    revenueMap.getOrDefault(ownerId, BigDecimal.ZERO).doubleValue()
+            );
+
+            return res;
+        });
     }
 
     @Override
@@ -69,7 +111,19 @@ public class ManageOwnerServiceImpl implements ManageOwnerService {
     public OwnerResponse getOwnerById(Long ownerId) {
         User owner = ownerRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Owner not found with id: " + ownerId));
-        return ownerMapper.toResponse(owner);
+
+        OwnerResponse res = ownerMapper.toResponse(owner);
+
+        // 🔥 số lượt thuê
+        Long totalBookings = bookingRepository.countBookingsByOwner(ownerId);
+
+        // 🔥 doanh thu
+        BigDecimal totalRevenue = bookingRepository.sumRevenueByOwner(ownerId);
+
+        res.setNumberOfCars(totalBookings != null ? totalBookings.intValue() : 0);
+        res.setTotalRevenue(totalRevenue != null ? totalRevenue.doubleValue() : 0);
+
+        return res;
     }
 
     @Override
@@ -94,6 +148,27 @@ public class ManageOwnerServiceImpl implements ManageOwnerService {
     @Transactional
     public void setToPending(Long ownerId) {
         updateStatus(ownerId, UserStatus.PENDING);
+    }
+
+    @Override
+    public List<BookingHistoryResponse> getRecentBookingsByOwner(Long ownerId) {
+
+        return bookingRepository
+                .findTopOwnerBookingsWithDetails(ownerId, Pageable.ofSize(5))
+                .stream()
+                .map(b -> BookingHistoryResponse.builder()
+                        .id(Long.valueOf(b.getBookingId()))
+                        .carName(b.getCar().getName())
+                        .startDate(b.getStartDate())
+                        .endDate(b.getEndDate())
+                        .totalAmount(
+                                b.getTotalAmount() != null
+                                        ? b.getTotalAmount().doubleValue()
+                                        : 0
+                        )
+                        .status(b.getStatus().name())
+                        .build())
+                .toList();
     }
 
     /**

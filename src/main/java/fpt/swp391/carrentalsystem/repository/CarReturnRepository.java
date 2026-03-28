@@ -28,8 +28,8 @@ public interface CarReturnRepository extends JpaRepository<CarReturn, Integer> {
     // lấy danh sách booking đã hoàn thành nhưng chưa tạo car return
     @Query("SELECT b FROM Booking b " +
             "WHERE b.customer.id = :userId " +
-            "AND b.status = fpt.swp391.carrentalsystem.enums.BookingStatus.IN_USE " +
-            "AND b.carReturn IS NULL")
+            "AND b.status = 'COMPLETED' " +
+            "AND b.bookingId NOT IN (SELECT cr.booking.bookingId FROM CarReturn cr)")
     List<Booking> findReadyToReturn(@Param("userId") Long userId);
 
     //lay du cac carReturn cua 1 owner
