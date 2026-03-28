@@ -18,8 +18,7 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
     List<Car> findByStatus(CarStatus status);
 
     // Find cars by owner
-
-    List<Car> findByOwnerId(Long ownerId);
+    List<Car> findByOwner_Id(Long ownerId);
 
     // Find car with pessimistic lock for reservation
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -32,7 +31,7 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
 
     // Check if car has active booking
     @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.car.carId = :carId " +
-           "AND b.status IN ('CONFIRMED', 'PAYMENT_PENDING') " +
+           "AND b.status IN ('CONFIRMED', 'PAYMENT_PENDING', 'IN_USE') " +
            "AND b.endDate > :now")
     boolean hasActiveBooking(@Param("carId") Integer carId, @Param("now") LocalDateTime now);
 
@@ -63,4 +62,24 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
      */
     @Query("SELECT DISTINCT c.location FROM Car c WHERE c.location IS NOT NULL AND c.status = 'AVAILABLE' ORDER BY c.location")
     List<String> findAllDistinctLocations();
+
+    // ===== Admin Dashboard queries =====
+
+    /**
+     * Count cars by status
+     */
+    @Query("SELECT COUNT(c) FROM Car c WHERE c.status = :status")
+    Long countByStatus(@Param("status") CarStatus status);
+
+    /**
+     * Count cars created after a specific date (for "new this month" stats)
+     */
+    @Query("SELECT COUNT(c) FROM Car c WHERE c.createdAt >= :startDate")
+    Long countCarsCreatedAfter(@Param("startDate") LocalDateTime startDate);
+
+    /**
+     * Count pending car approvals
+     */
+    @Query("SELECT COUNT(c) FROM Car c WHERE c.status = 'PENDING'")
+    Long countPendingApprovals();
 }

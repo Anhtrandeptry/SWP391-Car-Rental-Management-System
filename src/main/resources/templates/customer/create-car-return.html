@@ -510,6 +510,55 @@
             window.location.href = /*[[@{/customer/return/list-car-return}]]*/ '/customer/return/list-car-return';
         });
     }
+    document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    // Sử dụng querySelector chính xác theo ID hoặc Name
+    const actualDateInput = document.getElementById('actualReturnDate'); 
+    const odoInput = document.querySelector('input[name="odometerReading"]');
+    
+    // 1. Lấy startDate từ Thymeleaf và đảm bảo nó là một Date object hợp lệ
+    // Chúng ta ép kiểu chuỗi ISO từ server để JS hiểu đúng
+    const startDateStr = /*[[${#temporals.format(booking.startDate, 'yyyy-MM-dd-HH-mm')}]]*/ '';
+    // Format lại thành yyyy-MM-ddTHH:mm để New Date() hoạt động chuẩn
+    const startDate = new Date(startDateStr.replace(/-/g, (chat, index) => index === 10 ? 'T' : (index > 10 ? ':' : '-')));
+
+    const startDateDisplay = /*[[${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}]]*/ '';
+
+    form.addEventListener('submit', function(e) {
+        // Lấy giá trị mới nhất tại thời điểm submit
+        const actualDate = new Date(actualDateInput.value);
+        const odoValue = parseFloat(odoInput.value);
+        let errors = [];
+
+        // Kiểm tra tính hợp lệ của Date object
+        if (isNaN(actualDate.getTime())) {
+            errors.push("- Vui lòng chọn Ngày giờ trả xe thực tế hợp lệ.");
+        } else {
+            // 2. SO SÁNH: Sử dụng .getTime() để so sánh milisây (chính xác tuyệt đối)
+            if (actualDate.getTime() <= startDate.getTime()) {
+                errors.push("- Ngày trả xe thực tế (" + actualDateInput.value.replace('T', ' ') + 
+                            ") phải sau Ngày nhận xe (" + startDateDisplay + ").");
+            }
+        }
+
+        if (isNaN(odoValue) || odoValue < 0) {
+            errors.push("Số Odo không hợp lệ");
+        }
+
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert("KHÔNG THỂ TẠO ĐƠN TRẢ XE:\n\n" + errors.join("\n"));
+        }
+    });
+
+    // Tự động điền giờ hiện tại nếu input trống
+    if (!actualDateInput.value) {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+        actualDateInput.value = localISOTime;
+    }
+});
 </script>
 
 </body>

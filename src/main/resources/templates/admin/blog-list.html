@@ -61,7 +61,7 @@
                 <td>
                     <div class="acts">
                         <a class="link" th:href="@{|/admin/blogs/${b.id}/edit|}">Edit</a>
-                        <a class="link" th:href="@{|/public/blogs/${b.id}|}" target="_blank">View</a>
+                        <a class="link" th:href="@{|/admin/blogs/${b.id}|}">View</a>
                         <form th:action="@{|/admin/blogs/${b.id}/delete|}" method="post"
                               onsubmit="return confirm('Delete this blog?');">
                             <button class="link danger" type="submit" style="background:none;border:none;cursor:pointer;padding:0">Delete</button>

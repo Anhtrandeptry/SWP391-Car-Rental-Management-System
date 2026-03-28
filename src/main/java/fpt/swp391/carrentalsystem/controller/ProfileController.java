@@ -3,7 +3,7 @@ package fpt.swp391.carrentalsystem.controller;
 import fpt.swp391.carrentalsystem.dto.ChangePasswordForm;
 import fpt.swp391.carrentalsystem.dto.UpdateProfileForm;
 import fpt.swp391.carrentalsystem.dto.UserProfile;
-import fpt.swp391.carrentalsystem.sercurity.CustomUserDetails;
+import fpt.swp391.carrentalsystem.security.CustomUserDetails;
 import fpt.swp391.carrentalsystem.service.ProfileService;
 import jakarta.validation.Valid;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;

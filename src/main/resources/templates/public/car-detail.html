@@ -1,280 +1,573 @@
-    <!DOCTYPE html>
-    <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title th:text="${car.name}">Car Detail</title>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-        --primary-color: #00a58e;
-        --text-main: #2d3436;
-        --text-sub: #636e72;
-        --bg-body: #f4f7f6;
-        --white: #ffffff;
-        --radius: 12px;
-    }
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${car.name}">Car Detail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link th:href="@{/css/common.css}" rel="stylesheet"/>
+<style>
+    :root {
+    --primary-color: #0d6efd;
+    --text-main: #2d3436;
+    --text-sub: #636e72;
+    --bg-body: #f4f7f6;
+    --white: #ffffff;
+    --radius: 12px;
+}
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-    body {
-        background-color: var(--bg-body);
-        color: var(--text-main);
-        padding-bottom: 50px;
-    }
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    padding-bottom: 50px;
+}
 
-    .container {
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 20px;
-    }
+.container {
+    max-width: 1100px; /* Reduced for better proportions */
+    margin: 0 auto;
+    padding: 20px;
+}
 
-    .back-link { margin-bottom: 20px; }
-    .back-link a {
-        text-decoration: none;
-        color: var(--text-sub);
-        font-size: 14px;
-        transition: 0.3s;
-    }
-    .back-link a:hover { color: var(--primary-color); }
+.back-link { margin-bottom: 20px; }
+.back-link a {
+    text-decoration: none;
+    color: var(--text-sub);
+    font-size: 14px;
+    transition: 0.3s;
+}
+.back-link a:hover { color: var(--primary-color); }
 
-    .content-wrapper {
-        display: flex;
-        gap: 30px;
-    }
+.content-wrapper {
+    display: flex;
+    gap: 30px;
+}
 
-    .main-content { flex: 2; }
-    .sidebar { flex: 1; }
+.main-content { flex: 2; min-width: 0; }
+.sidebar { flex: 1; min-width: 280px; max-width: 350px; }
 
-    .car-gallery {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 12px;
-        margin-bottom: 24px;
-    }
+/* ===== PROFESSIONAL IMAGE GALLERY ===== */
+.car-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-    .main-img img {
-        width: 100%;
-        height: 400px;
-        object-fit: cover;
-        border-radius: var(--radius);
-    }
+/* Main image container */
+.main-img {
+    width: 100%;
+    position: relative;
+}
 
+/* Gallery navigation arrows */
+.gallery-navigation {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+    pointer-events: auto;
+}
+
+.nav-btn:hover {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+}
+
+/* Image counter badge */
+.image-counter {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+/* Thumbnail gallery container */
+.thumbnail-gallery {
+    width: 100%;
+    overflow: hidden;
+}
+
+.thumbnail-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px;
+    scroll-behavior: smooth;
+}
+
+/* Hide scrollbar but keep functionality */
+.thumbnail-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 10px;
+}
+
+.thumbnail-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* Individual thumbnail wrapper */
+.thumbnail-wrapper {
+    flex: 0 0 auto;
+    width: 100px;
+    height: 75px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.thumbnail-wrapper:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.thumbnail-wrapper.active {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 1px #0d6efd;
+}
+
+/* Thumbnail image */
+.thumbnail-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s;
+}
+
+.thumbnail-wrapper:hover .thumbnail-img {
+    transform: scale(1.05);
+}
+
+/* Main image transition effect */
+#mainImage {
+    transition: opacity 0.3s ease;
+}
+
+#mainImage.changing {
+    opacity: 0.7;
+}
+
+
+.car-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.location {
+    color: var(--text-sub);
+    font-size: 15px;
+    margin-bottom: 25px;
+}
+
+.specs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.spec-item {
+    background: var(--white);
+    padding: 15px;
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.spec-item i {
+    color: var(--primary-color);
+    font-size: 20px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.spec-item .label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-sub);
+}
+
+.section-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+}
+
+.section-card h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 10px;
+}
+
+.desc-text {
+    line-height: 1.8;
+    color: #444;
+}
+
+.booking-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 20px;
+}
+
+.price-header { margin-bottom: 20px; }
+.price-val { font-size: 28px; font-weight: 800; color: var(--text-main); }
+.price-unit { color: var(--text-sub); font-size: 14px; }
+
+.booking-details {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.detail-row.total {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px dashed #eee;
+    font-size: 18px;
+}
+
+.btn-booking {
+    width: 100%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s;
+}
+
+.btn-booking:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 165, 142, 0.3);
+}
+
+@media (max-width: 768px) {
+    .content-wrapper { flex-direction: column; }
+    .sidebar { max-width: 100%; min-width: 0; }
+    .car-gallery { max-width: 100%; }
     .sub-imgs {
-        display: grid;
-        grid-template-rows: 1fr 1fr;
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        max-width: 100%;
     }
+    .specs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<!-- PUBLIC NAVBAR -->
+<nav th:replace="~{fragments/public-navbar :: public-navbar('cars')}"></nav>
 
-    .sub-imgs img {
-        width: 100%;
-        height: 194px;
-        object-fit: cover;
-        border-radius: var(--radius);
-    }
+<div class="container">
+    <div class="back-link">
+        <a href="/public/cars"><i class="fas fa-arrow-left"></i> Quay lại danh sách xe</a>
+    </div>
 
-    .car-header h1 {
-        font-size: 28px;
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+    <div class="content-wrapper">
+        <div class="main-content">
 
-    .location {
-        color: var(--text-sub);
-        font-size: 15px;
-        margin-bottom: 25px;
-    }
+            <div class="car-gallery">
+                <!-- Main Image Display -->
+                <div class="main-img">
+                    <div class="car-detail-image-wrapper">
+                        <img id="mainImage"
+                             th:if="${not #lists.isEmpty(car.images)}"
+                             th:src="@{${car.images[0].imageUrl}}"
+                             th:alt="${car.name}"
+                             class="car-detail-image">
+                        <div th:if="${#lists.isEmpty(car.images)}" class="car-image-placeholder">
+                            <i class="bi bi-car-front"></i>
+                        </div>
 
-    .specs-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
-        margin-bottom: 25px;
-    }
+                        <!-- Optional: Navigation arrows for large galleries -->
+                        <div th:if="${car.images != null and car.images.size() > 1}" class="gallery-navigation">
+                            <button class="nav-btn prev-btn" onclick="navigateImage(-1)">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="nav-btn next-btn" onclick="navigateImage(1)">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
 
-    .spec-item {
-        background: var(--white);
-        padding: 15px;
-        border-radius: var(--radius);
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-
-    .spec-item i {
-        color: var(--primary-color);
-        font-size: 20px;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    .spec-item .label {
-        display: block;
-        font-size: 12px;
-        color: var(--text-sub);
-    }
-
-    .section-card {
-        background: var(--white);
-        padding: 25px;
-        border-radius: var(--radius);
-        margin-bottom: 20px;
-    }
-
-    .section-card h3 {
-        margin-bottom: 15px;
-        font-size: 18px;
-        border-left: 4px solid var(--primary-color);
-        padding-left: 10px;
-    }
-
-    .desc-text {
-        line-height: 1.8;
-        color: #444;
-    }
-
-    .booking-card {
-        background: var(--white);
-        padding: 30px;
-        border-radius: var(--radius);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        position: sticky;
-        top: 20px;
-    }
-
-    .price-header { margin-bottom: 20px; }
-    .price-val { font-size: 28px; font-weight: 800; color: var(--text-main); }
-    .price-unit { color: var(--text-sub); font-size: 14px; }
-
-    .booking-details {
-        border-top: 1px solid #eee;
-        padding-top: 20px;
-    }
-
-    .detail-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        font-size: 15px;
-    }
-
-    .detail-row.total {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 2px dashed #eee;
-        font-size: 18px;
-    }
-
-    .btn-booking {
-        width: 100%;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 16px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: all 0.3s;
-    }
-
-    .btn-booking:hover {
-        background: #008a77;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0, 165, 142, 0.3);
-    }
-
-    @media (max-width: 768px) {
-        .content-wrapper { flex-direction: column; }
-        .car-gallery { grid-template-columns: 1fr; }
-        .sub-imgs { display: none; }
-        .specs-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    </style>
-    </head>
-    <body>
-
-    <div class="container">
-        <div class="back-link">
-            <a href="/public/cars"><i class="fas fa-arrow-left"></i> Quay lại danh sách xe</a>
-        </div>
-
-        <div class="content-wrapper">
-            <div class="main-content">
-
-                <div class="car-gallery">
-                    <div class="main-img">
-                        <img th:if="${not #lists.isEmpty(car.images)}" th:src="@{${car.images[0].imageUrl}}" alt="Main Car">
-                    </div>
-                    <div class="sub-imgs">
-                        <div class="sub-img-item" th:each="img, iter : ${car.images}" th:if="${iter.index > 0 and iter.index < 3}">
-                            <img th:src="@{${img.imageUrl}}" alt="Sub Car">
+                        <!-- Image counter -->
+                        <div th:if="${car.images != null and car.images.size() > 1}"
+                             class="image-counter">
+                            <span id="currentImageIndex">1</span> / <span th:text="${car.images.size()}">1</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="car-header">
-                    <h1 th:text="${car.name}">Tên Xe</h1>
-                    <p class="location"><i class="fas fa-map-marker-alt"></i> <span th:text="${car.location}">Địa điểm</span></p>
-                </div>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fas fa-users"></i>
-                        <span class="label">Số chỗ</span>
-                        <strong th:text="${car.seats} + ' chỗ'">7 chỗ</strong>
+                <!-- Thumbnail Gallery (show if more than 1 image) -->
+                <div th:if="${car.images != null and car.images.size() > 1}" class="thumbnail-gallery">
+                    <div class="thumbnail-scroll">
+                        <div th:each="img, iter : ${car.images}"
+                             class="thumbnail-wrapper"
+                             th:classappend="${iter.index == 0} ? 'active' : ''">
+                            <img th:src="@{${img.imageUrl}}"
+                                 th:alt="${car.name + ' - Image ' + (iter.index + 1)}"
+                                 th:data-index="${iter.index}"
+                                 class="thumbnail-img"
+                                 onclick="changeMainImage(this)">
+                        </div>
                     </div>
-                    <div class="spec-item">
-                        <i class="fas fa-car"></i>
-                        <span class="label">Truyền động</span>
-                        <strong th:text="${car.carType}">Tự động</strong>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fas fa-gas-pump"></i>
-                        <span class="label">Nhiên liệu</span>
-                        <strong th:text="${car.fuelType}">Xăng</strong>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fas fa-leaf"></i>
-                        <span class="label">Tiêu hao</span>
-                        <strong th:text="${car.fuelConsumption}">7L/100km</strong>
-                    </div>
-                </div>
-
-                <div class="section-card">
-                    <h3>Mô tả</h3>
-                    <p class="desc-text" th:text="${car.description}">Mô tả chi tiết về xe...</p>
                 </div>
             </div>
 
-            <div class="sidebar">
-                <div class="booking-card">
-                    <div class="price-header">
-                        <span class="price-val" th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
-                        <span class="price-unit">/ngày</span>
-                    </div>
+            <div class="car-header">
+                <h1 th:text="${car.name}">Tên Xe</h1>
+                <p class="location"><i class="fas fa-map-marker-alt"></i> <span th:text="${car.location}">Địa điểm</span></p>
+            </div>
 
-                    <div class="booking-details">
-                        <div class="detail-row">
-                            <span>Đơn giá thuê</span>
-                            <span th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
-                        </div>
-                        <div class="detail-row total">
-                            <span>Tổng cộng</span>
-                            <strong th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</strong>
-                        </div>
-                    </div>
-
-                    <button class="btn-booking">Đặt xe ngay</button>
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <i class="fas fa-users"></i>
+                    <span class="label">Số chỗ</span>
+                    <strong th:text="${car.seats} + ' chỗ'">7 chỗ</strong>
                 </div>
+                <div class="spec-item">
+                    <i class="fas fa-car"></i>
+                    <span class="label">Truyền động</span>
+                    <strong th:text="${car.carType}">Tự động</strong>
+                </div>
+                <div class="spec-item">
+                    <i class="fas fa-gas-pump"></i>
+                    <span class="label">Nhiên liệu</span>
+                    <strong th:text="${car.fuelType}">Xăng</strong>
+                </div>
+                <div class="spec-item">
+                    <i class="fas fa-leaf"></i>
+                    <span class="label">Tiêu hao</span>
+                    <strong th:text="${car.fuelConsumption}">7L/100km</strong>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3>Mô tả</h3>
+                <p class="desc-text" th:text="${car.description}">Mô tả chi tiết về xe...</p>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="booking-card">
+                <div class="price-header">
+                    <span class="price-val" th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
+                    <span class="price-unit">/ngày</span>
+                </div>
+
+                <div class="booking-details">
+                    <div class="detail-row">
+                        <span>Đơn giá thuê</span>
+                        <span th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</span>
+                    </div>
+                    <div class="detail-row total">
+                        <span>Tổng cộng</span>
+                        <strong th:text="${#numbers.formatDecimal(car.pricePerDay, 1, 'COMMA', 0, 'POINT')} + 'K'">830K</strong>
+                    </div>
+                </div>
+
+                <button class="btn-booking">Đăng nhập để đặt xe</button>
             </div>
         </div>
     </div>
+</div>
 
-    </body>
-    </html>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Get all images from Thymeleaf
+    const carImages = /*[[${car.images}]]*/ [];
+    let currentImageIndex = 0;
+
+    /**
+     * Change main image when thumbnail is clicked
+     */
+    function changeMainImage(thumbnailElement) {
+        const mainImage = document.getElementById('mainImage');
+        const newImageUrl = thumbnailElement.src;
+        const imageIndex = parseInt(thumbnailElement.getAttribute('data-index'));
+
+        // Add transition effect
+        mainImage.classList.add('changing');
+
+        setTimeout(() => {
+            mainImage.src = newImageUrl;
+            mainImage.classList.remove('changing');
+
+            // Update current index
+            currentImageIndex = imageIndex;
+            updateImageCounter();
+            updateActiveThumbnail(imageIndex);
+        }, 150);
+    }
+
+    /**
+     * Navigate through images using arrow buttons
+     */
+    function navigateImage(direction) {
+        if (!carImages || carImages.length === 0) return;
+
+        // Calculate new index
+        currentImageIndex += direction;
+
+        // Wrap around
+        if (currentImageIndex < 0) {
+            currentImageIndex = carImages.length - 1;
+        } else if (currentImageIndex >= carImages.length) {
+            currentImageIndex = 0;
+        }
+
+        // Update main image
+        const mainImage = document.getElementById('mainImage');
+        const newImageUrl = carImages[currentImageIndex].imageUrl;
+
+        mainImage.classList.add('changing');
+
+        setTimeout(() => {
+            mainImage.src = newImageUrl;
+            mainImage.classList.remove('changing');
+            updateImageCounter();
+            updateActiveThumbnail(currentImageIndex);
+            scrollToThumbnail(currentImageIndex);
+        }, 150);
+    }
+
+    /**
+     * Update image counter display
+     */
+    function updateImageCounter() {
+        const counter = document.getElementById('currentImageIndex');
+        if (counter) {
+            counter.textContent = currentImageIndex + 1;
+        }
+    }
+
+    /**
+     * Update active thumbnail styling
+     */
+    function updateActiveThumbnail(index) {
+        // Remove active class from all thumbnails
+        document.querySelectorAll('.thumbnail-wrapper').forEach(wrapper => {
+            wrapper.classList.remove('active');
+        });
+
+        // Add active class to current thumbnail
+        const thumbnails = document.querySelectorAll('.thumbnail-img');
+        if (thumbnails[index]) {
+            thumbnails[index].closest('.thumbnail-wrapper').classList.add('active');
+        }
+    }
+
+    /**
+     * Scroll thumbnail into view
+     */
+    function scrollToThumbnail(index) {
+        const thumbnails = document.querySelectorAll('.thumbnail-wrapper');
+        if (thumbnails[index]) {
+            thumbnails[index].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    }
+
+    /**
+     * Keyboard navigation support
+     */
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            navigateImage(-1);
+        } else if (event.key === 'ArrowRight') {
+            navigateImage(1);
+        }
+    });
+
+    /**
+     * Initialize gallery on page load
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set first thumbnail as active
+        updateActiveThumbnail(0);
+    });
+    /*]]>*/
+</script>
+
+</body>
+</html>
+
+
+

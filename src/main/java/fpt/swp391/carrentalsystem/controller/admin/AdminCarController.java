@@ -22,13 +22,13 @@ public class AdminCarController {
     }
 
     @PostMapping("/approve/{id}")
-    public String approveCar(@PathVariable Long id) {
+    public String approveCar(@PathVariable Integer id) {
         carService.approveCar(id);
         return "redirect:/admin/car-management";
     }
 
     @PostMapping("/reject/{id}")
-    public String rejectCar(@PathVariable Long id) {
+    public String rejectCar(@PathVariable Integer id) {
         carService.rejectCar(id);
         return "redirect:/admin/car-management";
     }

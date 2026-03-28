@@ -1,0 +1,40 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< fpt.swp391:car-rental-system >--------------------
+[INFO] Building car-rental-system 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ car-rental-system ---
+[INFO] Deleting C:\Users\GIANG\IdeaProjects\car-rental-system\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ car-rental-system ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 76 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ car-rental-system ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 187 source files with javac [debug release 17] to target\classes
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/dto/response/CustomerStatsResponse.java:[19,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/dto/response/CustomerStatsResponse.java:[20,20] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/CarImage.java:[29,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/CarImage.java:[32,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Car.java:[201,23] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Car.java:[204,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Booking.java:[55,27] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Booking.java:[59,27] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Feedback.java:[41,28] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/CarReturn.java:[34,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/CarReturn.java:[40,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/CarReturn.java:[43,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/entity/Blog.java:[41,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/mapper/CarMapper.java:[27,20] Unmapped target properties: "ownerEmail, hasActiveBooking".
+[WARNING] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/mapper/UserMapper.java:[29,10] Unmapped target properties: "address, nationalId, driversLicense".
+[INFO] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/service/PaymentServiceImpl.java: C:\Users\GIANG\IdeaProjects\car-rental-system\src\main\java\fpt\swp391\carrentalsystem\service\PaymentServiceImpl.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/GIANG/IdeaProjects/car-rental-system/src/main/java/fpt/swp391/carrentalsystem/service/PaymentServiceImpl.java: Recompile with -Xlint:unchecked for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  19.587 s
+[INFO] Finished at: 2026-03-28T12:23:28+07:00
+[INFO] ------------------------------------------------------------------------

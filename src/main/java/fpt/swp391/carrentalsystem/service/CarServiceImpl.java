@@ -106,7 +106,7 @@ public class CarServiceImpl implements CarService {
     @Override
     @Transactional(readOnly = true)
     public List<CarResponseDto> getCarsByOwner(Long ownerId) {
-        List<Car> ownerCars = carRepository.findByOwnerId(ownerId);
+        List<Car> ownerCars = carRepository.findByOwner_Id(ownerId);
         return carMapper.toDtoList(ownerCars);
     }
 

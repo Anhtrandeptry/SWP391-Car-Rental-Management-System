@@ -257,21 +257,21 @@
                     </div>
                 </li>
             </ul>
-
-            <div style="margin-top: 30px; text-align: center;">
-                <a href="#" class="btn-action-red">Vô hiệu hóa tài khoản</a>
-            </div>
         </aside>
 
         <main class="content-area">
             <div class="mini-stats">
                 <div class="stat-box">
                     <p class="label">Tổng chi tiêu</p>
-                    <p class="val">0 đ</p>
+                    <p class="val"
+                    th:text="${#numbers.formatDecimal(customer.totalSpent != null ? customer.totalSpent : 0, 0, 'COMMA', 0, 'POINT') + ' đ'}">
+                    </p>
                 </div>
                 <div class="stat-box">
                     <p class="label">Số lượt thuê</p>
-                    <p class="val">0</p>
+                    <p class="val"
+                    th:text="${customer.totalBookings != null ? customer.totalBookings : 0}">
+                    </p>
                 </div>
             </div>
 
@@ -280,11 +280,64 @@
                     <span>Lịch sử thuê xe gần đây</span>
                     <i class="fas fa-history" style="color: var(--text-light)"></i>
                 </div>
-                
-                <div class="empty-history">
+                <!-- EMPTY -->
+                <div th:if="${#lists.isEmpty(histories)}" class="empty-history">
                     <i class="fas fa-car-side"></i>
                     <p>Chưa có dữ liệu giao dịch cho người dùng này.</p>
                 </div>
+
+                <!-- TABLE -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f1f5f9;">
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0;">Xe</th>
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0;">Ngày thuê</th>
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0;">Ngày trả</th>
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0;">Chi phí</th>
+                        <th style="text-align:left; padding:12px; border-bottom:1px solid #e2e8f0;">Trạng thái</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="b : ${histories}"
+                        style="border-bottom:1px solid #f1f5f9; transition:0.2s;"
+                        onmouseover="this.style.background='#f8fafc'"
+                        onmouseout="this.style.background='transparent'">
+
+                        <!-- Car -->
+                        <td style="padding:14px 12px; font-weight:600; color:#1e293b;"
+                            th:text="${b.carName}"></td>
+
+                        <!-- Start -->
+                        <td style="padding:14px 12px;"
+                            th:text="${#temporals.format(b.startDate, 'dd/MM/yyyy')}"></td>
+
+                        <!-- End -->
+                        <td style="padding:14px 12px;"
+                            th:text="${#temporals.format(b.endDate, 'dd/MM/yyyy')}"></td>
+
+                        <!-- Price -->
+                        <td style="padding:14px 12px; font-weight:600; color:#2563eb;"
+                            th:text="${#numbers.formatDecimal(b.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}"></td>
+
+                        <!-- Status -->
+                        <td style="padding:14px 12px;">
+                            <span style="padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;"
+                                th:style="${b.status == 'PENDING'} ? 'background:#fef3c7;color:#d97706;' :
+                                            (${b.status == 'CONFIRMED'} ? 'background:#e0f2fe;color:#0284c7;' :
+                                            (${b.status == 'COMPLETED'} ? 'background:#dcfce7;color:#16a34a;' :
+                                            'background:#fee2e2;color:#dc2626;'))">
+
+                                <span th:text="${b.status == 'PENDING' ? 'Chờ duyệt' :
+                                                b.status == 'CONFIRMED' ? 'Đã xác nhận' :
+                                                b.status == 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy'}">
+                                </span>
+                            </span>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
             </section>
 
             <section class="section-card">
@@ -312,3 +365,5 @@
 
 </body>
 </html>
+
+

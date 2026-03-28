@@ -5,6 +5,7 @@ import fpt.swp391.carrentalsystem.dto.response.LocationDTO;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.entity.CarDocument;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
+import fpt.swp391.carrentalsystem.enums.FuelType;
 import fpt.swp391.carrentalsystem.repository.CarDocumentRepository;
 import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import fpt.swp391.carrentalsystem.security.CustomUserDetails;
@@ -62,13 +63,13 @@ public class OwnerCarControllerByThinhHT {
                 cars = carRepositoryByThinhHT.findDeletedCarsByOwnerId(ownerId);
                 break;
             case "pending":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.PENDING);
                 break;
             case "available":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.AVAILABLE);
                 break;
             case "rented":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.BOOKED);
                 break;
             case "all":
             default:
@@ -154,13 +155,13 @@ public class OwnerCarControllerByThinhHT {
                 cars = carRepositoryByThinhHT.findDeletedCarsByOwnerId(ownerId);
                 break;
             case "pending":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.PENDING);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.PENDING);
                 break;
             case "available":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.AVAILABLE);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.AVAILABLE);
                 break;
             case "rented":
-                cars = carRepositoryByThinhHT.findByOwnerIdAndStatus(ownerId, CarStatus.RENTED);
+                cars = carRepositoryByThinhHT.findByOwner_IdAndStatus(ownerId, CarStatus.BOOKED);
                 break;
             case "all":
             default:
@@ -275,7 +276,7 @@ public class OwnerCarControllerByThinhHT {
 
         // Add car to model
         model.addAttribute("car", car);
-        model.addAttribute("fuelTypes", Car.FuelType.values());
+        model.addAttribute("fuelTypes", FuelType.values());
 
         // Static dropdown options
         model.addAttribute("colors", java.util.Arrays.asList(

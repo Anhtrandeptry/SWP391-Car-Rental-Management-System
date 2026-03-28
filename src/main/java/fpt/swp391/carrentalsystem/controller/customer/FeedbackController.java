@@ -4,7 +4,7 @@ import fpt.swp391.carrentalsystem.dto.request.FeedbackForm;
 import fpt.swp391.carrentalsystem.dto.response.FeedbackResponse;
 import fpt.swp391.carrentalsystem.repository.UserRepository;
 import fpt.swp391.carrentalsystem.service.FeedbackService;
-import fpt.swp391.carrentalsystem.sercurity.CustomUserDetails;
+import fpt.swp391.carrentalsystem.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,10 +46,14 @@ public class FeedbackController {
 
     @GetMapping("/new")
     public String sendForm(Model model,
-                           @RequestParam(value = "ok", required = false) String ok) {
-        model.addAttribute("form", new FeedbackForm());
+                           @RequestParam(value = "ok", required = false) String ok,
+                           @RequestParam(value = "bookingId", required = false) Long bookingId) {
+        FeedbackForm form = new FeedbackForm();
+        if (bookingId != null) {
+            form.setBookingId(bookingId);
+        }
+        model.addAttribute("form", form);
         model.addAttribute("ok", ok != null);
-
         model.addAttribute("suggestions", """
 - Mô tả đúng trải nghiệm bạn gặp phải (trước/sau khi nhận xe).
 - Nêu rõ điểm tốt và điểm cần cải thiện.

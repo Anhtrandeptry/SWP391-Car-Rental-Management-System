@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="public-navbar(activePage)" class="public-navbar">
+    <a th:href="@{/}" class="nav-brand"><i class="bi bi-car-front-fill" style="font-size:1.5rem;"></i> CRMS</a>
+    <div class="nav-links">
+        <a th:href="@{/public/cars}" th:classappend="${activePage == 'cars'} ? 'active' : ''">Thue xe</a>
+        <a th:href="@{/public/blogs}" th:classappend="${activePage == 'blogs'} ? 'active' : ''">Blog</a>
+        <a th:href="@{/income-estimate}" th:classappend="${activePage == 'income'} ? 'active' : ''">Uoc tinh thu nhap</a>
+    </div>
+    <div class="nav-actions">
+        <a th:href="@{/auth/login}" class="btn-login-nav">Dang nhap</a>
+        <a th:href="@{/auth/register}" class="btn-register-nav">Dang ky</a>
+    </div>
+</nav>
+</body>
+</html>
+
+
+

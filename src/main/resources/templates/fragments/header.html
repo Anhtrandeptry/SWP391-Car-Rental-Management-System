@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header(role, userName)" class="crms-header">
+    <a th:href="${role == 'ADMIN'} ? @{/admin/dashboard} : (${role == 'OWNER'} ? @{/owner/dashboard} : @{/customer/dashboard})" class="logo-area">
+        <div class="logo-icon"><i class="bi bi-car-front-fill"></i></div>
+        <div><div class="logo-text">CRMS</div><div class="logo-sub">Car Rental System</div></div>
+    </a>
+    <div class="user-area">
+        <div class="avatar" th:text="${userName != null ? userName.substring(0,1).toUpperCase() : 'U'}">U</div>
+        <div><div class="user-name" th:text="${userName != null ? userName : 'User'}">User</div><div class="user-role" th:text="${role}">Role</div></div>
+    </div>
+</header>
+</body>
+</html>
+
+
+

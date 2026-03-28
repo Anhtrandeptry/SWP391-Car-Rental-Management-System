@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${blog.title} + ' - Admin Blog'">Admin Blog Detail</title>
+    <style>
+        :root{--bg:#f6f7fb;--card:#fff;--text:#0f172a;--muted:#64748b;--line:#e5e7eb;--teal:#0f766e;--teal-soft:rgba(15,118,110,.08);--shadow:0 10px 30px rgba(15,23,42,.06)}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#f8fafc 0%,#f6f7fb 100%);color:var(--text)}
+        .wrap{max-width:980px;margin:0 auto;padding:24px 18px 40px}
+        .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+        .crumb{color:var(--muted);font-size:13px;font-weight:800}
+        .crumb a{color:var(--teal);text-decoration:none}
+        .crumb a:hover{text-decoration:underline}
+        .actions{display:flex;gap:10px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1px solid rgba(15,118,110,.15);background:#fff;color:var(--teal);font-weight:900;text-decoration:none;box-shadow:var(--shadow)}
+        .btn.primary{background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff;border-color:transparent}
+        .card{background:var(--card);border:1px solid rgba(15,118,110,.12);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+        .thumb{width:100%;max-height:360px;object-fit:cover;background:#e2e8f0;display:block}
+        .head{padding:20px 20px 16px}
+        .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}
+        .pub{background:#ecfdf5;color:#16a34a;border:1px solid #bbf7d0}
+        .draft{background:#fff7ed;color:#b45309;border:1px solid #fed7aa}
+        h1{margin:12px 0 0;font-size:28px;line-height:1.2}
+        .meta-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+        .meta{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--teal-soft)}
+        .meta-label{display:block;font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+        .meta-value{display:block;margin-top:6px;font-size:14px;font-weight:800;word-break:break-word}
+        .summary{margin-top:16px;padding:14px 16px;border-left:4px solid rgba(15,118,110,.35);background:#f8fafc;border-radius:12px;color:#334155;line-height:1.6}
+        .body{padding:20px;border-top:1px solid var(--line)}
+        .ql-content img{max-width:100%;height:auto}
+        .ql-content p,.ql-content li{line-height:1.7}
+        .ql-content h2,.ql-content h3{margin-top:18px}
+        .ql-content blockquote{border-left:4px solid rgba(15,118,110,.35);padding-left:12px;color:#334155}
+        @media (max-width:768px){.meta-grid{grid-template-columns:1fr}h1{font-size:24px}.wrap{padding:18px 14px 32px}}
+    </style>
+</head>
+<body>
+<div class="wrap" th:if="${blog != null}">
+    <div class="top">
+        <div>
+            <div class="crumb"><a th:href="@{/admin/blogs}">Blog Management</a> / <span>Chi tiet blog</span></div>
+            <h2 style="margin:10px 0 0;font-size:16px;font-weight:900;color:#334155">Admin blog preview</h2>
+        </div>
+        <div class="actions">
+            <a class="btn" th:href="@{/admin/blogs}">Quay lai danh sach</a>
+            <a class="btn" th:href="@{|/public/blogs/${blog.id}|}" target="_blank" th:if="${blog.status != null and blog.status.name() == 'PUBLISHED'}">Xem public</a>
+            <a class="btn primary" th:href="@{|/admin/blogs/${blog.id}/edit|}">Chinh sua</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <img class="thumb" th:if="${blog.thumbnailUrl != null and !#strings.isEmpty(#strings.trim(blog.thumbnailUrl))}"
+             th:src="${blog.thumbnailUrl}" alt="thumbnail"/>
+
+        <div class="head">
+            <span class="badge pub" th:if="${blog.status != null and blog.status.name() == 'PUBLISHED'}">PUBLISHED</span>
+            <span class="badge draft" th:if="${blog.status == null or blog.status.name() != 'PUBLISHED'}">DRAFT</span>
+            <h1 th:text="${blog.title}">Blog title</h1>
+
+            <div class="meta-grid">
+                <div class="meta">
+                    <span class="meta-label">Slug</span>
+                    <span class="meta-value" th:text="${blog.slug}">blog-slug</span>
+                </div>
+                <div class="meta">
+                    <span class="meta-label">Created At</span>
+                    <span class="meta-value" th:text="${blog.createdAt}">2026-03-28</span>
+                </div>
+                <div class="meta">
+                    <span class="meta-label">Updated At</span>
+                    <span class="meta-value" th:text="${blog.updatedAt}">2026-03-28</span>
+                </div>
+            </div>
+
+            <div class="summary" th:if="${blog.summary != null and !#strings.isEmpty(#strings.trim(blog.summary))}" th:text="${blog.summary}">
+                Blog summary
+            </div>
+        </div>
+
+        <div class="body">
+            <div class="ql-content" th:utext="${blog.contentHtml}">
+                content html
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

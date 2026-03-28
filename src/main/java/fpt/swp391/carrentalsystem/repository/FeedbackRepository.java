@@ -25,6 +25,6 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
            WHERE f.customer.id = :customerId
              AND f.systemReply IS NOT NULL
              AND TRIM(f.systemReply) <> ''
-           """)
+            """)
     long countRepliedByCustomer(@Param("customerId") Long customerId);
 }

@@ -1,7 +1,7 @@
 package fpt.swp391.carrentalsystem.controller.owner;
 
 import fpt.swp391.carrentalsystem.dto.request.FinalCarSubmitDTO;
-import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.service.FinalCarCreationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +24,15 @@ public class OwnerFinalCarController {
      * POST /api/owner/cars/create-complete
      */
     @PostMapping("/create-complete")
-    public ResponseEntity<ApiResponse<CarResponseDTO>> createCompleteCar(
+    public ResponseEntity<ApiResponse<CarResponseDto>> createCompleteCar(
             @Valid @RequestBody FinalCarSubmitDTO submitDTO) {
 
         // TODO: Sau này lấy ownerId từ JWT
         submitDTO.setOwnerId(1L); // Hardcode tạm
 
-        CarResponseDTO createdCar = finalCarCreationService.createCompleteCar(submitDTO);
+        CarResponseDto createdCar = finalCarCreationService.createCompleteCar(submitDTO);
 
-        ApiResponse<CarResponseDTO> response =
+        ApiResponse<CarResponseDto> response =
                 new ApiResponse<>(true,
                         "Tạo xe thành công! Đang chờ admin phê duyệt.",
                         createdCar);

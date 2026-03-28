@@ -1,10 +1,15 @@
 package fpt.swp391.carrentalsystem.controller.admin;
 
+import fpt.swp391.carrentalsystem.dto.response.AdminDashboardStatsDto;
+import fpt.swp391.carrentalsystem.dto.response.BookingHistoryResponse;
 import fpt.swp391.carrentalsystem.dto.response.CustomerResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerResponse;
 import fpt.swp391.carrentalsystem.enums.UserStatus;
+import fpt.swp391.carrentalsystem.service.admin.AdminDashboardService;
 import fpt.swp391.carrentalsystem.service.admin.ManageCustomerService;
 import fpt.swp391.carrentalsystem.service.admin.ManageOwnerService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,20 +21,29 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
+@RequiredArgsConstructor
+@Slf4j
 public class AdminController {
 
     private final ManageCustomerService manageCustomerService;
     private final ManageOwnerService manageOwnerService;
-
-    // ✅ Constructor Injection (khuyến nghị)
-    public AdminController(ManageCustomerService manageCustomerService,
-                           ManageOwnerService manageOwnerService) {
-        this.manageCustomerService = manageCustomerService;
-        this.manageOwnerService = manageOwnerService;
-    }
+    private final AdminDashboardService adminDashboardService;
 
     @GetMapping("/dashboard")
-    public String dashboard() {
+    public String dashboard(Model model) {
+        try {
+            // Fetch all dashboard statistics from database
+            AdminDashboardStatsDto stats = adminDashboardService.getDashboardStats();
+            model.addAttribute("stats", stats);
+
+            log.info("Admin dashboard loaded with stats: totalUsers={}, totalBookings={}, totalRevenue={}",
+                    stats.getTotalUsers(), stats.getTotalBookings(), stats.getTotalRevenue());
+        } catch (Exception e) {
+            log.error("Error loading admin dashboard: {}", e.getMessage(), e);
+            model.addAttribute("error", "Không thể tải dữ liệu dashboard. Vui lòng thử lại.");
+            // Provide empty stats to prevent template errors
+            model.addAttribute("stats", AdminDashboardStatsDto.builder().build());
+        }
         return "admin/admin-dashboard";
     }
 
@@ -60,13 +74,16 @@ public class AdminController {
     // Lấy chi tiết khách hàng theo ID dưới dạng JSON
     @GetMapping("/customers/detail-page")
     public String customerDetailPage(@RequestParam("id") Long id, Model model) {
-        // Lấy dữ liệu chi tiết từ service
+
         CustomerResponse customer = manageCustomerService.getCustomerById(id);
 
-        // Đưa dữ liệu vào model để Thymeleaf bên trang detail sử dụng
-        model.addAttribute("customer", customer);
+        // 🔥 thêm dòng này
+        List<BookingHistoryResponse> histories =
+                manageCustomerService.getRecentBookings(id);
 
-        // Trả về file customer-detail.html
+        model.addAttribute("customer", customer);
+        model.addAttribute("histories", histories);
+
         return "admin/customer-detail";
     }
 
@@ -124,9 +141,17 @@ public class AdminController {
     // 2. Trang chi tiết chủ xe
     @GetMapping("/owners/detail-page")
     public String ownerDetailPage(@RequestParam("id") Long id, Model model) {
+
         OwnerResponse owner = manageOwnerService.getOwnerById(id);
+
+        // 🔥 Lấy lịch sử booking của owner
+        List<BookingHistoryResponse> histories =
+                manageOwnerService.getRecentBookingsByOwner(id);
+
         model.addAttribute("owner", owner);
-        return "admin/owner-detail"; // Trả về file owner-detail.html
+        model.addAttribute("histories", histories);
+
+        return "admin/owner-detail";
     }
 
     // 3. Phê duyệt chủ xe

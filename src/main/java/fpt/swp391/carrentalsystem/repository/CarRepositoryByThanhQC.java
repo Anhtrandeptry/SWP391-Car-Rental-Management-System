@@ -9,9 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
+public interface CarRepositoryByThanhQC extends JpaRepository<Car, Integer> {
 
     @Query("SELECT c FROM Car c WHERE c.status = fpt.swp391.carrentalsystem.enums.CarStatus.AVAILABLE " +
             "AND (:location IS NULL OR :location = '' OR c.location = :location) " +
@@ -20,10 +21,11 @@ public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
             "AND (:carType IS NULL OR :carType = '' OR c.carType = :carType) " +
             "AND (:fuelType IS NULL OR :fuelType = '' OR CAST(c.fuelType AS string) = :fuelType) " +
             "AND (:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-            "AND (cast(:startDate as timestamp) IS NULL OR c.id NOT IN (" +
-            "   SELECT b.car.id FROM Booking b " +
+            "AND (cast(:startDate as timestamp) IS NULL OR c.carId NOT IN (" +
+            "   SELECT b.car.carId FROM Booking b " +
             "   WHERE b.status IN (fpt.swp391.carrentalsystem.enums.BookingStatus.CONFIRMED, " +
-            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.PENDING) " +
+            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.PAYMENT_PENDING, " +
+            "                      fpt.swp391.carrentalsystem.enums.BookingStatus.IN_USE) " +
             "   AND b.startDate < :endDate " +
             "   AND b.endDate > :startDate" +
             "))")
@@ -53,7 +55,10 @@ public interface CarRepositoryByThanhQC extends JpaRepository<Car, Long> {
     @Query("SELECT DISTINCT c.seats FROM Car c WHERE c.seats IS NOT NULL")
     List<Integer> findDistinctSeats();
 
-    List<Car> findByOwnerId(Long ownerId);
+    List<Car> findByOwner_Id(Long ownerId);
 
     List<Car> findByStatus(CarStatus status);
+
+    @Query("SELECT c FROM Car c LEFT JOIN FETCH c.images WHERE c.carId = :id")
+    Optional<Car> findByIdWithImages(@Param("id") Integer id);
 }

@@ -31,34 +31,34 @@ public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
     /**
      * Tìm xe theo chủ xe (Owner ID)
      */
-    List<Car> findByOwnerId(Long ownerId);
+    List<Car> findByOwner_Id(Long ownerId);
 
     /**
      * Tìm xe theo chủ xe và trạng thái
      */
-    List<Car> findByOwnerIdAndStatus(Long ownerId, CarStatus status);
+    List<Car> findByOwner_IdAndStatus(Long ownerId, CarStatus status);
 
     /**
      * Tìm xe theo chủ xe và loại trừ một trạng thái (dùng để lấy xe chưa bị xóa)
      */
-    List<Car> findByOwnerIdAndStatusNot(Long ownerId, CarStatus status);
+    List<Car> findByOwner_IdAndStatusNot(Long ownerId, CarStatus status);
 
     /**
      * Tìm xe đã bị xóa mềm (INACTIVE) của một owner
      */
-    @Query("SELECT c FROM Car c WHERE c.ownerId = :ownerId AND c.status = 'INACTIVE'")
+    @Query("SELECT c FROM Car c WHERE c.owner.id = :ownerId AND c.status = 'INACTIVE'")
     List<Car> findDeletedCarsByOwnerId(@Param("ownerId") Long ownerId);
 
     /**
      * Tìm xe chưa bị xóa mềm của một owner (status != INACTIVE)
      */
-    @Query("SELECT c FROM Car c WHERE c.ownerId = :ownerId AND c.status != 'INACTIVE'")
+    @Query("SELECT c FROM Car c WHERE c.owner.id = :ownerId AND c.status != 'INACTIVE'")
     List<Car> findActiveCarsByOwnerId(@Param("ownerId") Long ownerId);
 
     // 2. Định nghĩa câu lệnh xóa mềm
     @Modifying // Đánh dấu đây là truy vấn thay đổi dữ liệu (Update/Delete)
     @Transactional // Đảm bảo việc update diễn ra trong một giao dịch an toàn
-    @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.id = :carId AND c.ownerId = :ownerId")
+    @Query("UPDATE Car c SET c.status = 'INACTIVE' WHERE c.carId = :carId AND c.owner.id = :ownerId")
     int softDeleteCar(@Param("carId") Long carId, @Param("ownerId") Long ownerId);
 
     // NOTE: Restore feature has been removed - soft deleted cars are permanent
@@ -67,14 +67,14 @@ public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
     //  */
     // @Modifying
     // @Transactional
-    // @Query("UPDATE Car c SET c.status = 'AVAILABLE' WHERE c.id = :carId AND c.ownerId = :ownerId AND c.status = 'INACTIVE'")
+    // @Query("UPDATE Car c SET c.status = 'AVAILABLE' WHERE c.carId = :carId AND c.owner.id = :ownerId AND c.status = 'INACTIVE'")
     // int restoreCar(@Param("carId") Long carId, @Param("ownerId") Long ownerId);
 
 
     /**
      * Đếm số xe của một owner
      */
-    long countByOwnerId(Long ownerId);
+    long countByOwner_Id(Long ownerId);
 
     // ================== SEARCH BY ATTRIBUTES ==================
 
@@ -233,7 +233,7 @@ public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
     /**
      * Tính tổng thu nhập ước tính của một owner
      */
-    @Query("SELECT SUM(c.estimatedIncome) FROM Car c WHERE c.ownerId = :ownerId")
+    @Query("SELECT SUM(c.estimatedIncome) FROM Car c WHERE c.owner.id = :ownerId")
     BigDecimal sumEstimatedIncomeByOwnerId(@Param("ownerId") Long ownerId);
 
     /**
@@ -280,7 +280,7 @@ public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
     /**
      * Lấy top N xe mới nhất của owner
      */
-    @Query("SELECT c FROM Car c WHERE c.ownerId = :ownerId ORDER BY c.createdAt DESC")
+    @Query("SELECT c FROM Car c WHERE c.owner.id = :ownerId ORDER BY c.createdAt DESC")
     List<Car> findLatestCarsByOwnerId(@Param("ownerId") Long ownerId);
 
     // ================== CUSTOM QUERIES ==================
@@ -315,7 +315,7 @@ public interface CarRepositoryByThinhHT extends JpaRepository<Car, Long> {
      * Kiểm tra owner có xe nào đang cho thuê không
      */
     @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END " +
-            "FROM Car c WHERE c.ownerId = :ownerId AND c.status = 'RENTED'")
+            "FROM Car c WHERE c.owner.id = :ownerId AND c.status = 'RENTED'")
     boolean hasRentedCars(@Param("ownerId") Long ownerId);
 
     /**

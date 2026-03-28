@@ -166,13 +166,7 @@
                             <span class="info-value" th:text="${#temporals.format(owner.createdAt, 'dd/MM/yyyy')}">10/02/2026</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="sidebar-action">
-                    <form id="disableForm" th:action="@{/admin/owners/disable(id=${owner.id})}" method="post">
-                        <button type="button" class="btn-disable-outline" onclick="confirmDisable()">Vô hiệu hóa tài khoản</button>
-                    </form>
-                </div>
+                </div>  
             </div>
         </aside>
 
@@ -184,7 +178,7 @@
                 </div>
                 <div class="stat-box">
                     <p class="label">Số lượt cho thuê</p>
-                    <p class="val">0</p>
+                    <p class="val" th:text="${owner.numberOfCars}">0</p>
                 </div>
             </div>
 
@@ -193,10 +187,42 @@
                     <span>Lịch sử cho thuê xe gần đây</span>
                     <i class="fas fa-history" style="color: var(--text-light)"></i>
                 </div>
-                <div class="empty-history">
-                    <i class="fas fa-car-side"></i>
-                    <p>Chưa có dữ liệu giao dịch cho người dùng này.</p>
-                </div>
+                <div th:if="${histories != null and !#lists.isEmpty(histories)}">
+    <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+            <tr style="background:#f8fafc; text-align:left;">
+                <th style="padding:10px;">Xe</th>
+                <th style="padding:10px;">Ngày thuê</th>
+                <th style="padding:10px;">Ngày trả</th>
+                <th style="padding:10px;">Chi phí</th>
+                <th style="padding:10px;">Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="h : ${histories}" style="border-top:1px solid #e2e8f0;">
+                <td style="padding:10px;" th:text="${h.carName}"></td>
+
+                <td style="padding:10px;"
+                    th:text="${#temporals.format(h.startDate, 'dd/MM/yyyy')}"></td>
+
+                <td style="padding:10px;"
+                    th:text="${#temporals.format(h.endDate, 'dd/MM/yyyy')}"></td>
+
+                <td style="padding:10px; font-weight:600; color:#16a34a;"
+                    th:text="${#numbers.formatDecimal(h.totalAmount, 0, 'COMMA', 0, 'POINT') + ' đ'}"></td>
+
+                <td style="padding:10px;">
+                    <span style="padding:4px 10px; border-radius:12px; font-size:12px;"
+                          th:text="${h.status}"
+                          th:style="${h.status == 'COMPLETED'} ? 'background:#dcfce7;color:#16a34a;' :
+                                    (${h.status == 'CONFIRMED'} ? 'background:#e0f2fe;color:#0284c7;' :
+                                    'background:#fef3c7;color:#d97706;')">
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
             </section>
 
             <section class="section-card">

@@ -34,7 +34,8 @@ public class OwnerServiceImpl implements OwnerService {
     @Override
     @Transactional(readOnly = true)
     public List<RentalHistoryDto> getRentalHistory(Long ownerId) {
-        List<Booking> bookings = bookingRepository.findByCarOwnerIdOrderByCreatedAtDesc(ownerId);
+        // Use optimized query with JOIN FETCH to avoid N+1 problem
+        List<Booking> bookings = bookingRepository.findOwnerBookingsWithDetails(ownerId);
 
         return bookings.stream()
                 .map(this::toRentalHistoryDtoForOwner)
@@ -47,7 +48,7 @@ public class OwnerServiceImpl implements OwnerService {
         User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("Owner not found: " + ownerId));
 
-        List<Car> ownerCars = carRepository.findByOwnerId(ownerId);
+        List<Car> ownerCars = carRepository.findByOwner_Id(ownerId);
         BigDecimal totalIncome = bookingRepository.calculateTotalRevenueByOwnerId(ownerId);
 
         List<CarIncomeDto> carIncomes = new ArrayList<>();
@@ -59,13 +60,17 @@ public class OwnerServiceImpl implements OwnerService {
 
             List<BookingIncomeDto> bookingIncomeDtos = carBookings.stream()
                     .filter(b -> b.getPaymentStatus() == PaymentStatus.PAID &&
-                               (b.getStatus() == BookingStatus.CONFIRMED || b.getStatus() == BookingStatus.COMPLETED))
+                               (b.getStatus() == BookingStatus.CONFIRMED ||
+                                b.getStatus() == BookingStatus.COMPLETED ||
+                                b.getStatus() == BookingStatus.IN_USE))
                     .map(this::toBookingIncomeDto)
                     .collect(Collectors.toList());
 
             int completedBookingsCount = (int) carBookings.stream()
                     .filter(b -> b.getPaymentStatus() == PaymentStatus.PAID &&
-                               (b.getStatus() == BookingStatus.CONFIRMED || b.getStatus() == BookingStatus.COMPLETED))
+                               (b.getStatus() == BookingStatus.CONFIRMED ||
+                                b.getStatus() == BookingStatus.COMPLETED ||
+                                b.getStatus() == BookingStatus.IN_USE))
                     .count();
 
             totalCompletedBookings += completedBookingsCount;

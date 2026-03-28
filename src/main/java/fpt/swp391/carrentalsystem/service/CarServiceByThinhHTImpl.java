@@ -1,9 +1,10 @@
 package fpt.swp391.carrentalsystem.service;
 
-import fpt.swp391.carrentalsystem.dto.response.CarResponseDTO;
+import fpt.swp391.carrentalsystem.dto.response.CarResponseDto;
 import fpt.swp391.carrentalsystem.entity.Car;
 import fpt.swp391.carrentalsystem.enums.CarStatus;
 import fpt.swp391.carrentalsystem.exception.ResourceNotFoundException;
+import fpt.swp391.carrentalsystem.mapper.CarMapper;
 import fpt.swp391.carrentalsystem.repository.CarRepositoryByThinhHT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
 
     private final CarRepositoryByThinhHT carRepositoryByThinhHT;
     private final CarDocumentService carDocumentService;
+    private final CarMapper carMapper;
 
     // ... existing methods ...
 
@@ -25,12 +27,12 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
         // Kiểm tra quyền sở hữu
-        if (!car.getOwnerId().equals(ownerId)) {
+        if (!car.getOwner().getId().equals(ownerId)) {
             throw new IllegalArgumentException("Bạn không có quyền xóa xe này");
         }
 
         // Kiểm tra xe có đang được thuê không
-        if (car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED) {
+        if (car.getStatus() == CarStatus.RESERVED || car.getStatus() == CarStatus.BOOKED) {
             throw new IllegalArgumentException("Không thể xóa xe đang được thuê hoặc đã đặt");
         }
 
@@ -45,12 +47,12 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
         // Kiểm tra quyền sở hữu
-        if (!car.getOwnerId().equals(ownerId)) {
+        if (!car.getOwner().getId().equals(ownerId)) {
             throw new IllegalArgumentException("Bạn không có quyền xóa xe này");
         }
 
         // Kiểm tra xe có đang được thuê không
-        if (car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED) {
+        if (car.getStatus() == CarStatus.RESERVED || car.getStatus() == CarStatus.BOOKED) {
             throw new IllegalArgumentException("Không thể xóa xe đang được thuê hoặc đã đặt");
         }
 
@@ -62,12 +64,12 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
     }
 
     @Override
-    public CarResponseDTO restoreCar(Long id, Long ownerId) {
+    public CarResponseDto restoreCar(Long id, Long ownerId) {
         Car car = carRepositoryByThinhHT.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + id));
 
         // Kiểm tra quyền sở hữu
-        if (!car.getOwnerId().equals(ownerId)) {
+        if (!car.getOwner().getId().equals(ownerId)) {
             throw new IllegalArgumentException("Bạn không có quyền khôi phục xe này");
         }
 
@@ -80,7 +82,7 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
         car.setStatus(CarStatus.PENDING);
         Car restoredCar = carRepositoryByThinhHT.save(car);
 
-        return new CarResponseDTO(restoredCar);
+        return carMapper.toDto(restoredCar);
     }
 
     @Override
@@ -89,6 +91,6 @@ public class CarServiceByThinhHTImpl implements CarServiceByThinhHT {
         Car car = carRepositoryByThinhHT.findById(carId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy xe với ID: " + carId));
 
-        return car.getStatus() == CarStatus.RENTED || car.getStatus() == CarStatus.BOOKED;
+        return car.getStatus() == CarStatus.RESERVED || car.getStatus() == CarStatus.BOOKED;
     }
 }

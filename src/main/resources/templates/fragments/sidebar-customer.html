@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar-customer(activePage)" class="crms-sidebar">
+    <div class="nav-section">
+        <div class="nav-title">Thue xe</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a th:href="@{/customer/dashboard}" class="nav-link" th:classappend="${activePage == 'dashboard'} ? 'active' : ''">
+                    <i class="bi bi-speedometer2"></i><span>Tong quan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/customer/cars}" class="nav-link" th:classappend="${activePage == 'view-cars'} ? 'active' : ''">
+                    <i class="bi bi-search"></i><span>Xem xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/customer/booking}" class="nav-link" th:classappend="${activePage == 'booking'} ? 'active' : ''">
+                    <i class="bi bi-car-front"></i><span>Dat xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/customer/booking-history}" class="nav-link" th:classappend="${activePage == 'history'} ? 'active' : ''">
+                    <i class="bi bi-calendar-check"></i><span>Lich su dat xe</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="nav-section">
+        <div class="nav-title">Giao nhan xe</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a th:href="@{/customer/handover/list}" class="nav-link" th:classappend="${activePage == 'handover'} ? 'active' : ''">
+                    <i class="bi bi-hand-index"></i><span>Ban giao xe</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/customer/return/list-car-return}" class="nav-link" th:classappend="${activePage == 'returns'} ? 'active' : ''">
+                    <i class="bi bi-arrow-return-left"></i><span>Tra xe</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="nav-section">
+        <div class="nav-title">Danh gia</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a th:href="@{/customer/feedbacks}" class="nav-link" th:classappend="${activePage == 'feedbacks'} ? 'active' : ''">
+                    <i class="bi bi-star"></i><span>Danh gia cua toi</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="nav-section">
+        <div class="nav-title">Tai khoan</div>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a th:href="@{/profile}" class="nav-link" th:classappend="${activePage == 'profile'} ? 'active' : ''">
+                    <i class="bi bi-person"></i><span>Ho so ca nhan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a th:href="@{/profile/change-password}" class="nav-link" th:classappend="${activePage == 'password'} ? 'active' : ''">
+                    <i class="bi bi-key"></i><span>Doi mat khau</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="logout-section">
+        <form th:action="@{/auth/logout}" method="post">
+            <button type="submit" class="logout-btn">
+                <i class="bi bi-box-arrow-right"></i> Dang xuat
+            </button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>
+
+

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-    --primary-color: #00a58e;
+    --primary-color: #0d6efd;
     --text-main: #2d3436;
     --text-sub: #636e72;
     --bg-body: #f4f7f6;
@@ -170,6 +170,7 @@ body {
 }
 
 .btn-booking {
+display: block;
     width: 100%;
     background: var(--primary-color);
     color: white;
@@ -184,7 +185,7 @@ body {
 }
 
 .btn-booking:hover {
-    background: #008a77;
+    background: #0056b3;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 165, 142, 0.3);
 }
@@ -270,11 +271,12 @@ body {
                     </div>
                 </div>
 
-                <button class="btn-booking">Đặt xe ngay</button>
-            </div>
+                <a th:href="@{/customer/booking}" class="btn-booking">Đặt xe ngay</a>            </div>
         </div>
     </div>
 </div>
 
 </body>
 </html>
+
+

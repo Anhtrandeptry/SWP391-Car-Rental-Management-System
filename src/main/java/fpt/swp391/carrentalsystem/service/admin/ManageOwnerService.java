@@ -1,5 +1,6 @@
 package fpt.swp391.carrentalsystem.service.admin;
 
+import fpt.swp391.carrentalsystem.dto.response.BookingHistoryResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerResponse;
 import fpt.swp391.carrentalsystem.dto.response.OwnerStatsResponse; // Giả định bạn có DTO stats tương tự Customer
 import fpt.swp391.carrentalsystem.enums.UserStatus;
@@ -26,4 +27,6 @@ public interface ManageOwnerService {
 
     // Hàm để chuyển bất kỳ trạng thái nào về Pending
     void setToPending(Long ownerId);
+
+    List<BookingHistoryResponse> getRecentBookingsByOwner(Long ownerId);
 }

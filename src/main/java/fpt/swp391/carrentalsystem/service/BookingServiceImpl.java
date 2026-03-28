@@ -83,13 +83,18 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal rentalFee = car.getPricePerDay().multiply(BigDecimal.valueOf(days));
         BigDecimal totalAmount = rentalFee.add(HOLDING_FEE).add(DEPOSIT_AMOUNT);
 
+        // Determine pickup location - use car's location if not provided or empty
+        String pickupLocation = (request.getPickupLocation() != null && !request.getPickupLocation().trim().isEmpty())
+                ? request.getPickupLocation().trim()
+                : car.getLocation();
+
         // Create booking
         Booking booking = Booking.builder()
                 .customer(customer)
                 .car(car)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .pickupLocation(request.getPickupLocation() != null ? request.getPickupLocation() : car.getLocation())
+                .pickupLocation(pickupLocation)
                 .rentalFee(rentalFee)
                 .holdingFee(HOLDING_FEE)
                 .depositAmount(DEPOSIT_AMOUNT)
@@ -126,6 +131,18 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
+        // Check if already paid (idempotency)
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            log.info("Booking {} already PAID, returning cached info", bookingId);
+            return PaymentResponseDto.builder()
+                    .bookingId(bookingId)
+                    .amount(booking.getHoldingFee())
+                    .status("PAID")
+                    .message("Payment already completed")
+                    .timestamp(System.currentTimeMillis())
+                    .build();
+        }
+
         // Check if booking is still pending payment
         if (booking.getStatus() != BookingStatus.PAYMENT_PENDING) {
             throw new RuntimeException("Booking is not in pending payment status");
@@ -136,8 +153,42 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Payment deadline has passed. Please create a new booking.");
         }
 
-        String description = "Phi giu cho Booking " + bookingId;
-        return paymentService.createPayOSPayment(bookingId, booking.getHoldingFee(), description);
+        // IDEMPOTENCY CHECK: If orderCode already exists, return cached payment URL
+        // This prevents "Đơn thanh toán đã tồn tại" error on page reload/retry
+        if (booking.getOrderCode() != null && booking.getPaymentUrl() != null) {
+            log.info("Booking {} already has PayOS payment - orderCode: {}, reusing existing payment URL",
+                    bookingId, booking.getOrderCode());
+            return PaymentResponseDto.builder()
+                    .transactionId(String.valueOf(booking.getOrderCode()))
+                    .bookingId(bookingId)
+                    .amount(booking.getHoldingFee())
+                    .status("PENDING")
+                    .paymentUrl(booking.getPaymentUrl())
+                    .message("Reusing existing PayOS payment")
+                    .timestamp(System.currentTimeMillis())
+                    .build();
+        }
+
+        // Generate GLOBALLY UNIQUE orderCode for PayOS
+        // Format: timestamp (13 digits) + random (3 digits) = 16 digits max
+        // PayOS orderCode must be positive and unique across all transactions
+        long orderCode = System.currentTimeMillis() * 1000 + new java.util.Random().nextInt(1000);
+
+        log.info("Creating NEW PayOS payment - bookingId: {}, orderCode: {}", bookingId, orderCode);
+
+        String description = "GiuCho BK" + bookingId;
+        PaymentResponseDto response = paymentService.createPayOSPayment(
+                bookingId, orderCode, booking.getHoldingFee(), description);
+
+        // PERSIST orderCode and paymentUrl to booking for idempotency
+        booking.setOrderCode(orderCode);
+        booking.setPaymentUrl(response.getPaymentUrl());
+        bookingRepository.save(booking);
+
+        log.info("Saved PayOS payment info - bookingId: {}, orderCode: {}, paymentUrl: {}",
+                bookingId, orderCode, response.getPaymentUrl());
+
+        return response;
     }
 
     @Override
@@ -207,9 +258,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public List<RentalHistoryDto> getCustomerRentalHistory(Long customerId) {
-        List<Booking> bookings = bookingRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        // Use optimized query with JOIN FETCH
+        List<Booking> bookings = bookingRepository.findCustomerBookingsWithDetails(customerId);
         return bookings.stream()
                 .map(this::toRentalHistoryDtoForCustomer)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RentalHistoryDto> getOwnerRentalHistory(Long ownerId) {
+        // Use optimized query with JOIN FETCH
+        List<Booking> bookings = bookingRepository.findOwnerBookingsWithDetails(ownerId);
+        return bookings.stream()
+                .map(this::toRentalHistoryDtoForOwner)
                 .collect(Collectors.toList());
     }
 
@@ -279,9 +341,97 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional(readOnly = true)
     public RentalHistoryDto getBookingDetails(Integer bookingId) {
-        Booking booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         return toRentalHistoryDtoForCustomer(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RentalHistoryDto getBookingDetailsForCustomer(Integer bookingId, Long customerId) {
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify the customer owns this booking
+        if (!booking.getCustomer().getId().equals(customerId)) {
+            throw new RuntimeException("You don't have permission to view this booking");
+        }
+
+        return toRentalHistoryDtoForCustomer(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RentalHistoryDto getBookingDetailsForOwner(Integer bookingId, Long ownerId) {
+        Booking booking = bookingRepository.findBookingWithAllDetails(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Verify the owner owns the car
+        if (!booking.getCar().getOwner().getId().equals(ownerId)) {
+            throw new RuntimeException("You don't have permission to view this booking");
+        }
+
+        return toRentalHistoryDtoForOwner(booking);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canCancelBooking(Integer bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check ownership
+        if (!booking.getCustomer().getId().equals(userId)) {
+            return false;
+        }
+
+        // Can cancel if: status is PENDING or PAYMENT_PENDING AND current time < startDate
+        boolean validStatus = booking.getStatus() == BookingStatus.PENDING
+                || booking.getStatus() == BookingStatus.PAYMENT_PENDING;
+        boolean beforeStartDate = LocalDateTime.now().isBefore(booking.getStartDate());
+
+        return validStatus && beforeStartDate;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canPayBooking(Integer bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Can pay if: paymentStatus is UNPAID AND current time < startDate
+        boolean unpaid = booking.getPaymentStatus() == PaymentStatus.UNPAID;
+        boolean beforeStartDate = LocalDateTime.now().isBefore(booking.getStartDate());
+        boolean validStatus = booking.getStatus() == BookingStatus.PAYMENT_PENDING;
+
+        return unpaid && beforeStartDate && validStatus;
+    }
+
+    private RentalHistoryDto toRentalHistoryDtoForOwner(Booking booking) {
+        User customer = booking.getCustomer();
+        Car car = booking.getCar();
+
+        return RentalHistoryDto.builder()
+                .bookingId(booking.getBookingId())
+                .carId(car.getCarId())
+                .carName(car.getName())
+                .carBrand(car.getBrand())
+                .carModel(car.getModel())
+                .licensePlate(car.getLicensePlate())
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
+                .pickupLocation(booking.getPickupLocation())
+                .rentalFee(booking.getRentalFee())
+                .depositAmount(booking.getDepositAmount())
+                .holdingFee(booking.getHoldingFee())
+                .totalAmount(booking.getTotalAmount())
+                .status(booking.getStatus().name())
+                .paymentStatus(booking.getPaymentStatus().name())
+                .createdAt(booking.getCreatedAt())
+                .customerName(customer.getFirstName() + " " + customer.getLastName())
+                .customerPhone(customer.getPhoneNumber())
+                .customerEmail(customer.getEmail())
+                .build();
     }
 
     private boolean isCarAvailable(Integer carId, LocalDateTime startDate, LocalDateTime endDate) {

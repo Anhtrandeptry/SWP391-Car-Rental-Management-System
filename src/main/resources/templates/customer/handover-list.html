@@ -7,12 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #00a58e;
+            --primary-color: #0d6efd;
             --bg-body: #f4f7f6;
             --text-main: #2d3436;
             --text-sub: #636e72;
             --white: #ffffff;
-            /* Chỉnh màu viền đậm hơn để rõ nét */
             --border-color: #cbd5e1;
             --radius: 12px;
         }
@@ -28,7 +27,6 @@
 
         .table-card {
             background: var(--white); border-radius: var(--radius);
-            /* Tăng độ dày viền lên 2px cho rõ nét */
             border: 2px solid var(--border-color);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             overflow: hidden;
@@ -39,12 +37,10 @@
             background: #f8fafb; padding: 15px 20px; text-align: left;
             font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
             color: var(--text-sub);
-            /* Viền dưới của header rõ nét hơn */
             border-bottom: 2px solid var(--border-color);
         }
         td {
             padding: 20px;
-            /* Viền giữa các hàng rõ nét hơn */
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
         }
@@ -53,7 +49,6 @@
         .car-info strong { display: block; color: var(--text-main); }
         .car-info small { color: var(--text-sub); }
 
-        /* Status Badge */
         .badge {
             padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
         }
@@ -68,12 +63,27 @@
         }
         .btn-action:hover { background: var(--primary-hover); transform: translateY(-2px); }
         .btn-disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+        /* NÚT QUAY LẠI */
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #e2e8f0; color: #2d3436;
+            text-decoration: none; padding: 8px 16px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; transition: 0.3s;
+            margin-bottom: 15px;
+        }
+        .btn-back:hover { background: #cbd5e1; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2><i class="fas fa-exchange-alt"></i> Đơn hàng bàn giao xe</h2>
+
+    <!-- NÚT QUAY LẠI -->
+    <a th:href="@{/customer/dashboard}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Quay lại
+    </a>
 
     <div class="table-card">
         <table>
@@ -95,11 +105,11 @@
                 </td>
                 <td th:text="${#temporals.format(b.startDate, 'dd/MM/yyyy')}">20/03/2026</td>
                 <td>
-                    <span th:if="${b.status.name() == 'ACCEPTED'}" class="badge bg-success">Đã Duyệt</span>
+                    <span th:if="${b.status.name() == 'CONFIRMED'}" class="badge bg-success">Đã Duyệt</span>
                     <span th:if="${b.status.name() == 'HANDOVER_PENDING'}" class="badge bg-warning">Đang Chờ Xác Nhận</span>
                 </td>
                 <td style="text-align: right;">
-                    <a th:if="${b.status.name() == 'ACCEPTED'}"
+                    <a th:if="${b.status.name() == 'CONFIRMED'}"
                        th:href="@{/customer/handover/{id}(id=${b.bookingId})}"
                        class="btn-action">
                         <i class="fas fa-paper-plane"></i> Gửi yêu cầu
@@ -124,3 +134,5 @@
 
 </body>
 </html>
+
+
