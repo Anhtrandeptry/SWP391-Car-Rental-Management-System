@@ -23,6 +23,7 @@ public interface CarMapper {
 
     @Mapping(source = "owner.firstName", target = "ownerName")
     @Mapping(source = "owner.phoneNumber", target = "ownerPhone")
+    @Mapping(source = "images", target = "images", qualifiedByName = "mapImageUrls")
     CarResponseDto toDto(Car car);
 
     @Named("mapMainImage")
@@ -35,6 +36,17 @@ public interface CarMapper {
                 .map(CarImage::getImageUrl)
                 .findFirst()
                 .orElse(images.get(0).getImageUrl());
+    }
+
+    @Named("mapImageUrls")
+    default List<String> mapImageUrls(List<CarImage> images) {
+        if (images == null || images.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return images.stream()
+                .map(CarImage::getImageUrl)
+                .filter(url -> url != null)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Named("mapStatus")

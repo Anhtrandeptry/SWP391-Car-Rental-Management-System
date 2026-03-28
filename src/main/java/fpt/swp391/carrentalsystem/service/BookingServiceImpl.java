@@ -42,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
     private final CarMapper carMapper;
     private final PaymentService paymentService;
 
-    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(5000);
+    private static final BigDecimal HOLDING_FEE = BigDecimal.valueOf(500000);
     private static final BigDecimal DEPOSIT_AMOUNT = BigDecimal.valueOf(5000000);
     private static final int PAYMENT_TIMEOUT_MINUTES = 5;
 
@@ -83,13 +83,18 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal rentalFee = car.getPricePerDay().multiply(BigDecimal.valueOf(days));
         BigDecimal totalAmount = rentalFee.add(HOLDING_FEE).add(DEPOSIT_AMOUNT);
 
+        // Determine pickup location - use car's location if not provided or empty
+        String pickupLocation = (request.getPickupLocation() != null && !request.getPickupLocation().trim().isEmpty())
+                ? request.getPickupLocation().trim()
+                : car.getLocation();
+
         // Create booking
         Booking booking = Booking.builder()
                 .customer(customer)
                 .car(car)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .pickupLocation(request.getPickupLocation() != null ? request.getPickupLocation() : car.getLocation())
+                .pickupLocation(pickupLocation)
                 .rentalFee(rentalFee)
                 .holdingFee(HOLDING_FEE)
                 .depositAmount(DEPOSIT_AMOUNT)

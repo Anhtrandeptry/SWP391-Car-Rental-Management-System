@@ -181,9 +181,13 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}/details")
-    public String bookingDetails(@PathVariable Integer bookingId, Model model) {
+    public String bookingDetails(@PathVariable Integer bookingId,
+                                Authentication authentication,
+                                Model model) {
         try {
-            RentalHistoryDto booking = bookingService.getBookingDetails(bookingId);
+            Long userId = extractUserId(authentication);
+            // Use the method that verifies ownership
+            RentalHistoryDto booking = bookingService.getBookingDetailsForCustomer(bookingId, userId);
             model.addAttribute("booking", booking);
             return "customer/booking-details";
         } catch (Exception e) {

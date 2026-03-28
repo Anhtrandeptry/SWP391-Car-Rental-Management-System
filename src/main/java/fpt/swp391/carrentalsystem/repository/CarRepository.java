@@ -31,7 +31,7 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
 
     // Check if car has active booking
     @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.car.carId = :carId " +
-           "AND b.status IN ('CONFIRMED', 'PAYMENT_PENDING') " +
+           "AND b.status IN ('CONFIRMED', 'PAYMENT_PENDING', 'IN_USE') " +
            "AND b.endDate > :now")
     boolean hasActiveBooking(@Param("carId") Integer carId, @Param("now") LocalDateTime now);
 

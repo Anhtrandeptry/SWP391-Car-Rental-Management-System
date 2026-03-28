@@ -45,19 +45,19 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // Find completed bookings for revenue calculation (non-cancelled)
     @Query("SELECT b FROM Booking b WHERE b.car.carId = :carId " +
-           "AND b.status IN ('CONFIRMED', 'COMPLETED') " +
+           "AND b.status IN ('CONFIRMED', 'COMPLETED', 'IN_USE') " +
            "AND b.paymentStatus = 'PAID'")
     List<Booking> findCompletedBookingsByCarId(@Param("carId") Integer carId);
 
     // Calculate total revenue for a car
     @Query("SELECT COALESCE(SUM(b.rentalFee), 0) FROM Booking b WHERE b.car.carId = :carId " +
-           "AND b.status IN ('CONFIRMED', 'COMPLETED') " +
+           "AND b.status IN ('CONFIRMED', 'COMPLETED', 'IN_USE') " +
            "AND b.paymentStatus = 'PAID'")
     BigDecimal calculateRevenueByCarId(@Param("carId") Integer carId);
 
     // Calculate total revenue for owner
     @Query("SELECT COALESCE(SUM(b.rentalFee), 0) FROM Booking b WHERE b.car.owner.id = :ownerId " +
-           "AND b.status IN ('CONFIRMED', 'COMPLETED') " +
+           "AND b.status IN ('CONFIRMED', 'COMPLETED', 'IN_USE') " +
            "AND b.paymentStatus = 'PAID'")
     BigDecimal calculateTotalRevenueByOwnerId(@Param("ownerId") Long ownerId);
 

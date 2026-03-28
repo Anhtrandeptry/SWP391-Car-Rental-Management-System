@@ -211,6 +211,13 @@ public class PaymentServiceImpl implements PaymentService {
             log.info("========================================");
             log.info("Full webhook data: {}", webhookData);
 
+            // Verify webhook signature first (security)
+            if (!verifyPayOSWebhook(webhookData)) {
+                log.error("PayOS webhook signature verification failed!");
+                return false;
+            }
+            log.info("Webhook signature verified successfully");
+
             // Extract data from webhook
             @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) webhookData.get("data");

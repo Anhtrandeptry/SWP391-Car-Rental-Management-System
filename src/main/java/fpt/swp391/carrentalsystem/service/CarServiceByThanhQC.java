@@ -16,12 +16,12 @@ public interface CarServiceByThanhQC {
     List<String> getAllCarTypes();
     List<String> getAllFuelTypes();
     List<Integer> getAllSeats();
-    Car getCarById(Long id);
+    Car getCarById(Integer id);
     List<CarListItemResponse> getCarsByOwnerAndStatus(Long ownerId, String filter);
 
     List<CarListItemResponse> getCarsByOwner(Long ownerId);
     List<CarListItemResponse> getPendingCars();
-    void approveCar(Long id);
-    void rejectCar(Long id);
-    void updateCarStatus(Long id, CarStatus status);
+    void approveCar(Integer id);
+    void rejectCar(Integer id);
+    void updateCarStatus(Integer id, CarStatus status);
 }

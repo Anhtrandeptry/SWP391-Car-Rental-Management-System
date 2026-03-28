@@ -14,8 +14,6 @@ import java.util.List;
 
 @Entity
 @Table(name = "cars")
-@Getter
-@Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
